@@ -20,7 +20,6 @@ namespace MarketplaceApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Navigation Properties
         [ForeignKey("ConversationID")]
         public virtual Conversation Conversation { get; set; } = null!;
 
