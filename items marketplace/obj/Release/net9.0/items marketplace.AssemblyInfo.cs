@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("items marketplace")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+992f909a390ab56c489942e1b6e16f51ea0726d8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+470be4163666e10bd340281ed285e8989dd8ac60")]
 [assembly: System.Reflection.AssemblyProductAttribute("items marketplace")]
 [assembly: System.Reflection.AssemblyTitleAttribute("items marketplace")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
