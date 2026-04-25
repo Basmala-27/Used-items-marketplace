@@ -1,7 +1,21 @@
+using Microsoft.EntityFrameworkCore; // 1. ??? ??? ?????
+using MarketplaceApp.Data;         // 2. ??? ??? ?????? ???? ??? ??? DbContext
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// -----------------------------------------------------------
+// ?? ????? ????? ???????? (SQLite)
+// -----------------------------------------------------------
+// ????? ??? Connection String ???? ??? ?????? ?? appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// ????? ??? DbContext ?? ???? ??? ??????? (Dependency Injection)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
+// -----------------------------------------------------------
 
 var app = builder.Build();
 
@@ -9,7 +23,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -24,6 +37,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

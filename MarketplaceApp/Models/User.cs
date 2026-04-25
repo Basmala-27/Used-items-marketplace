@@ -35,15 +35,13 @@ namespace MarketplaceApp.Models
 
         [Range(0, 5)]
         public double TrustScore { get; set; } = 0;
-
+        [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // Navigation
         public ICollection<Item> Items { get; set; }= new List<Item>();
 
-        // Offer 
-        public ICollection<Offer> OffersMade { get; set; } = new List<Offer>();
-
+        
         // Notification
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

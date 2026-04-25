@@ -13,11 +13,11 @@ namespace MarketplaceApp.Models
         public int ConversationID { get; set; }
 
         [Required]
-        public string SenderID { get; set; } = string.Empty;
+        public int SenderID { get; set; }
 
         [Required(ErrorMessage = "Message cannot be empty")]
         public string MessageText { get; set; } = string.Empty;
-
+        [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [ForeignKey("ConversationID")]

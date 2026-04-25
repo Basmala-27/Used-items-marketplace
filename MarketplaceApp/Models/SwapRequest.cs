@@ -1,14 +1,22 @@
+using MarketplaceApp.Enums;
+using System.ComponentModel.DataAnnotations;
+
 namespace MarketplaceApp.Models
 {
     public class SwapRequest
     {
+        [Key]
         public int SwapRequestId { get; set; }
-
+        [Required]
         public int RequesterId { get; set; }
+        [Required]
         public int OfferedItemId { get; set; }
+        [Required]
         public int RequestedItemId { get; set; }
-
-        public string Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        [Required]
+        public User Requester { get; set; }
+        public OfferStatus Status { get; set; } = OfferStatus.Pending;
+        [DataType(DataType.DateTime)]
+        public DateTime CreatedAt { get; set; }= DateTime.Now;
     }
 }

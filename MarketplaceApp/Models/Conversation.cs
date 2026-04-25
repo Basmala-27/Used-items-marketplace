@@ -19,7 +19,7 @@ namespace MarketplaceApp.Models
         [Required]
         [ForeignKey("Seller")]
         public int SellerID { get; set; }
-
+        [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public Item Item { get; set; }

@@ -10,7 +10,8 @@ namespace MarketplaceApp.Models
         public int NotificationID { get; set; }
 
         [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [DataType(DataType.DateTime)]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [Required]
         public bool IsRead { get; set; } = false;

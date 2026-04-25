@@ -13,7 +13,7 @@ namespace MarketplaceApp.Models
 
         [Required]
         public int ItemID { get; set; }
-
+        [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation

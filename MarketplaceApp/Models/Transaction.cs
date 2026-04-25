@@ -12,9 +12,9 @@ namespace MarketplaceApp.Models
 
         public int ItemID { get; set; }
 
-        public string BuyerID { get; set; } = string.Empty;
+        public int BuyerID { get; set; }
 
-        public string SellerID { get; set; } = string.Empty;
+        public int SellerID { get; set; }
 
         public decimal FinalPrice { get; set; }
 
@@ -24,7 +24,7 @@ namespace MarketplaceApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-   
+
         public virtual Item Item { get; set; } = null!;
         public virtual User Buyer { get; set; } = null!;
         public virtual User Seller { get; set; } = null!;
