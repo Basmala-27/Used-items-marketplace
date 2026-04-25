@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MarketplaceApp.Enums;
 
 namespace MarketplaceApp.Models
 {
@@ -15,8 +16,7 @@ namespace MarketplaceApp.Models
         public bool IsRead { get; set; } = false;
 
         [Required]
-        public string Type { get; set; } = "system";
-
+        public NotificationType Type { get; set; } = NotificationType.System;
         public string? MessageText { get; set; }
 
         public int? RelatedOfferID { get; set; }

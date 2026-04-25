@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MarketplaceApp.Enums;
 
 namespace MarketplaceApp.Models
 {
@@ -12,8 +13,7 @@ namespace MarketplaceApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Required]
-        public string Status { get; set; } = "pending";
-
+        public OfferStatus Status { get; set; } = OfferStatus.Pending;
         [Required]
         public decimal Price { get; set; }
 

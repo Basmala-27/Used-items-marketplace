@@ -50,4 +50,7 @@ public class Item
 
     // Relationships
     public ICollection<ItemImage> Images { get; set; } = new List<ItemImage>();
+
+    // Favourites 
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 }
