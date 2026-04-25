@@ -46,5 +46,8 @@ namespace MarketplaceApp.Models
 
         // Notification
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+        // Favourites
+        public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     }
 }
