@@ -40,5 +40,11 @@ namespace MarketplaceApp.Models
 
         // Navigation
         public ICollection<Item> Items { get; set; }= new List<Item>();
+
+        // Offer 
+        public ICollection<Offer> OffersMade { get; set; } = new List<Offer>();
+
+        // Notification
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }
