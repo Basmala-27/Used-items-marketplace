@@ -1,7 +1,5 @@
 ﻿using MarketplaceApp.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace MarketplaceApp.Data
 {
@@ -12,6 +10,7 @@ namespace MarketplaceApp.Data
         {
         }
 
+        // الجداول (DbSets)
         public DbSet<User> Users { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemImage> ItemImages { get; set; }
@@ -24,41 +23,59 @@ namespace MarketplaceApp.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SwapRequest> SwapRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Test> Reports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            
+            // 1. إعداد البريد الإلكتروني كحقل فريد
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            // 2. إعداد المفتاح المركب للمفضلات لضمان عدم تكرار نفس المنتج لنفس المستخدم
             modelBuilder.Entity<Favorite>()
                 .HasIndex(f => new { f.UserID, f.ItemID })
                 .IsUnique();
 
+            // 3. علاقة One-to-One بين العملية والتقييم
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.Review)
                 .WithOne(r => r.Transaction)
-                .HasForeignKey<Review>(r => r.TransactionID);
+                .HasForeignKey<Review>(r => r.TransactionID)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.Buyer)
-                .WithMany()
-                .HasForeignKey(c => c.BuyerID)
-                .OnDelete(DeleteBehavior.Restrict);
+            // 4. معالجة علاقات المحادثات (بائع ومشتري) - ضروري جداً لتجنب Multiple Cascade Paths
+            modelBuilder.Entity<Conversation>(entity =>
+            {
+                entity.HasOne(c => c.Buyer)
+                    .WithMany()
+                    .HasForeignKey(c => c.BuyerID)
+                    .OnDelete(DeleteBehavior.Restrict); // نستخدم Restrict لمنع الحذف المتسلسل المتعارض
 
-            modelBuilder.Entity<Conversation>()
-                .HasOne(c => c.Seller)
-                .WithMany()
-                .HasForeignKey(c => c.SellerID)
-                .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(c => c.Seller)
+                    .WithMany()
+                    .HasForeignKey(c => c.SellerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
-            modelBuilder.Entity<SwapRequest>()
-                .HasOne(s => s.Requester)
+            // 5. علاقة طلبات التبادل
+            modelBuilder.Entity<SwapRequest>(entity =>
+            {
+                entity.HasOne(s => s.Requester)
+                    .WithMany()
+                    .HasForeignKey(s => s.RequesterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // 6. علاقة العروض مع المستخدمين (إذا كانت موجودة في الموديل)
+            modelBuilder.Entity<Offer>()
+                .HasOne(o => o.Buyer)
                 .WithMany()
-                .HasForeignKey(s => s.RequesterId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(o => o.BuyerID)
+                .OnDelete(DeleteBehavior.NoAction);
+          
         }
     }
 }

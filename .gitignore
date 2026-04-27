@@ -9,3 +9,5 @@
 /MarketplaceApp/bin/Debug/net9.0
 /MarketplaceApp/obj/Debug/net9.0
 /MarketplaceApp/obj/Release/net9.0
+/MarketplaceApp/obj
+/MarketplaceApp/.config

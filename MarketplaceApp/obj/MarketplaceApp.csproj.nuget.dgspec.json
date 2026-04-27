@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\MarketplaceApp.csproj": {}
+    "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\MarketplaceApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\MarketplaceApp.csproj": {
+    "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\MarketplaceApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\MarketplaceApp.csproj",
+        "projectUniqueName": "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\MarketplaceApp.csproj",
         "projectName": "MarketplaceApp",
-        "projectPath": "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\MarketplaceApp.csproj",
+        "projectPath": "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\MarketplaceApp.csproj",
         "packagesPath": "C:\\Users\\ITC\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\obj\\",
+        "outputPath": "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Iot3R+YfWmc=",
+  "dgSpecHash": "RpaHhyHBdOY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ITC\\Desktop\\used item marketplace\\MarketplaceApp\\MarketplaceApp.csproj",
+  "projectFilePath": "C:\\Users\\ITC\\Desktop\\1\\MarketplaceApp\\MarketplaceApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ITC\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",
     "C:\\Users\\ITC\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
