@@ -1,0 +1,170 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using MarketplaceApp.Data;
+using MarketplaceApp.Models;
+
+namespace MarketplaceApp.Controllers
+{
+    public class OffersController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public OffersController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Offers
+        public async Task<IActionResult> Index()
+        {
+            var applicationDbContext = _context.Offers.Include(o => o.Buyer).Include(o => o.Item);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        // GET: Offers/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var offer = await _context.Offers
+                .Include(o => o.Buyer)
+                .Include(o => o.Item)
+                .FirstOrDefaultAsync(m => m.OfferID == id);
+            if (offer == null)
+            {
+                return NotFound();
+            }
+
+            return View(offer);
+        }
+
+        // GET: Offers/Create
+        public IActionResult Create()
+        {
+            ViewData["BuyerID"] = new SelectList(_context.Users, "UserID", "Email");
+            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title");
+            return View();
+        }
+
+        // POST: Offers/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("OfferID,CreatedAt,Status,Price,ItemID,BuyerID")] Offer offer)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(offer);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["BuyerID"] = new SelectList(_context.Users, "UserID", "Email", offer.BuyerID);
+            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", offer.ItemID);
+            return View(offer);
+        }
+
+        // GET: Offers/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var offer = await _context.Offers.FindAsync(id);
+            if (offer == null)
+            {
+                return NotFound();
+            }
+            ViewData["BuyerID"] = new SelectList(_context.Users, "UserID", "Email", offer.BuyerID);
+            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", offer.ItemID);
+            return View(offer);
+        }
+
+        // POST: Offers/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("OfferID,CreatedAt,Status,Price,ItemID,BuyerID")] Offer offer)
+        {
+            if (id != offer.OfferID)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(offer);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!OfferExists(offer.OfferID))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["BuyerID"] = new SelectList(_context.Users, "UserID", "Email", offer.BuyerID);
+            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", offer.ItemID);
+            return View(offer);
+        }
+
+        // GET: Offers/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var offer = await _context.Offers
+                .Include(o => o.Buyer)
+                .Include(o => o.Item)
+                .FirstOrDefaultAsync(m => m.OfferID == id);
+            if (offer == null)
+            {
+                return NotFound();
+            }
+
+            return View(offer);
+        }
+
+        // POST: Offers/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var offer = await _context.Offers.FindAsync(id);
+            if (offer != null)
+            {
+                _context.Offers.Remove(offer);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool OfferExists(int id)
+        {
+            return _context.Offers.Any(e => e.OfferID == id);
+        }
+    }
+}

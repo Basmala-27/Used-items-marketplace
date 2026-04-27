@@ -23,7 +23,7 @@ namespace MarketplaceApp.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SwapRequest> SwapRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Test> Reports { get; set; }
+       
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
