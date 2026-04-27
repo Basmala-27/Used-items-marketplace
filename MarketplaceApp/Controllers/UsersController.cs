@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MarketplaceApp.Data;
 using MarketplaceApp.Models;
+using System.IO;
 
 namespace MarketplaceApp.Controllers
 {
@@ -29,16 +30,12 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.UserID == id);
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.UserID == id);
+
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return View(user);
         }
@@ -49,19 +46,37 @@ namespace MarketplaceApp.Controllers
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Users/Create (🔥 مع رفع الصورة)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserID,Name,Email,PasswordHash,Phone,Location,ProfileImage,TrustScore,CreatedAt")] User user)
+        public async Task<IActionResult> Create(User user, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
+                // 🔥 رفع الصورة فقط
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                    var path = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot/images",
+                        fileName
+                    );
+
+                    using (var stream = new FileStream(path, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    user.ProfileImage = "/images/" + fileName;
+                }
+
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(user);
         }
 
@@ -69,29 +84,23 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var user = await _context.Users.FindAsync(id);
+
             if (user == null)
-            {
                 return NotFound();
-            }
+
             return View(user);
         }
 
         // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserID,Name,Email,PasswordHash,Phone,Location,ProfileImage,TrustScore,CreatedAt")] User user)
+        public async Task<IActionResult> Edit(int id, User user)
         {
             if (id != user.UserID)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -103,16 +112,14 @@ namespace MarketplaceApp.Controllers
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!UserExists(user.UserID))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(user);
         }
 
@@ -120,16 +127,12 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.UserID == id);
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.UserID == id);
+
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return View(user);
         }
@@ -140,6 +143,7 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var user = await _context.Users.FindAsync(id);
+
             if (user != null)
             {
                 _context.Users.Remove(user);

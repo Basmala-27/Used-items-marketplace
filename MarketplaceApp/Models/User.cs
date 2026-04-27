@@ -30,7 +30,7 @@ namespace MarketplaceApp.Models
         [MaxLength(200)]
         public string Location { get; set; }= string.Empty;
 
-        [Url]
+       
         public string ProfileImage { get; set; }= string.Empty;
 
         [Range(0, 5)]
