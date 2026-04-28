@@ -7,28 +7,41 @@ namespace MarketplaceApp.Models
     public class Offer
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int OfferID { get; set; }
 
         [Required]
+        [Display(Name = "Offer Date")]
         [DataType(DataType.DateTime)]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        [Required]
+        [Required(ErrorMessage = "Offer status is required")]
+        [Display(Name = "Current Status")]
         public OfferStatus Status { get; set; } = OfferStatus.Pending;
-        [Required]
+
+        [Required(ErrorMessage = "Proposed price is required")]
+        [Range(0.01, 10000000, ErrorMessage = "Price must be a positive value")]
+        [Column(TypeName = "decimal(10,2)")]
+        [Display(Name = "Offered Price", Prompt = "0.00")]
         public decimal Price { get; set; }
 
-
-        [Required]
+        [Required(ErrorMessage = "Item reference is required")]
+        [Display(Name = "Related Item")]
         public int ItemID { get; set; }
 
-        [ForeignKey("ItemID")]
-        public Item Item { get; set; } = null!;
+        [Required(ErrorMessage = "Buyer reference is required")]
+        [Display(Name = "Buyer ID")]
+        public string BuyerID { get; set; } = string.Empty;
 
-        [Required]
-        public string BuyerID { get; set; }
+        // --- Navigation Properties ---
 
-        [ForeignKey("BuyerID")]
-        public ApplicationUser Buyer { get; set; } = null!;
+        [ForeignKey(nameof(ItemID))]
+        public virtual Item Item { get; set; } = null!;
+
+        [ForeignKey(nameof(BuyerID))]
+        [InverseProperty("BoughtOffers")]
+        public virtual ApplicationUser Buyer { get; set; } = null!;
+
+        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }

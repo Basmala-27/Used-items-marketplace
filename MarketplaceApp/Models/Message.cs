@@ -7,23 +7,34 @@ namespace MarketplaceApp.Models
     public class Message
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int MessageID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Conversation reference is required")]
+        [Display(Name = "Conversation ID")]
         public int ConversationID { get; set; }
 
-        [Required]
-        public string SenderID { get; set; }
+        [Required(ErrorMessage = "Sender reference is required")]
+        [Display(Name = "Sender")]
+        public int SenderID { get; set; }
+
+
 
         [Required(ErrorMessage = "Message cannot be empty")]
+        [StringLength(1000, ErrorMessage = "Message is too long")]
+        [Display(Name = "Message Text", Prompt = "Type your message here...")]
+        [RegularExpression(@"^[a-zA-Z0-9].*", ErrorMessage = "Message must start with a letter or number")]
         public string MessageText { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Sent At")]
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [ForeignKey("ConversationID")]
+        [ForeignKey(nameof(ConversationID))]
         public virtual Conversation Conversation { get; set; } = null!;
 
-        [ForeignKey("SenderID")] 
+        [ForeignKey(nameof(SenderID))]
         public virtual ApplicationUser Sender { get; set; } = null!;
     }
 }

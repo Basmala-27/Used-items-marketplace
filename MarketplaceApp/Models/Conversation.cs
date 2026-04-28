@@ -1,32 +1,48 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MarketplaceApp.Data;
 
 namespace MarketplaceApp.Models
 {
     public class Conversation
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)] //
         public int ConversationID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Item reference is required")]
+        [Display(Name = "Related Item")]
         [ForeignKey("Item")]
         public int ItemID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Buyer reference is required")]
         [ForeignKey("Buyer")]
-        public string BuyerID { get; set; }
+        [Display(Name = "Buyer Name")]
+        public int BuyerID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Seller reference is required")]
         [ForeignKey("Seller")]
-        public string SellerID { get; set; }
+        [Display(Name = "Seller Name")]
+        public int SellerID { get; set; }
+
+        [Required] // 
+        [Display(Name = "Date Created")]
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public Item Item { get; set; }
+        // --- Navigation Properties ---
 
-        public ApplicationUser Buyer { get; set; }=    null!;
-        public ApplicationUser Seller { get; set; }= null!;
+        [ForeignKey("ItemID")]
+        public virtual Item Item { get; set; } = null!;
 
-        public ICollection<Message> Messages { get; set; }= new List<Message>();
+        [ForeignKey("BuyerID")]
+        [InverseProperty("BoughtConversations")]
+        public virtual ApplicationUser Buyer { get; set; } = null!; // Changed to ApplicationUser
+
+        [ForeignKey("SellerID")]
+        [InverseProperty("SoldConversations")]
+        public virtual ApplicationUser Seller { get; set; } = null!; // Changed to ApplicationUser
+
+        public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
     }
 }
