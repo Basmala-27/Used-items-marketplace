@@ -12,9 +12,9 @@ namespace MarketplaceApp.Models
 
         public int ItemID { get; set; }
 
-        public int BuyerID { get; set; }
+        public string BuyerID { get; set; }
 
-        public int SellerID { get; set; }
+        public string SellerID { get; set; }
 
         public decimal FinalPrice { get; set; }
 
@@ -26,8 +26,8 @@ namespace MarketplaceApp.Models
 
 
         public virtual Item Item { get; set; } = null!;
-        public virtual User Buyer { get; set; } = null!;
-        public virtual User Seller { get; set; } = null!;
+        public virtual ApplicationUser Buyer { get; set; } = null!;
+        public virtual ApplicationUser Seller { get; set; } = null!;
 
         public virtual Review? Review { get; set; }
     }

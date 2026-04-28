@@ -14,18 +14,18 @@ namespace MarketplaceApp.Models
 
         [Required]
         [ForeignKey("Buyer")]
-        public int BuyerID { get; set; }
+        public string BuyerID { get; set; }
 
         [Required]
         [ForeignKey("Seller")]
-        public int SellerID { get; set; }
+        public string SellerID { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public Item Item { get; set; }
 
-        public User Buyer { get; set; }=    null!;
-        public User Seller { get; set; }= null!;
+        public ApplicationUser Buyer { get; set; }=    null!;
+        public ApplicationUser Seller { get; set; }= null!;
 
         public ICollection<Message> Messages { get; set; }= new List<Message>();
     }

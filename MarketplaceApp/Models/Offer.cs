@@ -26,9 +26,9 @@ namespace MarketplaceApp.Models
         public Item Item { get; set; } = null!;
 
         [Required]
-        public int BuyerID { get; set; }
+        public string BuyerID { get; set; }
 
         [ForeignKey("BuyerID")]
-        public User Buyer { get; set; } = null!;
+        public ApplicationUser Buyer { get; set; } = null!;
     }
 }

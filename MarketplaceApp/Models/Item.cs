@@ -33,7 +33,7 @@ public class Item
 
     // FK
     [Required]
-    public int UserID { get; set; }
+    public string UserID { get; set; }
 
     [Required]
     public int CategoryID { get; set; }
@@ -43,7 +43,7 @@ public class Item
 
     // Navigation Properties
     [ForeignKey(nameof(UserID))]
-    public User User { get; set; }
+    public ApplicationUser User { get; set; }
 
     [ForeignKey(nameof(CategoryID))]
     public Category Category { get; set; }

@@ -9,7 +9,7 @@ namespace MarketplaceApp.Models
         public int FavoriteID { get; set; }
 
         [Required]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         [Required]
         public int ItemID { get; set; }
@@ -18,7 +18,7 @@ namespace MarketplaceApp.Models
 
         // Navigation
         [ForeignKey(nameof(UserID))]
-        public User User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
 
         [ForeignKey(nameof(ItemID))]
         public Item Item { get; set; } = null!;

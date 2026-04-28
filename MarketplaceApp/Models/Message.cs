@@ -13,7 +13,7 @@ namespace MarketplaceApp.Models
         public int ConversationID { get; set; }
 
         [Required]
-        public int SenderID { get; set; }
+        public string SenderID { get; set; }
 
         [Required(ErrorMessage = "Message cannot be empty")]
         public string MessageText { get; set; } = string.Empty;
@@ -24,6 +24,6 @@ namespace MarketplaceApp.Models
         public virtual Conversation Conversation { get; set; } = null!;
 
         [ForeignKey("SenderID")] 
-        public virtual User Sender { get; set; } = null!;
+        public virtual ApplicationUser Sender { get; set; } = null!;
     }
 }

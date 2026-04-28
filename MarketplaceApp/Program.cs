@@ -1,25 +1,33 @@
-using Microsoft.EntityFrameworkCore; // 1. ??? ??? ?????
-using MarketplaceApp.Data;         // 2. ??? ??? ?????? ???? ??? ??? DbContext
+﻿using MarketplaceApp.Data;
+using MarketplaceApp.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 🔹 Add MVC
 builder.Services.AddControllersWithViews();
 
-// -----------------------------------------------------------
-// ?? ????? ????? ???????? (SQLite)
-// -----------------------------------------------------------
-// ????? ??? Connection String ???? ??? ?????? ?? appsettings.json
+// 🔹 Connection String
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// ????? ??? DbContext ?? ???? ??? ??????? (Dependency Injection)
+// 🔹 DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
-// -----------------------------------------------------------
+
+// 🔹 Identity + Roles
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 🔹 Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -27,15 +35,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // مهم بدل MapStaticAssets
+
 app.UseRouting();
 
+// 🔹 Auth
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
+// 🔹 Routing
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

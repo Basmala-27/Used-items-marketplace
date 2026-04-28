@@ -26,9 +26,9 @@ namespace MarketplaceApp.Models
         public Offer? Offer { get; set; }
 
         [Required]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         [ForeignKey("UserID")]
-        public User User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
     }
 }

@@ -1,9 +1,10 @@
 ﻿using MarketplaceApp.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace MarketplaceApp.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -11,7 +12,6 @@ namespace MarketplaceApp.Data
         }
 
         // الجداول (DbSets)
-        public DbSet<User> Users { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemImage> ItemImages { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -30,7 +30,7 @@ namespace MarketplaceApp.Data
             base.OnModelCreating(modelBuilder);
             
             // 1. إعداد البريد الإلكتروني كحقل فريد
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 

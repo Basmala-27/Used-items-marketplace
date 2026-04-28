@@ -8,13 +8,13 @@ namespace MarketplaceApp.Models
         [Key]
         public int SwapRequestId { get; set; }
         [Required]
-        public int RequesterId { get; set; }
+        public string RequesterId { get; set; }
         [Required]
         public int OfferedItemId { get; set; }
         [Required]
         public int RequestedItemId { get; set; }
         [Required]
-        public User Requester { get; set; }
+        public ApplicationUser Requester { get; set; }
         public OfferStatus Status { get; set; } = OfferStatus.Pending;
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }= DateTime.Now;

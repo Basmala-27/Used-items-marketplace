@@ -13,7 +13,7 @@ namespace MarketplaceApp.Models
         public Transaction Transaction { get; set; }
 
         public int ReviewerID { get; set; }
-        public int SellerID { get; set; }
+        public string SellerID { get; set; }
         [Range(1, 5)]
         public int Rating { get; set; }
         [StringLength(500, ErrorMessage = "Comment can't exceed 500 characters")]

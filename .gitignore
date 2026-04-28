@@ -11,3 +11,8 @@
 /MarketplaceApp/obj/Release/net9.0
 /MarketplaceApp/obj
 /MarketplaceApp/.config
+/MarketplaceApp/obj/project.assets.json
+/MarketplaceApp/obj/project.nuget.cache
+/MarketplaceApp/obj/MarketplaceApp.csproj.nuget.g.props
+/MarketplaceApp/obj/MarketplaceApp.csproj.nuget.dgspec.json
+/MarketplaceApp/MarketplaceApp.csproj
