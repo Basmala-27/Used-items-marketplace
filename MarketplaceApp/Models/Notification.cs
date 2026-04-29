@@ -36,7 +36,7 @@ namespace MarketplaceApp.Models
 
         [Required(ErrorMessage = "A target user is required")]
         [Display(Name = "Recipient")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }= string.Empty;
 
         [ForeignKey(nameof(UserID))]
         public virtual ApplicationUser User { get; set; } = null!;

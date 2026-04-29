@@ -18,12 +18,12 @@ namespace MarketplaceApp.Models
         [Required(ErrorMessage = "Buyer reference is required")]
         [ForeignKey("Buyer")]
         [Display(Name = "Buyer Name")]
-        public int BuyerID { get; set; }
+        public string BuyerID { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Seller reference is required")]
         [ForeignKey("Seller")]
         [Display(Name = "Seller Name")]
-        public int SellerID { get; set; }
+        public string SellerID { get; set; } = string.Empty;
 
         [Required] // 
         [Display(Name = "Date Created")]

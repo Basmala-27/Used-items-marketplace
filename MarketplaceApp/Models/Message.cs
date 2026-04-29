@@ -16,7 +16,7 @@ namespace MarketplaceApp.Models
 
         [Required(ErrorMessage = "Sender reference is required")]
         [Display(Name = "Sender")]
-        public int SenderID { get; set; }
+        public string SenderID { get; set; }=string.Empty;
 
 
 

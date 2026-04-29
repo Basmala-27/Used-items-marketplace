@@ -23,32 +23,38 @@ namespace MarketplaceApp.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            return View(new RegisterVM());
         }
-
         [HttpPost]
-        public async Task<IActionResult> Register(string email, string password)
+        public async Task<IActionResult> Register(RegisterVM model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email
+                UserName = model.Email,
+                Email = model.Email,
+                Name = model.Name,
+                Location = model.Location,
+                PhoneNumber = model.PhoneNumber
             };
 
-            var result = await _userManager.CreateAsync(user, password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInAsync(user, false);
                 return RedirectToAction("Index", "Home");
             }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
-            return View();
+            return View(model);
         }
-
         // ---------------- LOGIN ----------------
 
         [HttpGet]
@@ -58,18 +64,47 @@ namespace MarketplaceApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        [ValidateAntiForgeryToken] 
+        public async Task<IActionResult> Login(LoginVM model)
         {
+           
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+           
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("Email", "This email address is not registered.");
+                return View(model);
+            }
+
+           
             var result = await _signInManager.PasswordSignInAsync(
-                email, password, false, false);
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
 
             if (result.Succeeded)
+            {
                 return RedirectToAction("Index", "Home");
+            }
 
-            ModelState.AddModelError("", "Invalid login");
-            return View();
+            
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError(string.Empty, "Account locked due to too many failed attempts.");
+            }
+            else
+            {
+                ModelState.AddModelError("Password", "Incorrect password. Please try again.");
+            }
+
+            return View(model);
         }
-
         // ---------------- LOGOUT ----------------
 
         public async Task<IActionResult> Logout()

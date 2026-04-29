@@ -1,8 +1,323 @@
-﻿<h2>Login</h2>
+﻿@model MarketplaceApp.Models.LoginVM
+@{
+    Layout = null;
+}
 
-<form method="post">
-    <input name="email" placeholder="Email" />
-    <input name="password" type="password" placeholder="Password" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Back - Login</title>
 
-    <button type="submit">Login</button>
-</form>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: #fff;
+        }
+
+        .main {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT */
+        .left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .wrapper {
+            width: 400px;
+        }
+
+        h2 {
+            font-weight: 800;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* TRUST */
+        .trust {
+            background: linear-gradient(135deg,#fff7f3,#f7f7f7);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .trust i {
+                font-size: 18px;
+                color: #ff6b35;
+            }
+
+        /* INPUT */
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+            .form-control:focus {
+                border-color: #ff6b35;
+                box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.15);
+            }
+
+        .btn-orange {
+            background: #ff6b35;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            margin-top: 15px;
+        }
+
+            .btn-orange:hover {
+                background: #e85a2a;
+            }
+
+        /* SOCIAL */
+        .social {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+            .social a {
+                flex: 1;
+                border: 1px solid #eee;
+                border-radius: 10px;
+                padding: 10px;
+                text-align: center;
+                text-decoration: none;
+                color: #333;
+                font-size: 13px;
+            }
+
+        .right {
+            flex: 1;
+            background: radial-gradient(circle at top right, #ffe7df, #fff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* FLOAT ANIMATION */
+        @@keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-18px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .icon {
+            position: absolute;
+            background: white;
+            border-radius: 14px;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            animation: float 4s ease-in-out infinite;
+        }
+
+            .icon.main {
+                background: #ff6b35;
+                color: white;
+                width: 70px;
+                height: 70px;
+                font-size: 22px;
+                top: 22%;
+            }
+
+        .i1 {
+            top: 16%;
+            right: 32%;
+            animation-delay: 0s;
+        }
+
+        .i2 {
+            top: 16%;
+            right: 60%;
+            animation-delay: 0.8s;
+        }
+
+        .i3 {
+            top: 30%;
+            right: 60%;
+            animation-delay: 1.5s;
+        }
+
+        .i4 {
+            top: 30%;
+            right: 32%;
+            animation-delay: 2s;
+        }
+
+        /* BOX */
+        .box {
+            width: 380px;
+            margin-top: 160px;
+        }
+
+        .feature {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+            transition: 0.2s;
+        }
+
+            .feature:hover {
+                transform: translateX(5px);
+            }
+
+            .feature i {
+                color: #ff6b35;
+                font-size: 18px;
+            }
+
+
+    </style>
+</head>
+
+<body>
+
+    <div class="main">
+
+        <!-- LEFT -->
+        <div class="left">
+            <div class="wrapper">
+
+                <h2>Welcome back</h2>
+                <p class="subtitle">Sign in to continue buying and selling safely</p>
+
+                <div class="trust">
+                    <i class="bi bi-shield-lock"></i>
+                    <div>
+                        Secure marketplace trusted by thousands<br />
+                        Fast & safe login experience
+                    </div>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2" style="font-size:13px;"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email">Email Address</label>
+                        <input asp-for="Email" class="form-control" placeholder="example@mail.com" />
+                        <span asp-validation-for="Email" class="text-danger" style="font-size:12px;"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                        <span asp-validation-for="Password" class="text-danger" style="font-size:12px;"></span>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label class="form-check-label" asp-for="RememberMe" style="font-weight:400; font-size:12px;">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-orange">Sign In</button>
+
+                    <div class="text-center mt-3 mb-2" style="font-size:12px;color:#777;">
+                        Or continue with
+                    </div>
+
+                    <div class="social">
+                        <a href="#"><i class="bi bi-google"></i> Google</a>
+                        <a href="#"><i class="bi bi-facebook text-primary"></i> Facebook</a>
+                    </div>
+
+                    <p class="text-center mt-3" style="font-size:12px;">
+                        Don't have account?
+                        <a href="/Account/Register" style="color:#ff6b35;text-decoration:none; font-weight:bold;">Create one</a>
+                    </p>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right">
+
+            <div class="icon i1"><i class="bi bi-bag"></i></div>
+            <div class="icon i2"><i class="bi bi-graph-up"></i></div>
+            <div class="icon main"><i class="bi bi-chat"></i></div>
+            <div class="icon i3"><i class="bi bi-lock"></i></div>
+            <div class="icon i4"><i class="bi bi-cart"></i></div>
+
+            <div class="box">
+                <h5 class="fw-bold text-center">Why join our marketplace?</h5>
+
+                <div class="feature">
+                    <i class="bi bi-patch-check-fill"></i>
+                    <div><b>Secure Transactions</b><br />Protected payments</div>
+                </div>
+
+                <div class="feature">
+                    <i class="bi bi-chat-left-text-fill"></i>
+                    <div><b>Direct Messaging</b><br />Safe buyer-seller chat</div>
+                </div>
+
+                <div class="feature">
+                    <i class="bi bi-star-fill"></i>
+                    <div><b>Verified Ratings</b><br />Trusted reviews system</div>
+                </div>
+
+                <div class="feature">
+                    <i class="bi bi-list-check"></i>
+                    <div><b>Easy Listing</b><br />List items in minutes</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

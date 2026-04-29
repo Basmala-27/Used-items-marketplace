@@ -50,7 +50,7 @@ public class Item
     // FK
     [Required]
     [Display(Name = "Seller ID")]
-    public int UserID { get; set; }
+    public string UserID { get; set; }= string.Empty;
 
     [Required]
     [Display(Name = "Category ID")]

@@ -11,7 +11,7 @@ namespace MarketplaceApp.Models
 
         [Required(ErrorMessage = "User ID is required")]
         [Display(Name = "User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Item ID is required")]
         [Display(Name = "Favorited Item")]

@@ -20,7 +20,7 @@ namespace MarketplaceApp.Models
 
         [Required(ErrorMessage = "Reviewer reference is required")]
         [Display(Name = "Reviewer")]
-        public int ReviewerID { get; set; }  // Should it changed to string ?
+        public string ReviewerID { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Seller reference is required")]
         [Display(Name = "Seller")]
