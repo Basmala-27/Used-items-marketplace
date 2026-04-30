@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
+using MarketplaceApp.Enums;
 namespace MarketplaceApp.Controllers
 {
    
@@ -71,10 +71,10 @@ namespace MarketplaceApp.Controllers
                         Title = vm.Title,
                         Description = vm.Description,
                         Price = vm.Price,
-                        Condition = vm.Condition,
-                        Location = vm.Location,
+                        
+                        Condition = Enum.Parse<ItemCondition>(vm.Condition.Replace(" ", "")),
                         CategoryID = vm.CategoryID,
-                        Status = "Available", // القيمة الافتراضية
+                        Status = ItemStatus.Available, // القيمة الافتراضية
                         CreatedAt = DateTime.Now,
                         // هنا بنفترض إنك بتستخدمي Identity لجلب الـ UserID
                         // UserID = User.FindFirstValue(ClaimTypes.NameIdentifier) 

@@ -6,7 +6,7 @@ namespace MarketplaceApp.Models
     public class Favorite
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int FavoriteID { get; set; }
 
         [Required(ErrorMessage = "User ID is required")]

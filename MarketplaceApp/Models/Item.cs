@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MarketplaceApp.Enums;
 
 public class Item
 {
@@ -31,9 +32,9 @@ public class Item
 
 
     [Required(ErrorMessage = "Condition is required")] //
-    [StringLength(50)]
+
     [Display(Name = "Item Condition", Prompt = "e.g., New, Like New, Used")]
-    public string Condition { get; set; } = string.Empty;
+    public ItemCondition Condition { get; set; } = ItemCondition.Used;
 
 
     [StringLength(100)]
@@ -45,8 +46,7 @@ public class Item
     [Required(ErrorMessage = "Status is required")]
     [StringLength(50)]
     [Display(Name = "Listing Status")]
-    public string Status { get; set; } = "Available";  // Default is Available
-
+    public ItemStatus Status { get; set; } = ItemStatus.Available;
     // FK
     [Required]
     [Display(Name = "Seller ID")]

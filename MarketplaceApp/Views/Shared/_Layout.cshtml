@@ -88,28 +88,43 @@
         </main>
     </div>
 
-   
+
     <nav class="bottom-nav">
-        <a href="@Url.Action("Index", "Home")" class="nav-item active">
-            <i class="bi bi-house-door-fill"></i>
+
+        <!-- زرار الهوم مش هنغيره، أي حد يشوفه -->
+        <a href="@Url.Action("Index", "Home")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "bi-house-door-fill" : "bi-house-door")"></i>
             <span>Home</span>
         </a>
-        <a href="#" class="nav-item">
-            <i class="bi bi-grid"></i>
+
+        <!-- زرار الـ Categories برضه متاح للكل -->
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Categories") : "/Account/Login")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "bi-grid-fill" : "bi-grid")"></i>
             <span>Categories</span>
         </a>
-        <a href="#" class="nav-item sell-btn">
+
+        <!-- 1. زرار إضافة منتج: لو مش مسجل يروح للـ Login -->
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Create", "Items") : "/Account/Login")"
+           class="nav-item sell-btn">
             <div class="plus-icon">
                 <i class="bi bi-plus-lg"></i>
             </div>
             <span>Add item</span>
         </a>
-        <a href="#" class="nav-item">
-            <i class="bi bi-chat-left-text"></i>
+
+        <!-- 2. زرار الشات: لو مش مسجل يروح للـ Login -->
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chats") : "/Account/Login")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chats" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chats" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
             <span>Chats</span>
         </a>
-        <a href="#" class="nav-item">
-            <i class="bi bi-person"></i>
+
+        <!-- 3. زرار البروفايل: لو مش مسجل يروح للـ Login -->
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Account") : "/Account/Login")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "bi-person-fill" : "bi-person")"></i>
             <span>Profile</span>
         </a>
         <a href="@Url.Action("Index", "Notifications")" class="nav-item position-relative">
@@ -124,6 +139,7 @@
             </span>
         </a>
     </nav>
+    
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
