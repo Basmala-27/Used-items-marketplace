@@ -1,0 +1,21 @@
+﻿@model List<MarketplaceApp.Models.Notification>
+
+    @if (!Model.Any())
+    {
+    <li class="dropdown-item text-center text-muted">
+        No notifications
+    </li>
+    }
+    else
+    {
+    foreach (var n in Model)
+    {
+    <li class="dropdown-item @(n.IsRead ? " " : " fw-bold")">
+        <a href="@n.TargetUrl" class="text-decoration-none text-dark">
+            @n.MessageText
+        </a>
+        <br />
+        <small class="text-muted">@n.CreatedAt.ToString("g")</small>
+    </li>
+    }
+    }

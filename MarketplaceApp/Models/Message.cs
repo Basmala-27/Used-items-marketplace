@@ -7,7 +7,7 @@ namespace MarketplaceApp.Models
     public class Message
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MessageID { get; set; }
 
         [Required(ErrorMessage = "Conversation reference is required")]

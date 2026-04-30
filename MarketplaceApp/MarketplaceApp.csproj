@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Notifications\Index.cshtml" />
+    <Content Remove="Views\Notifications\_NotificationList.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -31,7 +36,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\images\Home\" />
     <Folder Include="wwwroot\uploads\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Notifications\Index.cshtml" />
+    <None Include="Views\Notifications\_NotificationList.cshtml" />
   </ItemGroup>
 
 </Project>

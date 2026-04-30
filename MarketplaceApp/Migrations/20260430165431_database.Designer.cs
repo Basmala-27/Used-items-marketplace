@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430165431_database")]
+    partial class database
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -164,6 +167,9 @@ namespace MarketplaceApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -196,19 +202,19 @@ namespace MarketplaceApp.Migrations
                     b.HasData(
                         new
                         {
-                            CategoryID = 1,
+                            CategoryID = -1,
                             ImageUrl = "/images/categories/electronics.jpg",
                             Name = "Electronics"
                         },
                         new
                         {
-                            CategoryID = 2,
+                            CategoryID = -2,
                             ImageUrl = "/images/categories/furniture.jpg",
                             Name = "Furniture"
                         },
                         new
                         {
-                            CategoryID = 3,
+                            CategoryID = -3,
                             ImageUrl = "/images/categories/fashion.jpg",
                             Name = "Fashion"
                         });
@@ -217,7 +223,6 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
                 {
                     b.Property<int>("ConversationID")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("BuyerID")
@@ -274,7 +279,6 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Message", b =>
                 {
                     b.Property<int>("MessageID")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ConversationID")
@@ -307,11 +311,7 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Notification", b =>
                 {
                     b.Property<int>("NotificationID")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -324,14 +324,8 @@ namespace MarketplaceApp.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("OfferID")
+                    b.Property<int?>("RelatedOfferID")
                         .HasColumnType("INTEGER");
-
-                    b.Property<int?>("RelatedEntityID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("TargetUrl")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
@@ -342,9 +336,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasKey("NotificationID");
 
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("OfferID");
+                    b.HasIndex("RelatedOfferID");
 
                     b.HasIndex("UserID");
 
@@ -725,19 +717,17 @@ namespace MarketplaceApp.Migrations
 
             modelBuilder.Entity("MarketplaceApp.Models.Notification", b =>
                 {
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", null)
+                    b.HasOne("MarketplaceApp.Models.Offer", "Offer")
                         .WithMany("Notifications")
-                        .HasForeignKey("ApplicationUserId");
-
-                    b.HasOne("MarketplaceApp.Models.Offer", null)
-                        .WithMany("Notifications")
-                        .HasForeignKey("OfferID");
+                        .HasForeignKey("RelatedOfferID");
 
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("Notifications")
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Offer");
 
                     b.Navigation("User");
                 });
@@ -751,7 +741,7 @@ namespace MarketplaceApp.Migrations
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "Buyer")
                         .WithMany()
                         .HasForeignKey("BuyerID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Item", "Item")

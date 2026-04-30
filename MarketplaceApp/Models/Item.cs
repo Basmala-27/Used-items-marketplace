@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class Item
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int ItemID { get; set; }
 
     [Required(ErrorMessage = "Title is required")]

@@ -1,8 +1,227 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using MarketplaceApp.Models
+@model List<Item>
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<div class="hero-full-width-container">
+
+    <!-- 🔎 SEARCH BAR -->
+    <div class="search-wrapper">
+        <div class="search-bar input-group">
+            <span class="input-group-text bg-white border-0 ps-3">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input class="form-control border-0 shadow-none"
+                   placeholder="Search for items, brands, categories...">
+        </div>
+    </div>
+
+    <!-- 🟡 HERO SLIDER -->
+    <div id="heroSlider" class="carousel slide hero-slider" data-bs-ride="carousel">
+        <div class="carousel-inner">
+
+            <div class="carousel-item active">
+                <img src="~/images/categories/elc.png">
+                <div class="overlay"></div>
+                <div class="hero-text">
+                    <h1>Amazing Deals on Electronics</h1>
+                    <p>Buy & Sell Easily Near You</p>
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</button>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=2070">
+                <div class="overlay"></div>
+                <div class="hero-text">
+                    <h1>Find Anything You Need</h1>
+                    <p>Best Marketplace Experience</p>
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Explore</button>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <img src="~/images/categories/clo.png">
+                <div class="overlay"></div>
+                <div class="hero-text">
+                    <h1>Sell Your Unused Items</h1>
+                    <p>Turn clutter into cash 💰</p>
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Start Selling</button>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroSlider" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroSlider" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
 </div>
+
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold m-0 text-dark">Latest Items</h3>
+        <a href="#" class="view-all text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+        @if (Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                var imageUrl = item.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
+
+                <div class="col">
+                    <div class="product-card h-100">
+                        <div class="img-badge-container">
+                            <img src="@imageUrl" alt="@item.Title">
+                            <span class="badge bg-white text-dark position-absolute top-0 end-0 m-2 shadow-sm">New</span>
+                        </div>
+
+                        <div class="p-3">
+                            <h6 class="text-truncate fw-bold mb-1">@item.Title</h6>
+                            <div class="price text-orange fw-bold mb-1">$@item.Price</div>
+                            <small class="text-muted d-block">
+                                <i class="bi bi-geo-alt"></i> @(item.Location ?? "Egypt")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- 🎨 CSS Styles -->
+<style>
+    body {
+        background: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    
+    .hero-full-width-container {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        overflow: hidden;
+    }
+
+    /* 🔎 Search Bar */
+    .search-wrapper {
+        position: absolute;
+        top: 25px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 10;
+        padding: 0 15px;
+    }
+
+    .search-bar {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 50px !important;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+
+    /* 🟡 Hero Slider */
+    .hero-slider img {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+    }
+
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    }
+
+    .hero-text {
+        position: absolute;
+        left: 8%;
+        bottom: 20%;
+        color: white;
+        z-index: 5;
+    }
+
+        .hero-text h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+    /* 🛍️ Product Cards */
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+        }
+
+    .img-badge-container {
+        position: relative;
+    }
+
+    .product-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .text-orange {
+        color: #ff6b00;
+    }
+
+    .view-all {
+        color: #ff6b00;
+        font-weight: 700;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-slider img {
+            height: 250px;
+        }
+
+        .hero-text h1 {
+            font-size: 1.5rem;
+        }
+
+        .search-bar {
+            max-width: 90%;
+        }
+    }
+</style>
+
+<!-- ⚙️ JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var myCarousel = document.querySelector('#heroSlider');
+        new bootstrap.Carousel(myCarousel, {
+            interval: 4000,
+            ride: 'carousel'
+        });
+    });
+</script>
