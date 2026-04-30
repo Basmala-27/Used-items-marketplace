@@ -13,7 +13,7 @@ namespace MarketplaceApp.Controllers
 {
    
     
-        public class ItemsController : Controller
+        public class    ItemsController : Controller
         {
             private readonly ApplicationDbContext _context;
             private readonly IWebHostEnvironment _webHostEnvironment;
@@ -123,12 +123,59 @@ namespace MarketplaceApp.Controllers
 
                 return View(vm);
             }
+        public async Task<IActionResult> Index(int? categoryId, string searchTerm, string condition, string location, decimal? minPrice, decimal? maxPrice)
+        {
+            // 1. Check if ALL filter parameters are empty/null
+            bool noFiltersApplied = string.IsNullOrWhiteSpace(searchTerm) &&
+                                    !categoryId.HasValue &&
+                                    (string.IsNullOrEmpty(condition) || condition == "Any Condition") &&
+                                    string.IsNullOrWhiteSpace(location) &&
+                                    !minPrice.HasValue &&
+                                    !maxPrice.HasValue;
 
-            // Index لغرض التجربة
-            public async Task<IActionResult> Index()
+            if (noFiltersApplied)
             {
-                var items = await _context.Items.Include(i => i.Category).Include(i => i.Images).ToListAsync();
-                return View(items);
+                return RedirectToAction("Index", "Home");
             }
+
+            // 2. FETCH THE CATEGORIES FROM THE DATABASE
+            // This is the missing piece to make Electronics, Fashion, etc., appear in the dropdown.
+            var categories = await _context.Categories.ToListAsync();
+
+            var itemsQuery = _context.Items.AsQueryable();
+
+            // 3. Search Logic
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                itemsQuery = itemsQuery.Where(i => i.Title.Contains(searchTerm) || i.Description.Contains(searchTerm));
+            }
+
+            // 4. Category Filter
+            if (categoryId.HasValue)
+            {
+                itemsQuery = itemsQuery.Where(i => i.CategoryID == categoryId);
+            }
+
+            // 5. Condition Filter
+            if (!string.IsNullOrEmpty(condition) && condition != "Any Condition")
+            {
+                itemsQuery = itemsQuery.Where(i => i.Condition == condition);
+            }
+
+            // 6. Location Filter
+            if (!string.IsNullOrEmpty(location))
+            {
+                itemsQuery = itemsQuery.Where(i => i.Location.Contains(location));
+            }
+
+            // 7. Price Range Filter
+            if (minPrice.HasValue) itemsQuery = itemsQuery.Where(i => i.Price >= minPrice);
+            if (maxPrice.HasValue) itemsQuery = itemsQuery.Where(i => i.Price <= maxPrice);
+
+            // 8. POPULATE ViewBag correctly using the fetched list
+            ViewBag.Categories = new SelectList(categories, "CategoryID", "Name", categoryId);
+
+            return View(await itemsQuery.ToListAsync());
         }
+    }
     }

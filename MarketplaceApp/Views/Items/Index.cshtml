@@ -1,83 +1,145 @@
 @model IEnumerable<Item>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Marketplace Items";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold m-0">Marketplace Items</h2>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-plus-lg"></i> Create New
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Condition)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Condition)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Location)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ItemID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ItemID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ItemID">Delete</a>
-            </td>
-        </tr>
+    <!-- Search Bar & Filter Trigger -->
+    <div class="row g-2 mb-4">
+        <div class="col-md-10">
+            <form asp-action="Index" method="get" class="d-flex gap-2" id="searchForm">
+                <input type="text" name="searchTerm" id="searchInput" class="form-control rounded-3" placeholder="Search for items...">
+                <button type="submit" class="btn btn-dark px-4">Search</button>
+            </form>
+        </div>
+        <div class="col-md-2">
+            <!-- This button opens the Modal below -->
+            <button class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-sliders"></i> Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle bg-white mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Title)</th>
+                    <th>@Html.DisplayNameFor(model => model.Price)</th>
+                    <th>@Html.DisplayNameFor(model => model.Condition)</th>
+                    <th>@Html.DisplayNameFor(model => model.Location)</th>
+                    <th>@Html.DisplayNameFor(model => model.Category)</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@Html.DisplayFor(modelItem => item.Title)</td>
+                        <td class="text-success fw-bold">@item.Price.ToString("C")</td>
+                        <td>
+                            <span class="badge @(item.Condition == "New" ? "bg-info" : "bg-warning") text-dark">
+                                @item.Condition
+                            </span>
+                        </td>
+                        <td><i class="bi bi-geo-alt small"></i> @item.Location</td>
+                        <td>@item.Category?.Name</td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@item.ItemID" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.ItemID" class="btn btn-sm btn-outline-info">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.ItemID" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="modal-title fw-bold">Advanced Filters</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form asp-controller="Items" asp-action="Index" method="get">
+                    <!-- Category Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Category</label>
+                        <select name="categoryId" class="form-select bg-light border-0 py-2" asp-items="ViewBag.Categories">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+
+                    <!-- Condition Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Condition</label>
+                        <select name="condition" class="form-select bg-light border-0 py-2">
+                            <option value="">Any Condition</option>
+                            <option value="New">New</option>
+                            <option value="Used">Used</option>
+                        </select>
+                    </div>
+
+                    <!-- Location Input -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Location</label>
+                        <input type="text" name="location" class="form-control bg-light border-0 py-2" placeholder="Enter city or zip code">
+                    </div>
+
+                    <!-- Price Range Slider -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <label class="form-label fw-bold small">Max Price</label>
+                            <span class="text-muted small" id="priceValue">$0 - $1000</span>
+                        </div>
+                        <input type="range" name="maxPrice" class="form-range" min="0" max="1000" step="10" id="priceRange" style="accent-color: #ff6b00;">
+                    </div>
+
+                    <button type="submit" class="btn w-100 fw-bold py-3 text-white" style="background-color: #ff6b00; border-radius: 12px;">
+                        Apply Filters
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 1. Live Price Slider Label
+        const priceRange = document.getElementById('priceRange');
+        const priceValue = document.getElementById('priceValue');
+        if (priceRange && priceValue) {
+            priceRange.addEventListener('input', (e) => {
+                priceValue.textContent = `$0 - $${e.target.value}`;
+            });
+        }
+
+        // 2. Prevent empty main search
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        if (searchForm && searchInput) {
+            searchForm.addEventListener('submit', function (e) {
+                if (searchInput.value.trim() === "") {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+        }
+    </script>
 }
-    </tbody>
-</table>

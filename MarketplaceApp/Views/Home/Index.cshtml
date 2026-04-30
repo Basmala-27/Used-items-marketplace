@@ -8,16 +8,89 @@
 
 <div class="hero-full-width-container">
 
-    <!-- 🔎 SEARCH BAR -->
-    <div class="search-wrapper">
-        <div class="search-bar input-group">
-            <span class="input-group-text bg-white border-0 ps-3">
-                <i class="bi bi-search text-muted"></i>
-            </span>
-            <input class="form-control border-0 shadow-none"
-                   placeholder="Search for items, brands, categories...">
+<!-- 🔎 SEARCH BAR -->
+<div class="search-wrapper">
+    <div class="d-flex align-items-center gap-2">
+        <div class="search-bar flex-grow-1">
+            <form asp-controller="Items" asp-action="Index" method="get" class="input-group align-items-center">
+                <span class="input-group-text bg-white border-0 ps-3">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input name="searchTerm" class="form-control border-0 shadow-none py-2"
+                       placeholder="Search for items, brands, categories...">
+                <button type="submit" class="btn btn-hero-yellow rounded-pill px-4 fw-bold me-1">
+                    Search
+                </button>
+            </form>
         </div>
+
+        <!-- Filter Icon Button -->
+        @* <button type="button" class="btn btn-white rounded-3 shadow-sm p-2 border" data-bs-toggle="modal" data-bs-target="#filterModal" style="background: white; height: 45px; width: 45px;">
+            <i class="bi bi-sliders text-dark"></i>
+        </button> *@
     </div>
+</div>
+
+    @* <!-- Advanced Filters Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h4 class="modal-title fw-bold">Advanced Filters</h4>
+                        <p class="text-muted small">Refine your search with detailed filters</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Change: asp-controller changed from "Items" to "Home" -->
+                    <form asp-controller="Home" asp-action="Index" method="get">
+
+                        <!-- Category Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Category</label>
+                            <select name="categoryId" class="form-select bg-light border-0 py-2" asp-items="ViewBag.Categories">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+
+                        <!-- Condition Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Condition</label>
+                            <select name="condition" class="form-select bg-light border-0 py-2">
+                                <option value="">Any Condition</option>
+                                <option value="New">New</option>
+                                <option value="Used">Used</option>
+                            </select>
+                        </div>
+
+                        <!-- Location Input -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Location</label>
+                            <input type="text" name="location" class="form-control bg-light border-0 py-2" placeholder="Enter city or zip code">
+                        </div>
+
+                        <!-- Price Range Slider -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold small m-0">Price Range</label>
+                                <span class="text-muted small" id="priceValue">$0 - $1000</span>
+                            </div>
+                            <input type="range" name="maxPrice" class="form-range" min="0" max="1000" step="10" id="priceRange" style="accent-color: #ff6b00;">
+                        </div>
+
+                        <!-- Apply Button -->
+                        <button type="submit" class="btn w-100 fw-bold py-3 text-white" style="background-color: #ff6b00; border-radius: 12px;">
+                            Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+
+    
 
     <!-- 🟡 HERO SLIDER -->
     <div id="heroSlider" class="carousel slide hero-slider" data-bs-ride="carousel">
@@ -130,13 +203,25 @@
         padding: 0 15px;
     }
 
+        /* This controls the horizontal stretch */
+        .search-wrapper > div {
+            width: 100%;
+            /* Change this value to make it even wider (e.g., 1200px or 90%) */
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
     .search-bar {
-        width: 100%;
-        max-width: 600px;
+        flex: 1; /* Forces the white bar to stretch and fill the 1100px width */
         border-radius: 50px !important;
         background: white;
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         overflow: hidden;
+        padding: 3px;
+        display: flex;
     }
 
     /* 🟡 Hero Slider */
