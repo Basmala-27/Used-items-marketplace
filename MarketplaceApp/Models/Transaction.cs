@@ -56,7 +56,7 @@ namespace MarketplaceApp.Models
         [InverseProperty("Sales")] 
         public virtual ApplicationUser Seller { get; set; } = null!;
 
-        public virtual Review? Review { get; set; }
+  
 
 
         [Display(Name = "Customer Review")]

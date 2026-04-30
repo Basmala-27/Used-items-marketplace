@@ -22,9 +22,12 @@ namespace MarketplaceApp.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            // ??????? Include ????? ????? ????? ???????? ???????? ??? ?????
+            var categories = await _context.Categories
+                                           .Include(c => c.Items)
+                                           .ToListAsync();
+            return View(categories);
         }
-
         // GET: Categories/Details/5
         public async Task<IActionResult> Details(int? id)
         {

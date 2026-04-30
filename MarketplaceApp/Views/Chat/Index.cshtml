@@ -1,0 +1,17 @@
+@model List<Conversation>
+
+@using System.Security.Claims
+
+@foreach (var c in Model)
+{
+  
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var otherUser = c.BuyerID == currentUserId ? c.Seller : c.Buyer;
+    
+
+    <div>
+        <a asp-action="Chat" asp-route-id="@c.ConversationID">
+            Chat with @otherUser.UserName
+        </a>
+    </div>
+}

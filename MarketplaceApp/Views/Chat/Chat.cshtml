@@ -1,0 +1,20 @@
+@model List<Message>
+
+<h2>Chat</h2>
+
+<div style="border:1px solid gray; height:300px; overflow-y:scroll;">
+    @foreach (var msg in Model)
+    {
+        <div>
+            <b>@msg.SenderID:</b> @msg.MessageText
+        </div>
+    }
+</div>
+
+<form asp-action="SendMessage" method="post">
+    <input type="hidden" name="conversationId" value="@ViewBag.ConversationId" />
+
+    <input type="text" name="content" placeholder="Type message..." />
+
+    <button type="submit">Send</button>
+</form>

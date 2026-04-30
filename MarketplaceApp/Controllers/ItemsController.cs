@@ -1,31 +1,41 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using MarketplaceApp.Data;
+using MarketplaceApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MarketplaceApp.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MarketplaceApp.Controllers
 {
-    public class ItemsController : Controller
-    {
-        private readonly ApplicationDbContext _context;
-
-        public ItemsController(ApplicationDbContext context)
+   
+    
+        public class ItemsController : Controller
         {
-            _context = context;
-        }
+            private readonly ApplicationDbContext _context;
+            private readonly IWebHostEnvironment _webHostEnvironment;
 
-        // GET: Items
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbContext = _context.Items.Include(i => i.Category).Include(i => i.User);
-            return View(await applicationDbContext.ToListAsync());
-        }
+            public ItemsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+            {
+                _context = context;
+                _webHostEnvironment = webHostEnvironment;
+            }
 
-        // GET: Items/Details/5
+            // GET: Items/Create
+            public IActionResult Create()
+            {
+                // تحضير قائمة الأقسام من الداتابيز
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name");
+
+                // قائمة ثابتة للحالات (Condition) كما تظهر في الـ UI
+                ViewBag.Conditions = new SelectList(new[] { "New", "Like New", "Used", "Refurbished" });
+
+                return View();
+            }
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,137 +43,92 @@ namespace MarketplaceApp.Controllers
                 return NotFound();
             }
 
+            // مهم جداً نستخدم Include عشان بيانات الـ User والـ Category تظهر في الصفحة
             var item = await _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.User)
+                .Include(i => i.Images) // لو عاوزه تعرضي الصور برضه
                 .FirstOrDefaultAsync(m => m.ItemID == id);
+
             if (item == null)
             {
                 return NotFound();
             }
 
             return View(item);
-        }
-
-        // GET: Items/Create
-        public IActionResult Create()
-        {
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "Name");
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email");
-            return View();
         }
 
         // POST: Items/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ItemID,Title,Description,Price,Condition,Location,Status,UserID,CategoryID,CreatedAt")] Item item)
-        {
-            if (ModelState.IsValid)
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Create(ItemCreateViewModel vm)
             {
-                _context.Add(item);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "Name", item.CategoryID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", item.UserID);
-            return View(item);
-        }
-
-        // GET: Items/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Items.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "Name", item.CategoryID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", item.UserID);
-            return View(item);
-        }
-
-        // POST: Items/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ItemID,Title,Description,Price,Condition,Location,Status,UserID,CategoryID,CreatedAt")] Item item)
-        {
-            if (id != item.ItemID)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                if (ModelState.IsValid)
                 {
-                    _context.Update(item);
+                    // 1. تحويل الـ ViewModel إلى الـ Model الأصلي (Item)
+                    var newItem = new Item
+                    {
+                        Title = vm.Title,
+                        Description = vm.Description,
+                        Price = vm.Price,
+                        Condition = vm.Condition,
+                        Location = vm.Location,
+                        CategoryID = vm.CategoryID,
+                        Status = "Available", // القيمة الافتراضية
+                        CreatedAt = DateTime.Now,
+                        // هنا بنفترض إنك بتستخدمي Identity لجلب الـ UserID
+                        // UserID = User.FindFirstValue(ClaimTypes.NameIdentifier) 
+                        UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),// استبدليه بـ ID المستخدم الفعلي
+                    };
+
+                    // 2. معالجة رفع الصور
+                    if (vm.ImageFiles != null && vm.ImageFiles.Count > 0)
+                    {
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+
+                        // التأكد من وجود الفولدر
+                        if (!Directory.Exists(uploadsFolder))
+                            Directory.CreateDirectory(uploadsFolder);
+
+                        foreach (var file in vm.ImageFiles)
+                        {
+                            // إنشاء اسم فريد للصورة لمنع التكرار
+                            string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                            // حفظ الملف على السيرفر
+                            using (var fileStream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await file.CopyToAsync(fileStream);
+                            }
+
+                            // إضافة بيانات الصورة للـ Model الأصلي (ItemImage)
+                            newItem.Images.Add(new ItemImage
+                            {
+                                ImageUrl = "/uploads/" + uniqueFileName
+                            });
+                        }
+                    }
+
+                    // 3. حفظ كل شيء في الداتابيز
+                    _context.Add(newItem);
                     await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Index)); // أو أي صفحة تانية
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemExists(item.ItemID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "Name", item.CategoryID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", item.UserID);
-            return View(item);
-        }
 
-        // GET: Items/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
+                // لو فيه مشكلة في الـ Validation نرجع نملا الـ Dropdowns تاني
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
+                ViewBag.Conditions = new SelectList(new[] { "New", "Like New", "Used", "Refurbished" }, vm.Condition);
+
+                return View(vm);
+            }
+
+            // Index لغرض التجربة
+            public async Task<IActionResult> Index()
             {
-                return NotFound();
+                var items = await _context.Items.Include(i => i.Category).Include(i => i.Images).ToListAsync();
+                return View(items);
             }
-
-            var item = await _context.Items
-                .Include(i => i.Category)
-                .Include(i => i.User)
-                .FirstOrDefaultAsync(m => m.ItemID == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
-        }
-
-        // POST: Items/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var item = await _context.Items.FindAsync(id);
-            if (item != null)
-            {
-                _context.Items.Remove(item);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool ItemExists(int id)
-        {
-            return _context.Items.Any(e => e.ItemID == id);
         }
     }
-}

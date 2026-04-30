@@ -7,7 +7,7 @@ namespace MarketplaceApp.Models
     public class Category
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CategoryID { get; set; }
 
         [Required(ErrorMessage = "Category Name is required")]
@@ -15,6 +15,8 @@ namespace MarketplaceApp.Models
         [Display(Name = "Category Name", Prompt = "e.g., Electronics, Furniture...")]
         [RegularExpression(@"^[A-Z][a-zA-Z\s]*$", ErrorMessage = "Category name must start with a capital letter")]
         public string Name { get; set; } = string.Empty;
+
+        public string ImageUrl { get; set; } = "/images/default-category.jpg";
 
         // --- Navigation Properties ---
 

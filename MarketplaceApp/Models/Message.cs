@@ -31,6 +31,8 @@ namespace MarketplaceApp.Models
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        public bool IsRead { get; set; }
+
         [ForeignKey(nameof(ConversationID))]
         public virtual Conversation Conversation { get; set; } = null!;
 

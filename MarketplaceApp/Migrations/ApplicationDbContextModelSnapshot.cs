@@ -178,7 +178,12 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Category", b =>
                 {
                     b.Property<int>("CategoryID")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -188,18 +193,32 @@ namespace MarketplaceApp.Migrations
                     b.HasKey("CategoryID");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            CategoryID = -1,
+                            ImageUrl = "/images/categories/electronics.jpg",
+                            Name = "Electronics"
+                        },
+                        new
+                        {
+                            CategoryID = -2,
+                            ImageUrl = "/images/categories/furniture.jpg",
+                            Name = "Furniture"
+                        },
+                        new
+                        {
+                            CategoryID = -3,
+                            ImageUrl = "/images/categories/fashion.jpg",
+                            Name = "Fashion"
+                        });
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
                 {
                     b.Property<int>("ConversationID")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ApplicationUserId1")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("BuyerID")
                         .IsRequired()
@@ -217,15 +236,12 @@ namespace MarketplaceApp.Migrations
 
                     b.HasKey("ConversationID");
 
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("ApplicationUserId1");
-
-                    b.HasIndex("BuyerID");
-
                     b.HasIndex("ItemID");
 
                     b.HasIndex("SellerID");
+
+                    b.HasIndex("BuyerID", "SellerID", "ItemID")
+                        .IsUnique();
 
                     b.ToTable("Conversations");
                 });
@@ -265,6 +281,9 @@ namespace MarketplaceApp.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("MessageText")
                         .IsRequired()
@@ -381,19 +400,13 @@ namespace MarketplaceApp.Migrations
                     b.Property<int>("TransactionID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TransactionID1")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("ReviewID");
 
                     b.HasIndex("ReviewerID");
 
                     b.HasIndex("SellerID");
 
-                    b.HasIndex("TransactionID")
-                        .IsUnique();
-
-                    b.HasIndex("TransactionID1");
+                    b.HasIndex("TransactionID");
 
                     b.ToTable("Reviews");
                 });
@@ -634,16 +647,8 @@ namespace MarketplaceApp.Migrations
 
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
                 {
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", null)
-                        .WithMany("BoughtConversations")
-                        .HasForeignKey("ApplicationUserId");
-
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", null)
-                        .WithMany("SoldConversations")
-                        .HasForeignKey("ApplicationUserId1");
-
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "Buyer")
-                        .WithMany()
+                        .WithMany("BoughtConversations")
                         .HasForeignKey("BuyerID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -655,7 +660,7 @@ namespace MarketplaceApp.Migrations
                         .IsRequired();
 
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "Seller")
-                        .WithMany()
+                        .WithMany("SoldConversations")
                         .HasForeignKey("SellerID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -697,7 +702,7 @@ namespace MarketplaceApp.Migrations
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Conversation");
@@ -760,14 +765,10 @@ namespace MarketplaceApp.Migrations
                         .IsRequired();
 
                     b.HasOne("MarketplaceApp.Models.Transaction", "Transaction")
-                        .WithOne("Review")
-                        .HasForeignKey("MarketplaceApp.Models.Review", "TransactionID")
+                        .WithMany("Reviews")
+                        .HasForeignKey("TransactionID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MarketplaceApp.Models.Transaction", null)
-                        .WithMany("Reviews")
-                        .HasForeignKey("TransactionID1");
 
                     b.Navigation("Reviewer");
 
@@ -940,8 +941,6 @@ namespace MarketplaceApp.Migrations
 
             modelBuilder.Entity("MarketplaceApp.Models.Transaction", b =>
                 {
-                    b.Navigation("Review");
-
                     b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
