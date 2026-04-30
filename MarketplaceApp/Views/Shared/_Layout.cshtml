@@ -112,11 +112,44 @@
             <i class="bi bi-person"></i>
             <span>Profile</span>
         </a>
+        <a href="@Url.Action("Index", "Notifications")" class="nav-item position-relative">
+            <i class="bi bi-bell"></i>
+            <span>Alerts</span>
+
+            <!-- 🔴 Badge -->
+            <span id="notif-badge"
+                  class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger"
+                  style="display:none; font-size:10px;">
+                0
+            </span>
+        </a>
     </nav>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        async function loadNotificationsCount() {
+            try {
+                const res = await fetch('/Notifications/GetUnreadCount');
+                const count = await res.json();
+
+                const badge = document.getElementById("notif-badge");
+
+                if (count > 0) {
+                    badge.style.display = "inline";
+                    badge.innerText = count > 99 ? "99+" : count;
+                } else {
+                    badge.style.display = "none";
+                }
+            } catch (e) {
+                console.log("Notification error");
+            }
+        }
+
+        loadNotificationsCount();
+        setInterval(loadNotificationsCount, 10000);
+    </script>
 </body>
 </html>

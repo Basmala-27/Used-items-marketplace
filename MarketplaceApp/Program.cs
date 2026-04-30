@@ -1,5 +1,7 @@
 ﻿using MarketplaceApp.Data;
 using MarketplaceApp.Models;
+using MarketplaceApp.Services; // 🔥 مهم
+using MarketplaceApp.Services.MarketplaceApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +27,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// ================= 🔥 ADD THIS =================
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// ================= BUILD =================
 var app = builder.Build();
 
 // 🔹 Middleware
@@ -35,7 +41,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // مهم بدل MapStaticAssets
+app.UseStaticFiles();
 
 app.UseRouting();
 

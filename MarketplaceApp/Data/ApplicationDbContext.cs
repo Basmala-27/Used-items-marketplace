@@ -11,6 +11,7 @@ namespace MarketplaceApp.Data
         {
         }
 
+        // ================= DB SETS =================
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemImage> ItemImages { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -27,32 +28,24 @@ namespace MarketplaceApp.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1. إعداد البريد الإلكتروني كحقل فريد
-            modelBuilder.Entity<ApplicationUser>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
-
-            // 2. إعدادات المحادثات (Conversation) - علاقة البائع والمشتري
+            // ================= CONVERSATION =================
             modelBuilder.Entity<Conversation>(entity =>
             {
-                // تعريف علاقة المشتري
                 entity.HasOne(c => c.Buyer)
                     .WithMany(u => u.BoughtConversations)
                     .HasForeignKey(c => c.BuyerID)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // تعريف علاقة البائع
                 entity.HasOne(c => c.Seller)
                     .WithMany(u => u.SoldConversations)
                     .HasForeignKey(c => c.SellerID)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // منع تكرار نفس المحادثة لنفس المشتري والبائع على نفس المنتج
                 entity.HasIndex(c => new { c.BuyerID, c.SellerID, c.ItemID })
                     .IsUnique();
             });
 
-            // 3. إعدادات الرسائل (Message)
+            // ================= MESSAGE =================
             modelBuilder.Entity<Message>(entity =>
             {
                 entity.HasOne(m => m.Sender)
@@ -66,53 +59,60 @@ namespace MarketplaceApp.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // 4. المفتاح المركب للمفضلات
+            // ================= FAVORITE =================
             modelBuilder.Entity<Favorite>()
                 .HasIndex(f => new { f.UserID, f.ItemID })
                 .IsUnique();
 
-            // 5. علاقة طلبات التبادل
+            // ================= SWAP REQUEST =================
             modelBuilder.Entity<SwapRequest>()
                 .HasOne(s => s.Requester)
                 .WithMany()
                 .HasForeignKey(s => s.RequesterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 6. علاقة العروض
+            // ================= OFFER =================
             modelBuilder.Entity<Offer>()
                 .HasOne(o => o.Buyer)
                 .WithMany()
                 .HasForeignKey(o => o.BuyerID)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // 7. علاقة التقييمات مع المعاملات
+            // ================= REVIEW =================
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Transaction)
                 .WithMany(t => t.Reviews)
                 .HasForeignKey(r => r.TransactionID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ================= NOTIFICATION =================
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // ================= SEED DATA =================
             modelBuilder.Entity<Category>().HasData(
-        new Category
-        {
-            CategoryID = -1,
-            Name = "Electronics",
-            ImageUrl = "/images/categories/electronics.jpg"
-        },
-        new Category
-        {
-            CategoryID = -2,
-            Name = "Furniture",
-            ImageUrl = "/images/categories/furniture.jpg"
-        },
-        new Category
-        {
-            CategoryID = -3,
-            Name = "Fashion",
-            ImageUrl = "/images/categories/fashion.jpg"
-        }
-        );
+                new Category
+                {
+                    CategoryID = 1,
+                    Name = "Electronics",
+                    ImageUrl = "/images/categories/electronics.jpg"
+                },
+                new Category
+                {
+                    CategoryID = 2,
+                    Name = "Furniture",
+                    ImageUrl = "/images/categories/furniture.jpg"
+                },
+                new Category
+                {
+                    CategoryID = 3,
+                    Name = "Fashion",
+                    ImageUrl = "/images/categories/fashion.jpg"
+                }
+            );
         }
     }
 }
