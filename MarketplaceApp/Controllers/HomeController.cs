@@ -1,31 +1,48 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+using MarketplaceApp.Data;
 using MarketplaceApp.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Diagnostics;
 
-namespace MarketplaceApp.Controllers;
-
-public class HomeController : Controller
+namespace MarketplaceApp.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<HomeController> _logger;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        
+        public async Task<IActionResult> Index()
+        {
+            var items = await _context.Items
+                .Include(i => i.Images)   
+                .Include(i => i.User)     
+                .Include(i => i.Category) 
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(items); 
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
+        }
     }
 }

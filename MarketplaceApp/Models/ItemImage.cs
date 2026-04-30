@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class ItemImage
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int ImageID { get; set; }
 
     [Required(ErrorMessage = "Image URL is required")]
