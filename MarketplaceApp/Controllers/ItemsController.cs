@@ -1,4 +1,5 @@
 ﻿using MarketplaceApp.Data;
+using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -71,10 +72,10 @@ namespace MarketplaceApp.Controllers
                         Title = vm.Title,
                         Description = vm.Description,
                         Price = vm.Price,
-                        Condition = vm.Condition,
+                        Condition = Enum.Parse<ItemCondition>(vm.Condition.Replace(" ", "")),
                         Location = vm.Location,
                         CategoryID = vm.CategoryID,
-                        Status = "Available", // القيمة الافتراضية
+                        Status = ItemStatus.Available, // القيمة الافتراضية
                         CreatedAt = DateTime.Now,
                         // هنا بنفترض إنك بتستخدمي Identity لجلب الـ UserID
                         // UserID = User.FindFirstValue(ClaimTypes.NameIdentifier) 

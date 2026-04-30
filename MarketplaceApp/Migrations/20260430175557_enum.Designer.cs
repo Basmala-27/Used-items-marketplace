@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430175557_enum")]
+    partial class @enum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -26,8 +29,10 @@ namespace MarketplaceApp.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Condition")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -249,7 +254,6 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Favorite", b =>
                 {
                     b.Property<int>("FavoriteID")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")

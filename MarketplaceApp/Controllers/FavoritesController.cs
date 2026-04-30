@@ -1,148 +1,100 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MarketplaceApp.Data;
 using MarketplaceApp.Models;
+using System.Security.Claims;
 
 namespace MarketplaceApp.Controllers
 {
     public class FavoritesController : Controller
     {
+        // 1. تعريف الـ context عشان تقدر الميثودز تشوف قاعدة البيانات
         private readonly ApplicationDbContext _context;
 
+        // 2. الـ Constructor لعمل Dependency Injection
         public FavoritesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Favorites
+        // --- الأكشن بتاع القلب (Toggle) ---
+        [HttpPost]
+        public async Task<IActionResult> ToggleFavorite(int itemId)
+        {
+            // بنجيب الـ ID بتاع اليوزر اللي عامل Login حالياً
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // لو مش مسجل دخول، بنبعت JSON يخلي الـ JavaScript يحوله لصفحة الـ Login
+            if (userId == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    isNotLoggedIn = true,
+                    redirectUrl = "/Account/Login"
+                });
+            }
+
+            // التأكد إذا كان المنتج موجود في المفضلة فعلاً
+            var existingFavorite = await _context.Favorites
+                .FirstOrDefaultAsync(f => f.ItemID == itemId && f.UserID == userId);
+
+            if (existingFavorite != null)
+            {
+                // لو موجود -> بنحذفه (Unfavorite)
+                _context.Favorites.Remove(existingFavorite);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, status = "removed" });
+            }
+            else
+            {
+                // لو مش موجود -> بنضيفه (Favorite)
+                var favorite = new Favorite
+                {
+                    UserID = userId,
+                    ItemID = itemId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Favorites.Add(favorite);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, status = "added" });
+            }
+        }
+
+        // GET: Favorites (عرض قائمة المفضلات لليوزر الحالي)
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Favorites.Include(f => f.Item).Include(f => f.User);
-            return View(await applicationDbContext.ToListAsync());
-        }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // GET: Favorites/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            if (userId == null)
             {
-                return NotFound();
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            var favorite = await _context.Favorites
+            var favorites = await _context.Favorites
+                .Where(f => f.UserID == userId)
                 .Include(f => f.Item)
-                .Include(f => f.User)
-                .FirstOrDefaultAsync(m => m.FavoriteID == id);
-            if (favorite == null)
-            {
-                return NotFound();
-            }
+                .ThenInclude(i => i.Images) // عشان لو عايزة تعرضي الصور في صفحة المفضلات
+                .ToListAsync();
 
-            return View(favorite);
+            return View(favorites);
         }
 
-        // GET: Favorites/Create
-        public IActionResult Create()
-        {
-            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title");
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email");
-            return View();
-        }
-
-        // POST: Favorites/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FavoriteID,UserID,ItemID,CreatedAt")] Favorite favorite)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(favorite);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", favorite.ItemID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", favorite.UserID);
-            return View(favorite);
-        }
-
-        // GET: Favorites/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var favorite = await _context.Favorites.FindAsync(id);
-            if (favorite == null)
-            {
-                return NotFound();
-            }
-            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", favorite.ItemID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", favorite.UserID);
-            return View(favorite);
-        }
-
-        // POST: Favorites/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FavoriteID,UserID,ItemID,CreatedAt")] Favorite favorite)
-        {
-            if (id != favorite.FavoriteID)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(favorite);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!FavoriteExists(favorite.FavoriteID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ItemID"] = new SelectList(_context.Items, "ItemID", "Title", favorite.ItemID);
-            ViewData["UserID"] = new SelectList(_context.Users, "UserID", "Email", favorite.UserID);
-            return View(favorite);
-        }
-
-        // GET: Favorites/Delete/5
+        // GET: Favorites/Delete/5 (للحذف التقليدي من صفحة المفضلات)
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var favorite = await _context.Favorites
                 .Include(f => f.Item)
-                .Include(f => f.User)
                 .FirstOrDefaultAsync(m => m.FavoriteID == id);
-            if (favorite == null)
-            {
-                return NotFound();
-            }
+
+            if (favorite == null) return NotFound();
 
             return View(favorite);
         }
@@ -156,9 +108,8 @@ namespace MarketplaceApp.Controllers
             if (favorite != null)
             {
                 _context.Favorites.Remove(favorite);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

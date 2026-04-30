@@ -2,8 +2,8 @@ using MarketplaceApp.Data;
 using MarketplaceApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Diagnostics;
+using System.Security.Claims; // ??? ???? ???? ??? ID ???? ??????
 
 namespace MarketplaceApp.Controllers
 {
@@ -18,17 +18,33 @@ namespace MarketplaceApp.Controllers
             _logger = logger;
         }
 
-        
         public async Task<IActionResult> Index()
         {
+            // ??? ???????? ?? ?? ???????? ????????
             var items = await _context.Items
-                .Include(i => i.Images)   
-                .Include(i => i.User)     
-                .Include(i => i.Category) 
+                .Include(i => i.Images)
+                .Include(i => i.User)
+                .Include(i => i.Category)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
 
-            return View(items); 
+            // ???? ???? ??? IDs ?????? ?????????
+            List<int> userFavoriteIds = new List<int>();
+
+            // ?? ?????? ???? ????? ????? ??????? ?? ??? SQLite
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                userFavoriteIds = await _context.Favorites
+                    .Where(f => f.UserID == userId)
+                    .Select(f => f.ItemID)
+                    .ToListAsync();
+            }
+
+            // ????? ?????? ??? View
+            ViewBag.UserFavoriteIds = userFavoriteIds;
+
+            return View(items);
         }
 
         public IActionResult Privacy()
