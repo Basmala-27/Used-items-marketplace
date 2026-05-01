@@ -30,6 +30,7 @@ namespace MarketplaceApp.Controllers
                 .Include(c => c.Item)
                 .Include(c => c.Buyer)
                 .Include(c => c.Seller)
+                .OrderByDescending(c => c.CreatedAt)
                 .ToList();
 
             return View(conversations);
@@ -40,25 +41,27 @@ namespace MarketplaceApp.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var conversation = _context.Conversations.Find(id);
+            var conversation = _context.Conversations
+                .Include(c => c.Seller)
+                .Include(c => c.Buyer)
+                .Include(c => c.Item)
+                .FirstOrDefault(c => c.ConversationID == id);
 
             if (conversation == null)
                 return NotFound();
 
-            // 🔒 أمان
             if (conversation.BuyerID != userId && conversation.SellerID != userId)
                 return Unauthorized();
 
             var messages = _context.Messages
-                .Where(m => m.ConversationID == id)
+                .Where(m => m.ConversationID    == id)
                 .OrderBy(m => m.CreatedAt)
                 .ToList();
 
-            ViewBag.ConversationId = id;
+            ViewBag.Conversation = conversation;
 
             return View(messages);
         }
-
         // 🔹 إرسال رسالة
         [HttpPost]
         public IActionResult SendMessage(int conversationId, string content)
@@ -99,10 +102,11 @@ namespace MarketplaceApp.Controllers
 
             // 🔍 هل في conversation موجودة؟
             var conversation = _context.Conversations
-                .FirstOrDefault(c =>
-                    ((c.SellerID == userId && c.BuyerID == sellerId) ||
-                     (c.BuyerID == sellerId && c.SellerID == userId))
-                    && c.ItemID == itemId);
+    .FirstOrDefault(c =>
+        c.BuyerID == userId &&
+        c.SellerID == sellerId &&
+        c.ItemID == itemId
+    );
 
             // 🆕 لو مش موجودة نعمل واحدة
             if (conversation == null)

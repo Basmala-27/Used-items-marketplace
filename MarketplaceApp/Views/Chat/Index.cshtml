@@ -1,17 +1,136 @@
-@model List<Conversation>
-
+﻿@model List<Conversation>
 @using System.Security.Claims
-
-@foreach (var c in Model)
-{
-  
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var otherUser = c.BuyerID == currentUserId ? c.Seller : c.Buyer;
-    
-
-    <div>
-        <a asp-action="Chat" asp-route-id="@c.ConversationID">
-            Chat with @otherUser.UserName
-        </a>
-    </div>
+@{
+    ViewData["Title"] = "Messages";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
+
+<div class="messages-page-container">
+    <div class="sidebar-header-mobile">
+        <h2>Messages</h2>
+    </div>
+
+    <div class="conversation-list">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="far fa-comments"></i>
+                <p>No messages yet. Start a conversation from an item page!</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var convo in Model)
+            {
+                var otherUser = convo.BuyerID == currentUserId ? convo.Seller : convo.Buyer;
+                <a asp-action="Chat" asp-route-id="@convo.ConversationID" class="convo-card">
+                    <div class="user-avatar">
+                        @if (otherUser != null && !string.IsNullOrEmpty(otherUser.ProfileImage))
+                        {
+                            <img src="@otherUser.ProfileImage" alt="@otherUser.Name" />
+                        }
+                        else
+                        {
+                            <img src="~/images/default-avatar.png" alt="Default User" />
+                        }
+                    </div>
+                    <div class="convo-details">
+                        <div class="top-row">
+                            <span class="user-name">@(otherUser?.Name ?? "User")</span>
+                            <span class="convo-time">@convo.CreatedAt.ToString("MMM dd")</span>
+                        </div>
+                        <div class="bottom-row">
+                            <p class="last-msg">Discussion about: @convo.Item.Title</p>
+                        </div>
+                    </div>
+                </a>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-orange: #FF6B00;
+        --border-color: #f0f0f0;
+    }
+
+    .messages-page-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        height: calc(100vh - 70px);
+    }
+
+    .sidebar-header-mobile {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .sidebar-header-mobile h2 {
+            font-weight: bold;
+            margin: 0;
+            color: #333;
+        }
+
+    .convo-card {
+        display: flex;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        text-decoration: none !important;
+        color: inherit;
+        transition: 0.2s;
+    }
+
+        .convo-card:hover {
+            background-color: #fff9f5;
+        }
+
+    .user-avatar img {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--border-color);
+    }
+
+    .convo-details {
+        flex: 1;
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .top-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .convo-time {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .last-msg {
+        font-size: 13px;
+        color: #666;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px;
+        color: #ccc;
+    }
+</style>

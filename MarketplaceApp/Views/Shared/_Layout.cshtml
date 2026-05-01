@@ -115,9 +115,9 @@
         </a>
 
         <!-- 2. زرار الشات: لو مش مسجل يروح للـ Login -->
-        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chats") : "/Account/Login")"
-           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chats" ? "active" : "")">
-            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chats" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chat") : "/Account/Login")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
             <span>Chats</span>
         </a>
 
