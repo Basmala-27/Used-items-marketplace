@@ -23,7 +23,11 @@ namespace MarketplaceApp.Models
         [Required]
         public int CategoryID { get; set; }
 
-     
+        // NEW: Sale or Swap
+        [Required(ErrorMessage = "Listing type is required")]
+        [Display(Name = "Listing Type")]
+        public string ListingType { get; set; } = "Sale";
+
         [Display(Name = "Item Photos")]
         public List<IFormFile>? ImageFiles { get; set; }
     }

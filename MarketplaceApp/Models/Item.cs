@@ -1,9 +1,9 @@
 ﻿using MarketplaceApp.Models;
+using MarketplaceApp.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using MarketplaceApp.Enums;
 
 public class Item
 {
@@ -18,7 +18,7 @@ public class Item
     public string Title { get; set; } = string.Empty;
 
     [StringLength(1000)]
-    [Required(ErrorMessage = "Description is required")] // 
+    [Required(ErrorMessage = "Description is required")]
     [DataType(DataType.MultilineText)]
     [Display(Name = "Item Description", Prompt = "Describe the item's features")]
     public string Description { get; set; } = string.Empty;
@@ -29,28 +29,30 @@ public class Item
     [Display(Name = "Asking Price", Prompt = "0.00")]
     public decimal Price { get; set; }
 
-
-
-    [Required(ErrorMessage = "Condition is required")] //
-
-    [Display(Name = "Item Condition", Prompt = "e.g., New, Like New, Used")]
-    public ItemCondition Condition { get; set; } = ItemCondition.Used;
-
+    [Required(ErrorMessage = "Condition is required")]
+    [StringLength(50)]
+    [Display(Name = "Item Condition", Prompt = "e.g., Like New, Very Good, Good, Needs Repair")]
+    public string Condition { get; set; } = string.Empty;
 
     [StringLength(100)]
     [Display(Name = "Pickup Location", Prompt = "City or Neighborhood")]
-    public string? Location { get; set; } // nullable
+    public string? Location { get; set; }
 
-
-
+    // FIXED: changed from string to ItemStatus enum
     [Required(ErrorMessage = "Status is required")]
-    [StringLength(50)]
     [Display(Name = "Listing Status")]
     public ItemStatus Status { get; set; } = ItemStatus.Available;
+
+    // NEW: whether item is for Sale or Swap
+    [Required(ErrorMessage = "Listing type is required")]
+    [StringLength(20)]
+    [Display(Name = "Listing Type")]
+    public string ListingType { get; set; } = "Sale";
+
     // FK
     [Required]
     [Display(Name = "Seller ID")]
-    public string UserID { get; set; }= string.Empty;
+    public string UserID { get; set; } = string.Empty;
 
     [Required]
     [Display(Name = "Category ID")]
@@ -61,10 +63,8 @@ public class Item
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Navigation Properties
-
-
     [ForeignKey(nameof(UserID))]
-    public virtual ApplicationUser User { get; set; } = null!;  // making it virtual to allow lazy loading (data access pattern)
+    public virtual ApplicationUser User { get; set; } = null!;
 
     [ForeignKey(nameof(CategoryID))]
     public virtual Category Category { get; set; } = null!;
@@ -72,9 +72,7 @@ public class Item
     // Relationships
     public virtual ICollection<ItemImage> Images { get; set; } = new List<ItemImage>();
 
-    // Favourites 
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
-
 
     [InverseProperty(nameof(SwapRequest.OfferedItem))]
     [Display(Name = "Swaps where this item is offered")]
