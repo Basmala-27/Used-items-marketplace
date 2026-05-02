@@ -1,0 +1,141 @@
+﻿@model MarketplaceApp.Models.EditProfileVM
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container py-2">
+    <!-- تقليل الـ padding العلوي والسفلي -->
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <!-- تقليل عرض الكارد قليلاً ليظهر بشكل أرشق -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Header مصغر -->
+                <div class="p-3 text-white text-center" style="background-color: #FF6600;">
+                    <i class="bi bi-person-gear fs-2 mb-1"></i>
+                    <h4 class="fw-bold mb-0">Edit Your Profile</h4>
+                    <p class="small opacity-75 mb-0" style="font-size: 0.75rem;">Update your information and photo</p>
+                </div>
+
+                <div class="card-body p-3 p-md-4">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show rounded-pill px-3 py-2 mb-3 small" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                        <!-- قسم الصورة مصغر -->
+                        <div class="text-center mb-3">
+                            <div class="position-relative d-inline-block">
+                                <img src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "/images/default-profile.png" : Model.ExistingImageUrl)"
+                                     class="rounded-circle border border-3 border-light shadow-sm"
+                                     style="width: 100px; height: 100px; object-fit: cover;"
+                                     id="profilePreview">
+                                <label for="imageUpload" class="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm p-1" style="cursor: pointer;">
+                                    <i class="bi bi-camera-fill text-dark small"></i>
+                                </label>
+                            </div>
+                            <input asp-for="ProfileImage" type="file" class="d-none" id="imageUpload" accept="image/*">
+                            <span asp-validation-for="ProfileImage" class="text-danger d-block small mt-1"></span>
+                        </div>
+
+                        <!-- حقل الاسم -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold text-secondary small mb-1">Full Name</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+                                <input asp-for="Name" class="form-control bg-light border-0 rounded-end-pill py-2 px-3" placeholder="Enter your full name">
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small ms-2" style="font-size: 0.7rem;"></span>
+                        </div>
+
+                        <!-- حقل الموبايل -->
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label fw-bold text-secondary small mb-1">Phone Number</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3">
+                                    <i class="bi bi-telephone text-muted"></i>
+                                </span>
+                                <input asp-for="PhoneNumber" class="form-control bg-light border-0 rounded-end-pill py-2 px-3" placeholder="01xxxxxxxxx">
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="text-danger small ms-2" style="font-size: 0.7rem;"></span>
+                        </div>
+
+                        <!-- قسم الأمان مصغر -->
+                        <div class="mt-3 p-2 rounded-4 bg-light border-0 shadow-sm d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-white rounded-circle p-2 shadow-sm me-2">
+                                    <i class="bi bi-shield-lock-fill text-dark small"></i>
+                                </div>
+                                <div class="text-start">
+                                    <h6 class="fw-bold mb-0" style="font-size: 0.8rem;">Security</h6>
+                                </div>
+                            </div>
+                            <a asp-action="ChangePassword" class="btn btn-sm rounded-pill px-3 fw-bold btn-outline-orange py-0" style="font-size: 0.75rem;">
+                                Change
+                            </a>
+                        </div>
+
+                        <!-- الأزرار -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn text-white rounded-pill py-2 fw-bold shadow-sm btn-orange-main">
+                                Save Changes
+                            </button>
+                            <a asp-action="Index" class="btn btn-link text-muted btn-sm text-decoration-none">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('imageUpload').onchange = function (evt) {
+            const [file] = this.files
+            if (file) {
+                document.getElementById('profilePreview').src = URL.createObjectURL(file)
+            }
+        }
+    </script>
+    <style>
+        .btn-orange-main {
+            background-color: #FF6600;
+            transition: all 0.3s;
+        }
+
+            .btn-orange-main:hover {
+                background-color: #e65c00 !important;
+                transform: translateY(-1px);
+            }
+
+        .btn-outline-orange {
+            border: 1px solid #FF6600;
+            color: #FF6600;
+            transition: 0.2s;
+        }
+
+            .btn-outline-orange:hover {
+                background-color: #FF6600;
+                color: white;
+            }
+
+        .form-control:focus {
+            box-shadow: none;
+            background-color: #fdfdfd !important;
+            border: 1px solid #FF6600 !important;
+        }
+    </style>
+}
