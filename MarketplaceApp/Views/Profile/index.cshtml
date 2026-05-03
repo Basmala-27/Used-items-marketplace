@@ -220,7 +220,7 @@
                 </div>
             </div>
 
-            <!-- تاب العمليات - Updated for Real Data -->
+            <!-- تاب العمليات - Optimized for Soft Aesthetics -->
             <div class="tab-pane fade" id="transactions">
                 @if (Model.Transactions == null || !Model.Transactions.Any())
                 {
@@ -234,43 +234,48 @@
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                                <thead class="bg-light">
                                     <tr>
-                                        <th class="ps-4 py-3">Item</th>
-                                        <th class="py-3">Status</th>
-                                        <th class="py-3">Date</th>
-                                        <th class="text-end pe-4 py-3">Amount</th>
+                                        <th class="ps-4 py-3 border-0">Item</th>
+                                        <th class="py-3 border-0">Status</th>
+                                        <th class="py-3 border-0">Date</th>
+                                        <th class="text-end pe-4 py-3 border-0">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var trans in Model.Transactions)
                                     {
                                         <tr>
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="fw-bold text-dark">@trans.Item?.Title</div>
-                                                </div>
+                                            <td class="ps-4 py-3">
+                                                <div class="fw-bold text-dark">@trans.Item?.Title</div>
                                             </td>
                                             <td>
                                                 @{
+                                                    // Creating the soft pill colors from image_50ced4.png
                                                     var statusClass = trans.Status.ToString() switch
                                                     {
-                                                        "Completed" => "bg-success-subtle text-success border-success",
-                                                        "Pending" => "bg-warning-subtle text-warning border-warning",
-                                                        "Cancelled" => "bg-danger-subtle text-danger border-danger",
-                                                        _ => "bg-primary-subtle text-primary border-primary"
+                                                        "Completed" => "bg-success-subtle text-success border-success-subtle",
+                                                        "Pending" => "bg-warning-subtle text-warning border-warning-subtle",
+                                                        "Accepted" => "bg-primary-subtle text-primary border-primary-subtle",
+                                                        "Cancelled" => "bg-danger-subtle text-danger border-danger-subtle",
+                                                        _ => "bg-secondary-subtle text-muted border-secondary-subtle"
                                                     };
                                                 }
-                                                <span class="badge rounded-pill border px-3 @statusClass">
+                                                <span class="badge rounded-pill border @statusClass px-3 py-2">
                                                     @trans.Status
                                                 </span>
                                             </td>
-                                            <td class="text-muted small">
+                                            <td class="text-muted">
                                                 @trans.CreatedAt.ToString("dd MMM yyyy")
                                             </td>
                                             <td class="text-end pe-4">
-                                                <span class="fw-bold @(trans.SellerID == (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value) ? "text-success" : "text-dark")">
-                                                    @trans.FinalPrice.ToString("C")
+                                                @{
+                                                    // Logic to identify if this was a Sale (Income) or Purchase
+                                                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                                    var isSale = trans.SellerID == currentUserId;
+                                                }
+                                                <span class="fw-bold @(isSale ? "text-success" : "text-dark")">
+                                                    @(isSale ? "+" : "")@trans.FinalPrice.ToString("C")
                                                 </span>
                                             </td>
                                         </tr>
@@ -281,9 +286,6 @@
                     </div>
                 }
             </div>
-        </div>
-    </div>
-</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -14,7 +14,7 @@ namespace MarketplaceApp.Models
         public int ItemsPostedCount { get; set; }
         public IEnumerable<Item>? PostedItems { get; set; } // القائمة الفعليّة للعرض
 
-        public List<Transaction> Transactions { get; set; } = new();
+        public List<Transaction> Transactions { get; set; } = new List<Transaction>();
 
         public int FavoritesCount { get; set; }
         public IEnumerable<Item>? FavoriteItems { get; set; } // القائمة الفعليّة للعرض
