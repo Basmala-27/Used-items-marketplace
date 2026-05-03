@@ -17,6 +17,10 @@ public class Item
     [RegularExpression(@"^[A-Z].*", ErrorMessage = "The title must start with a capital letter")]
     public string Title { get; set; } = string.Empty;
 
+
+    public bool IsAvailableForSale { get; set; } = true;
+    public bool IsAvailableForSwap { get; set; } = false;
+
     [StringLength(1000)]
     [Required(ErrorMessage = "Description is required")]
     [DataType(DataType.MultilineText)]

@@ -22,7 +22,7 @@ namespace MarketplaceApp.Controllers
             _context = context;
             _webHostEnvironment = webHostEnvironment;
         }
-
+        //newItem = new Item
         // GET: Items/Index
         public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort)
         {
@@ -39,7 +39,13 @@ namespace MarketplaceApp.Controllers
                 query = query.Where(i => i.Condition == condition);
 
             if (!string.IsNullOrEmpty(listingType) && listingType != "all")
-                query = query.Where(i => i.ListingType == listingType);
+            {
+                if (listingType == "Swap")
+                    query = query.Where(i => i.IsAvailableForSwap);
+                else if (listingType == "Sale")
+                    query = query.Where(i => i.IsAvailableForSale);
+            }
+
 
             query = sort switch
             {
@@ -108,7 +114,8 @@ namespace MarketplaceApp.Controllers
                     Condition = vm.Condition,
                     Location = vm.Location,
                     CategoryID = vm.CategoryID,
-                    ListingType = vm.ListingType,
+                    IsAvailableForSale = vm.IsAvailableForSale,
+                    IsAvailableForSwap = vm.IsAvailableForSwap,
                     Status = ItemStatus.Available, // FIXED: enum instead of string
                     CreatedAt = DateTime.Now,
                     UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -146,9 +153,92 @@ namespace MarketplaceApp.Controllers
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
-            ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, vm.ListingType);
+
 
             return View(vm);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateSwap(int targetItemId)
+        {
+            var targetItem = await _context.Items.FindAsync(targetItemId);
+            if (targetItem == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // 1. هنجيب كل منتجاتك بدون أي شروط عشان نتأكد إن الـ UserID صح
+            var allMyItems = await _context.Items
+                .Where(i => i.UserID == currentUserId)
+                .ToListAsync();
+
+            // 2. هنجيب المنتجات اللي بتحقق الشرط بس (سعر + متاح)
+            decimal priceTolerance = targetItem.Price * 0.20m;
+            decimal minPrice = targetItem.Price - priceTolerance;
+            decimal maxPrice = targetItem.Price + priceTolerance;
+
+            var filteredItems = allMyItems
+                .Where(i => i.Status == ItemStatus.Available &&
+                            i.Price >= minPrice &&
+                            i.Price <= maxPrice)
+                .ToList();
+
+            // نبعت البيانات للـ View
+            ViewBag.TotalMyItems = allMyItems.Count; // عدد منتجاتك الكلي
+            ViewBag.MinAllowedPrice = minPrice;
+            ViewBag.MaxAllowedPrice = maxPrice;
+
+            var viewModel = new CreateSwapViewModel
+            {
+                RequestedItemId = targetItem.ItemID,
+                RequestedItemName = targetItem.Title,
+                RequestedItemPrice = targetItem.Price,
+                MyAvailableItems = filteredItems // اللي هيظهر في الـ Dropdown
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateSwap(CreateSwapViewModel model)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (ModelState.IsValid)
+            {
+                var swapRequest = new SwapRequest
+                {
+                    RequesterId = currentUserId,
+                    OfferedItemId = model.OfferedItemId,
+                    RequestedItemId = model.RequestedItemId,
+                    Status = OfferStatus.Pending,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.SwapRequests.Add(swapRequest);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "تم إرسال طلب التبادل بنجاح!";
+                return RedirectToAction("Details", new { id = model.RequestedItemId });
+            }
+
+            // --- لو وصلنا هنا يبقى فيه خطأ (Validation Error) ---
+
+            // 1. اجمعي كل الأخطاء وحطيها في الـ ViewBag عشان تظهر في الصفحة
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            ViewBag.ValidationErrors = errors;
+
+            // 2. لازم نعيد تحميل البيانات عشان الـ Dropdown ما تضربش
+            var targetItem = await _context.Items.FindAsync(model.RequestedItemId);
+            model.RequestedItemName = targetItem?.Title ?? "Unknown";
+            model.RequestedItemPrice = targetItem?.Price ?? 0;
+
+            model.MyAvailableItems = await _context.Items
+                .Where(i => i.UserID == currentUserId && i.Status == ItemStatus.Available)
+                .ToListAsync();
+
+            return View(model);
+        }
+
     }
 }

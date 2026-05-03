@@ -82,10 +82,16 @@
 </head>
 <body>
 
-    <div class="main-content">
-        <main role="main">
-            @RenderBody() 
-        </main>
+    <div class="container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <strong>نجاح!</strong> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @RenderBody()
     </div>
 
 
@@ -169,3 +175,4 @@
     </script>
 </body>
 </html>
+

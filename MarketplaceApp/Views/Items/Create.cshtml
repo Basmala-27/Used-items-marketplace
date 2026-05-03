@@ -6,53 +6,54 @@
 
 <div class="container mt-4 mb-5" style="max-width: 850px;">
     <!-- الهيدر -->
-    <div class="mb-4">
+    <div class="mb-4 text-center">
         <h2 class="fw-bold">Post a New Item</h2>
-        <p class="text-muted">Fill in the details to list your item</p>
+        <p class="text-muted">Fill in the details to list your item on the marketplace</p>
     </div>
 
     <form asp-action="Create" enctype="multipart/form-data" method="post">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
 
-                <!-- قسم الصور (Screenshot 2026-04-30 032112.png) -->
+                <!-- قسم الصور -->
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Item Photos</label>
-                    <div class="upload-container text-center p-5" id="drop-zone">
-                        <div id="image-preview-container" class="mt-3 d-flex flex-wrap gap-2">
-                            <!-- الصور هتظهر هنا بالـ JavaScript -->
+                    <label class="form-label fw-bold">Item Photos <span class="text-danger">*</span></label>
+                    <div class="upload-container text-center p-4 border-dashed rounded-3" id="drop-zone" style="cursor: pointer; background-color: #fafafa; border: 2px dashed #d1d5db; transition: 0.3s;">
+                        <div id="image-preview-container" class="mb-3 d-flex flex-wrap justify-content-center gap-2">
+                            <!-- الصور ستظهر هنا -->
                         </div>
-                        <div id="upload-status" class="text-success fw-bold small mt-2" style="display:none;">
-                            <i class="bi bi-check-circle-fill"></i> تمت إضافة الصور بنجاح!
+                        <div id="upload-status" class="text-success fw-bold small mb-2" style="display:none;">
+                            <i class="bi bi-check-circle-fill"></i> Images added successfully!
                         </div>
-                        <i class="bi bi-upload fs-1 mb-2"></i>
-                        <div class="mb-1">Click to upload or drag and drop</div>
-                        <div class="text-muted small">PNG, JPG up to 10MB (max 5 images)</div>
-                        <!-- خانة رفع الملفات مخفية وبنفتحها بالضغط على الـ Container -->
+                        <div class="upload-icon-wrapper">
+                            <i class="bi bi-camera fs-1 text-muted"></i>
+                            <div class="mt-2 fw-bold">Click to upload or drag and drop</div>
+                            <div class="text-muted small">PNG, JPG up to 10MB (Max 5 images)</div>
+                        </div>
                         <input type="file" asp-for="ImageFiles" multiple class="d-none" id="file-input" accept="image/*" />
                     </div>
                     <span asp-validation-for="ImageFiles" class="text-danger small"></span>
                 </div>
 
                 <!-- العنوان -->
-                <div class="mb-3">
-                    <label asp-for="Title" class="form-label fw-bold">Item Title *</label>
-                    <input asp-for="Title" class="form-control" placeholder="e.g., Sony WH-1000XM4 Wireless Headphones" />
+                <div class="mb-4">
+                    <label asp-for="Title" class="form-label fw-bold">Item Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control form-control-lg rounded-3" placeholder="e.g., iPhone 15 Pro Max - 256GB" />
                     <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
 
-                <!-- القسم والحالة (Row) -->
-                <div class="row mb-3">
+                <!-- القسم والحالة -->
+                <div class="row mb-4">
                     <div class="col-md-6">
-                        <label asp-for="CategoryID" class="form-label fw-bold">Category *</label>
-                        <select asp-for="CategoryID" asp-items="ViewBag.Categories" class="form-select">
+                        <label asp-for="CategoryID" class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+                        <select asp-for="CategoryID" asp-items="ViewBag.Categories" class="form-select rounded-3">
                             <option value="">Select category</option>
                         </select>
                         <span asp-validation-for="CategoryID" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="Condition" class="form-label fw-bold">Condition *</label>
-                        <select asp-for="Condition" asp-items="ViewBag.Conditions" class="form-select">
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <label asp-for="Condition" class="form-label fw-bold">Condition <span class="text-danger">*</span></label>
+                        <select asp-for="Condition" asp-items="ViewBag.Conditions" class="form-select rounded-3">
                             <option value="">Select condition</option>
                         </select>
                         <span asp-validation-for="Condition" class="text-danger small"></span>
@@ -60,45 +61,67 @@
                 </div>
 
                 <!-- الوصف -->
-                <div class="mb-3">
-                    <label asp-for="Description" class="form-label fw-bold">Description *</label>
-                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe your item in detail..."></textarea>
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                    <textarea asp-for="Description" class="form-control rounded-3" rows="5" placeholder="Tell buyers more about your item (features, flaws, reason for selling)..."></textarea>
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-                <!-- السعر والموقع (Screenshot 2026-04-30 032124.png) -->
+                <!-- السعر والموقع -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <label asp-for="Price" class="form-label fw-bold">Price (USD) *</label>
+                        <label asp-for="Price" class="form-label fw-bold">Price (USD) <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-end-0">$</span>
-                            <input asp-for="Price" class="form-control border-start-0" placeholder="0.00" type="number" step="0.01" />
+                            <span class="input-group-text bg-white border-end-0 rounded-start-3">$</span>
+                            <input asp-for="Price" class="form-control border-start-0 rounded-end-3" placeholder="0.00" type="number" step="0.01" />
                         </div>
                         <span asp-validation-for="Price" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="Location" class="form-label fw-bold">Location *</label>
-                        <input asp-for="Location" class="form-control" placeholder="City, State" />
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <label asp-for="Location" class="form-label fw-bold">Location <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 rounded-start-3"><i class="bi bi-geo-alt"></i></span>
+                            <input asp-for="Location" class="form-control border-start-0 rounded-end-3" placeholder="City, State" />
+                        </div>
                         <span asp-validation-for="Location" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <!-- Checkboxes الاختيارية -->
-                <div class="mb-4">
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="negotiable">
-                        <label class="form-check-label" for="negotiable">Price is negotiable</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="swapOffers">
-                        <label class="form-check-label" for="swapOffers">Open to swap/trade offers</label>
+                <!-- خيارات التعامل (Negotiation & Swap) -->
+                <div class="mb-4 p-3 rounded-3" style="background-color: #fff9f0; border: 1px solid #ffe8cc;">
+                    <label class="form-label fw-bold text-orange d-block mb-3"><i class="bi bi-gear-wide-connected"></i> Deal Options</label>
+
+                    <div class="row">
+                        <!-- الخيار الأول: تفاوض على السعر -->
+                        <div class="col-md-6 border-end">
+                            <div class="form-check custom-option mb-2">
+                                <input class="form-check-input" type="checkbox" asp-for="IsAvailableForSale" id="negCheck">
+                                <label class="form-check-label fw-bold" for="negCheck">
+                                    Open for Negotiation
+                                    <small class="d-block text-muted fw-normal">Allow users to chat and offer a different price.</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- الخيار الثاني: المقايضة -->
+                        <div class="col-md-6">
+                            <div class="form-check custom-option mb-2">
+                                <input class="form-check-input" type="checkbox" asp-for="IsAvailableForSwap" id="swapCheck">
+                                <label class="form-check-label fw-bold" for="swapCheck">
+                                    Available for Swap
+                                    <small class="d-block text-muted fw-normal">I'm interested in trading this item for another one.</small>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- أزرار التحكم -->
-                <div class="d-flex gap-3">
-                    <button type="submit" class="btn btn-orange flex-grow-1 py-2 fw-bold">Post Item</button>
-                    <a asp-action="Index" class="btn btn-light border px-4 py-2">Cancel</a>
+                <div class="d-flex flex-column flex-md-row gap-3 mt-5">
+                    <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3 fw-bold shadow-sm rounded-pill">
+                        <i class="bi bi-plus-circle me-2"></i> Post My Item
+                    </button>
+                    <a asp-action="Index" class="btn btn-light btn-lg border px-5 py-3 rounded-pill text-muted fw-bold">Cancel</a>
                 </div>
 
             </div>
@@ -106,80 +129,109 @@
     </form>
 </div>
 
+<style>
+    .text-orange {
+        color: #FF8C00;
+    }
+
+    .btn-orange {
+        background-color: #FF8C00;
+        color: white;
+        transition: 0.3s;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67e00;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #FF8C00;
+        box-shadow: 0 0 0 0.25rem rgba(255, 140, 0, 0.15);
+    }
+
+    .border-dashed:hover {
+        border-color: #FF8C00 !important;
+        background-color: #fffaf5 !important;
+    }
+
+    .custom-option .form-check-input:checked {
+        background-color: #FF8C00;
+        border-color: #FF8C00;
+    }
+
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // ... السكربت الخاص بك كما هو مع تحسين بسيط في عرض الصور ...
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const previewContainer = document.getElementById('image-preview-container');
         const uploadStatus = document.getElementById('upload-status');
+        const uploadIconWrapper = document.querySelector('.upload-icon-wrapper');
 
-        // مصفوفة (Array) عشان نخزن فيها الصور اللي بنختارها وما تروحش لما نختار جديد
         let selectedFiles = [];
 
-        // فتح النافذة لما نضغط على الـ drop zone (بشرط ما يكونش الضغط على زرار المسح)
         dropZone.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'SPAN') {
-                fileInput.click();
-            }
+            if (e.target.tagName !== 'SPAN') fileInput.click();
         });
 
         fileInput.addEventListener('change', function () {
-            // إضافة الملفات الجديدة للمصفوفة القديمة
             const newFiles = Array.from(this.files);
             selectedFiles = selectedFiles.concat(newFiles);
-
             updateUI();
         });
 
         function updateUI() {
             previewContainer.innerHTML = '';
-
             if (selectedFiles.length > 0) {
                 uploadStatus.style.display = 'block';
-                uploadStatus.innerHTML = `<i class="bi bi-check-circle-fill"></i> جاري التحميل... (${selectedFiles.length} صور)`;
+                uploadIconWrapper.style.display = 'none';
+                uploadStatus.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${selectedFiles.length} images selected`;
 
                 selectedFiles.forEach((file, index) => {
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         const imgWrapper = document.createElement('div');
                         imgWrapper.className = "position-relative";
-                        imgWrapper.style.width = "90px";
+                        imgWrapper.style.width = "100px";
 
                         imgWrapper.innerHTML = `
-                            <img src="${e.target.result}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
-                            <span class="position-absolute top-0 start-0 translate-middle badge rounded-circle bg-danger"
-                                  style="cursor:pointer; padding: 0.35em 0.6em; z-index: 10;"
+                            <img src="${e.target.result}" class="img-thumbnail shadow-sm" style="width: 100px; height: 100px; object-fit: cover; border-radius: 12px; border: 2px solid #fff;">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger border border-light"
+                                  style="cursor:pointer; z-index: 10; padding: 5px 8px;"
                                   onclick="removeFile(${index}, event)">×</span>
                         `;
                         previewContainer.appendChild(imgWrapper);
                     };
                     reader.readAsDataURL(file);
                 });
-
-                // تحديث الـ Input الفعلي بالملفات النهائية عشان لما الفورم تتبعت
                 syncFilesToInput();
             } else {
                 uploadStatus.style.display = 'none';
+                uploadIconWrapper.style.display = 'block';
             }
         }
 
-        // ميثود لمسح صورة محددة
         window.removeFile = function(index, event) {
-            event.stopPropagation(); // منع فتح نافذة اختيار الملفات
-            selectedFiles.splice(index, 1); // مسح الصورة من المصفوفة
-            updateUI(); // تحديث الشكل
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            updateUI();
         };
 
-        // ميثود لربط المصفوفة بالـ Input عشان الداتا تتبعت للـ Controller
         function syncFilesToInput() {
             const dataTransfer = new DataTransfer();
             selectedFiles.forEach(file => dataTransfer.items.add(file));
             fileInput.files = dataTransfer.files;
         }
 
-        // Drag & Drop
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#FF6600'; });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#FF8C00'; });
         dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#d1d5db'; });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -189,3 +241,4 @@
         });
     </script>
 }
+ 

@@ -1,52 +1,22 @@
-@model MarketplaceApp.Models.SwapRequest
+﻿@model CreateSwapViewModel
 
-@{
-    ViewData["Title"] = "Create";
-}
+<h3>طلب تبادل مع: @Model.RequestedItemName</h3>
+<p>سعر المنتج المطلوب: @Model.RequestedItemPrice.ToString("C")</p>
 
-<h1>Create</h1>
+<form asp-action="CreateSwap" method="post">
+    <input type="hidden" asp-for="RequestedItemId" />
 
-<h4>SwapRequest</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="RequesterId" class="control-label"></label>
-                <select asp-for="RequesterId" class ="form-control" asp-items="ViewBag.RequesterId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="OfferedItemId" class="control-label"></label>
-                <input asp-for="OfferedItemId" class="form-control" />
-                <span asp-validation-for="OfferedItemId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RequestedItemId" class="control-label"></label>
-                <input asp-for="RequestedItemId" class="form-control" />
-                <span asp-validation-for="RequestedItemId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Status" class="control-label"></label>
-                <select asp-for="Status" class="form-control"></select>
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="form-group">
+        <label>اختر منتجك للمبادلة (المنتجات ذات السعر المتقارب فقط):</label>
+        <select asp-for="OfferedItemId" class="form-control">
+            <option value="">-- اختر المنتج --</option>
+            @foreach (var item in Model.MyAvailableItems)
+            {
+                <option value="@item.ItemID">@item.Title (@item.Price.ToString("C"))</option>
+            }
+        </select>
+        <span asp-validation-for="OfferedItemId" class="text-danger"></span>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+    <button type="submit" class="btn btn-primary mt-3">إرسال الطلب</button>
+</form>

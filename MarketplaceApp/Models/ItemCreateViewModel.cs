@@ -26,7 +26,8 @@ namespace MarketplaceApp.Models
         // NEW: Sale or Swap
         [Required(ErrorMessage = "Listing type is required")]
         [Display(Name = "Listing Type")]
-        public string ListingType { get; set; } = "Sale";
+        public bool IsAvailableForSale { get; set; } = true;
+        public bool IsAvailableForSwap { get; set; } = false;
 
         [Display(Name = "Item Photos")]
         public List<IFormFile>? ImageFiles { get; set; }
