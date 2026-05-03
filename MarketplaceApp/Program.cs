@@ -26,6 +26,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 
+
 var app = builder.Build();
 
 app.MapHub<NotificationHub>("/notificationHub");

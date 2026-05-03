@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* LEFT */
         .left {
             flex: 1;
             display: flex;
@@ -51,7 +50,6 @@
             margin-bottom: 25px;
         }
 
-        /* TRUST */
         .trust {
             background: linear-gradient(135deg,#fff7f3,#f7f7f7);
             border-radius: 14px;
@@ -67,7 +65,6 @@
                 color: #ff6b35;
             }
 
-        /* INPUT */
         label {
             font-size: 12px;
             font-weight: 600;
@@ -85,6 +82,20 @@
                 box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.15);
             }
 
+        /* --- ستايل الإيرور الجديد --- */
+        .input-validation-error {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 11px;
+            font-weight: 500;
+            display: block;
+            margin-top: 4px;
+        }
+
         .btn-orange {
             background: #ff6b35;
             color: white;
@@ -94,28 +105,40 @@
             border: none;
             font-weight: 700;
             margin-top: 15px;
+            transition: 0.2s;
         }
 
             .btn-orange:hover {
-                background: #e85a2a;
+                background: #ff5a1f;
+                transform: translateY(-1px);
             }
 
-        /* SOCIAL */
         .social {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
 
-            .social a {
-                flex: 1;
-                border: 1px solid #eee;
-                border-radius: 10px;
-                padding: 10px;
-                text-align: center;
-                text-decoration: none;
-                color: #333;
-                font-size: 13px;
+        .btn-social {
+            flex: 1;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            color: #333;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+            .btn-social:hover {
+                background: #f8f9fa;
+                border-color: #ddd;
             }
 
         .right {
@@ -128,7 +151,6 @@
             overflow: hidden;
         }
 
-        /* FLOAT ANIMATION */
         @@keyframes float {
             0% {
                 transform: translateY(0px);
@@ -189,7 +211,6 @@
             animation-delay: 2s;
         }
 
-        /* BOX */
         .box {
             width: 380px;
             margin-top: 160px;
@@ -215,19 +236,13 @@
                 color: #ff6b35;
                 font-size: 18px;
             }
-
-
     </style>
 </head>
 
 <body>
-
     <div class="main">
-
-        <!-- LEFT -->
         <div class="left">
             <div class="wrapper">
-
                 <h2>Welcome back</h2>
                 <p class="subtitle">Sign in to continue buying and selling safely</p>
 
@@ -239,19 +254,21 @@
                     </div>
                 </div>
 
+                <!-- 1. فورم تسجيل الدخول العادي -->
                 <form asp-action="Login" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2" style="font-size:13px;"></div>
+                    <!-- ملخص الأخطاء اللي بتيجي من السيرفر (زي Incorrect Password) -->
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px; font-weight: 500;"></div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label asp-for="Email">Email Address</label>
                         <input asp-for="Email" class="form-control" placeholder="example@mail.com" />
-                        <span asp-validation-for="Email" class="text-danger" style="font-size:12px;"></span>
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label asp-for="Password">Password</label>
                         <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
-                        <span asp-validation-for="Password" class="text-danger" style="font-size:12px;"></span>
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="form-check mb-2">
@@ -262,28 +279,33 @@
                     </div>
 
                     <button type="submit" class="btn-orange">Sign In</button>
-
-                    <div class="text-center mt-3 mb-2" style="font-size:12px;color:#777;">
-                        Or continue with
-                    </div>
-
-                    <div class="social">
-                        <a href="#"><i class="bi bi-google"></i> Google</a>
-                        <a href="#"><i class="bi bi-facebook text-primary"></i> Facebook</a>
-                    </div>
-
-                    <p class="text-center mt-3" style="font-size:12px;">
-                        Don't have account?
-                        <a href="/Account/Register" style="color:#ff6b35;text-decoration:none; font-weight:bold;">Create one</a>
-                    </p>
                 </form>
 
+                <!-- 2. فورم تسجيل الدخول الخارجي -->
+                <div class="text-center mt-4 mb-2" style="font-size:12px;color:#777;">
+                    Or continue with
+                </div>
+
+                <form asp-action="ExternalLogin" asp-controller="Account" method="post">
+                    <div class="social">
+                        <button type="submit" name="provider" value="Google" class="btn-social">
+                            <i class="bi bi-google"></i> Google
+                        </button>
+                        <button type="submit" name="provider" value="Facebook" class="btn-social">
+                            <i class="bi bi-facebook text-primary"></i> Facebook
+                        </button>
+                    </div>
+                </form>
+
+                <p class="text-center mt-4" style="font-size:12px;">
+                    Don't have account?
+                    <a href="/Account/Register" style="color:#ff6b35;text-decoration:none; font-weight:bold;">Create one</a>
+                </p>
             </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- الجزء اليمين (الأنيميشن) - زي ما هو بالظبط -->
         <div class="right">
-
             <div class="icon i1"><i class="bi bi-bag"></i></div>
             <div class="icon i2"><i class="bi bi-graph-up"></i></div>
             <div class="icon main"><i class="bi bi-chat"></i></div>
@@ -292,32 +314,30 @@
 
             <div class="box">
                 <h5 class="fw-bold text-center">Why join our marketplace?</h5>
-
                 <div class="feature">
                     <i class="bi bi-patch-check-fill"></i>
                     <div><b>Secure Transactions</b><br />Protected payments</div>
                 </div>
-
                 <div class="feature">
                     <i class="bi bi-chat-left-text-fill"></i>
                     <div><b>Direct Messaging</b><br />Safe buyer-seller chat</div>
                 </div>
-
                 <div class="feature">
                     <i class="bi bi-star-fill"></i>
                     <div><b>Verified Ratings</b><br />Trusted reviews system</div>
                 </div>
-
                 <div class="feature">
                     <i class="bi bi-list-check"></i>
                     <div><b>Easy Listing</b><br />List items in minutes</div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
+
+    <!-- Scripts اللازمة لتشغيل الـ Validation فورا من غير تحميل -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
 </body>
 </html>

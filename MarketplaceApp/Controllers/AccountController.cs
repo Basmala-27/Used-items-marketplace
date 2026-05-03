@@ -133,10 +133,17 @@ namespace MarketplaceApp.Controllers
         }
         // ---------------- LOGOUT ----------------
 
+        [HttpPost] 
+        [ValidateAntiForgeryToken]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
+
+
+
+
     }
 }

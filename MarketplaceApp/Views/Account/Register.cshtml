@@ -69,7 +69,7 @@
                 color: #ff6b35;
             }
 
-        /* INPUTS */
+        /* INPUTS & VALIDATION */
         label {
             font-size: 12px;
             font-weight: 600;
@@ -87,6 +87,21 @@
                 border-color: #ff6b35;
                 box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.15);
             }
+
+        /* Validation Styling */
+        .input-validation-error {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 11px;
+            font-weight: 500;
+            display: block;
+            margin-top: 2px;
+            margin-bottom: 8px;
+        }
 
         /* BUTTON */
         .btn-orange {
@@ -129,7 +144,7 @@
                     transform: translateY(-1px);
                 }
 
-        /* RIGHT */
+        /* RIGHT (UNCHANGED) */
         .right {
             flex: 1;
             background: radial-gradient(circle at top right, #ffe7df, #fff);
@@ -140,7 +155,6 @@
             overflow: hidden;
         }
 
-        /* FLOAT ANIMATION */
         @@keyframes float {
             0%
 
@@ -204,7 +218,6 @@
             animation-delay: 2s;
         }
 
-        /* BOX */
         .box {
             width: 380px;
             margin-top: 160px;
@@ -238,7 +251,7 @@
 
     <div class="main">
 
-        <!-- LEFT -->
+        <!-- LEFT (WITH VALIDATION) -->
         <div class="left">
             <div class="wrapper">
 
@@ -252,35 +265,40 @@
                         Secure & trusted marketplace
                     </div>
                 </div>
-                <div asp-validation-summary="All" class="text-danger"></div>
 
-                <form asp-action="Register" method="post">
+                <form asp-action="Register" method="post" enctype="multipart/form-data">
+                    <!-- Validation Summary (Optional but helpful) -->
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
 
-                    <label>Full Name</label>
-                    <input asp-for="Name" class="form-control mb-2" />
+                    <label asp-for="Name">Full Name</label>
+                    <input asp-for="Name" class="form-control" placeholder="John Doe" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
 
-                    <label>Email Address</label>
-                    <input asp-for="Email" class="form-control mb-2" />
-                    <div class="form-group">
-                        <label asp-for="PhoneNumber"></label>
-                        <input asp-for="PhoneNumber" class="form-control" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                    </div>
+                    <label asp-for="Email" class="mt-2">Email Address</label>
+                    <input asp-for="Email" class="form-control" placeholder="example@mail.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+
+                    <label asp-for="PhoneNumber" class="mt-2">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="01xxxxxxxxx" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+
                     <label class="mt-2">Profile Picture (Optional)</label>
-                    <input name="ProfileImageFile" type="file" class="form-control mb-2" accept="image/*" />
+                    <input name="ProfileImageFile" type="file" class="form-control mb-1" accept="image/*" />
 
-                    <div class="row">
+                    <div class="row mt-2">
                         <div class="col">
-                            <label>Password</label>
+                            <label asp-for="Password">Password</label>
                             <input asp-for="Password" type="password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
                         <div class="col">
-                            <label>Confirm</label>
+                            <label asp-for="ConfirmPassword">Confirm</label>
                             <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
                     </div>
 
-                    <button class="btn-orange">Create Account</button>
+                    <button type="submit" class="btn-orange">Create Account</button>
 
                     <div class="text-center mt-3 mb-2" style="font-size:12px;color:#777;">
                         Or continue with
@@ -301,7 +319,7 @@
             </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- RIGHT (UNCHANGED AS REQUESTED) -->
         <div class="right">
 
             <div class="icon i1"><i class="bi bi-bag"></i></div>
@@ -338,6 +356,11 @@
         </div>
 
     </div>
+
+    <!-- Scripts for Instant Validation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
 </body>
 </html>
