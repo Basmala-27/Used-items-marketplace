@@ -7,29 +7,38 @@
 }
 
 <div class="hero-full-width-container">
-
-    <!-- 🔎 SEARCH BAR -->
+    <!-- 🔎 SEARCH BAR & NOTIFICATION ICON -->
     <div class="search-wrapper">
-        <form asp-controller="Items" asp-action="Index" method="get" class="w-100" style="max-width: 600px;">
-            <div class="input-group search-bar shadow-lg">
-                <!-- Icon -->
-                <span class="input-group-text bg-white border-0 ps-3">
-                    <i class="bi bi-search text-muted"></i>
+        <div class="d-flex align-items-center w-100 px-3" style="max-width: 650px; gap: 15px;">
+
+            <!-- زر الإشعارات المطور -->
+            <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Notifications") : "/Account/Login")"
+               class="top-notif-btn position-relative">
+                <i class="bi bi-bell-fill fs-3 text-white shadow-sm"></i>
+                <span id="top-notif-badge"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white shadow-sm"
+                      style="display:none; font-size:10px;">
+                    0
                 </span>
+            </a>
 
-                <!-- Input Field -->
-                <input type="text"
-                       name="searchTerm"
-                       class="form-control border-0 shadow-none"
-                       placeholder="Search for items, brands, categories..."
-                       value="@ViewBag.SearchTerm">
-
-                <!-- NEW: Search Button -->
-                <button class="btn btn-warning px-4 fw-bold" type="submit" id="button-search" style="border-radius: 0 50px 50px 0;">
-                    Search
-                </button>
-            </div>
-        </form>
+            <!-- شريط البحث بالتصميم الأنيق -->
+            <form asp-controller="Items" asp-action="Index" method="get" class="flex-grow-1">
+                <div class="input-group search-bar shadow-lg">
+                    <span class="input-group-text bg-white border-0 ps-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text"
+                           name="searchTerm"
+                           class="form-control border-0 shadow-none"
+                           placeholder="Search for items, brands, categories..."
+                           value="@ViewBag.SearchTerm">
+                    <button class="btn btn-warning px-4 fw-bold" type="submit" id="button-search" style="border-radius: 0 50px 50px 0;">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- 🟡 HERO SLIDER -->
@@ -68,7 +77,7 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold m-0 text-dark">Latest Items</h3>
-        <a href="#" class="view-all text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
+        <a asp-controller="Items" asp-action="Index" class="view-all text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
     </div>
 
     <div class="row row-cols-2 row-cols-md-4 g-4">
@@ -77,7 +86,6 @@
             @foreach (var item in Model)
             {
                 var imageUrl = item.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
-
                 var statusClass = item.Status switch
                 {
                     ItemStatus.Available => "status-available",
@@ -90,13 +98,14 @@
                     <div class="product-card h-100 @(item.Status == ItemStatus.Sold ? "status-sold-filter" : "")">
 
                         <div class="img-badge-container">
-                            <img src="@imageUrl" alt="@item.Title" loading="lazy">
+                            <a asp-controller="Items" asp-action="Details" asp-route-id="@item.ItemID">
+                                <img src="@imageUrl" alt="@item.Title" loading="lazy">
+                            </a>
+
                             <div class="badges-overlay">
                                 <span class="badge custom-badge bg-orange">Hot Deal</span>
-                                <span class="badge custom-badge bg-orange-outline">Negotiable</span>
                             </div>
 
-                            @* ✅ تعديل زرار القلب ليقرأ الحالة من الـ ViewBag *@
                             <button class="wishlist-btn shadow-sm favorite-toggle" data-item-id="@item.ItemID">
                                 @{
                                     var isFav = ViewBag.UserFavoriteIds != null && ((List<int>)ViewBag.UserFavoriteIds).Contains(item.ItemID);
@@ -106,7 +115,9 @@
                         </div>
 
                         <div class="p-3">
-                            <h6 class="product-title text-truncate" title="@item.Title">@item.Title</h6>
+                            <a asp-controller="Items" asp-action="Details" asp-route-id="@item.ItemID" class="text-decoration-none text-dark">
+                                <h6 class="product-title text-truncate" title="@item.Title">@item.Title</h6>
+                            </a>
 
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="price text-orange fw-bold fs-5">$@item.Price</span>
@@ -135,11 +146,10 @@
 <style>
     body {
         background: #f8f9fa;
-        margin: 0;
-        padding-top: 0px;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Segoe UI', Roboto, sans-serif;
     }
 
+    /* --- Hero & Search --- */
     .hero-full-width-container {
         width: 100vw;
         position: relative;
@@ -156,17 +166,12 @@
         width: 100%;
         display: flex;
         justify-content: center;
-        z-index: 10;
-        padding: 0 15px;
+        z-index: 100;
     }
 
     .search-bar {
-        width: 100%;
-        max-width: 600px;
         border-radius: 50px !important;
         background: white;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        overflow: hidden;
     }
 
     .hero-slider img {
@@ -178,7 +183,7 @@
     .overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
     }
 
     .hero-text {
@@ -192,16 +197,27 @@
         .hero-text h1 {
             font-weight: 800;
             font-size: 2.2rem;
-            margin-bottom: 5px;
         }
 
+    /* --- Notification Button --- */
+    .top-notif-btn {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+
+        .top-notif-btn:hover {
+            transform: scale(1.1);
+        }
+
+    /* --- Product Cards --- */
     .product-card {
         border: none;
         border-radius: 20px;
         background: #fff;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: 0.3s;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         position: relative;
+        overflow: hidden;
     }
 
         .product-card:hover {
@@ -221,31 +237,41 @@
             border-radius: 16px;
         }
 
+    /* --- Badges & Status --- */
+    .badges-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        gap: 5px;
+    }
+
+    .custom-badge {
+        font-size: 10px;
+        padding: 5px 10px;
+        border-radius: 50px;
+    }
+
+    .bg-orange {
+        background-color: #f97316;
+        color: white;
+    }
+
     .badge-status {
         padding: 4px 10px;
         border-radius: 8px;
         font-size: 10.5px;
         font-weight: 700;
-        text-transform: capitalize;
-        letter-spacing: 0.3px;
     }
 
     .status-available {
         background-color: #dcfce7;
         color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-
-    .status-pending {
-        background-color: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
     }
 
     .status-sold {
         background-color: #fee2e2;
         color: #991b1b;
-        border: 1px solid #fecaca;
     }
 
     .badge-condition {
@@ -257,15 +283,7 @@
         font-weight: 600;
     }
 
-    .text-orange {
-        color: #f97316 !important;
-    }
-
-    .view-all {
-        color: #f97316;
-        font-weight: 700;
-    }
-
+    /* --- Wishlist Button --- */
     .wishlist-btn {
         position: absolute;
         top: 18px;
@@ -275,23 +293,25 @@
         border-radius: 50%;
         background: white;
         border: none;
-        color: #374151;
-        transition: transform 0.2s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        outline: none !important;
+        transition: 0.2s;
+        z-index: 10;
     }
 
         .wishlist-btn:hover {
-            background: #fef2f2;
-            color: #ef4444;
             transform: scale(1.1);
+            background: #fef2f2;
         }
 
-    .text-danger {
-        color: #ef4444 !important;
+    .text-orange {
+        color: #f97316 !important;
+    }
+
+    .view-all {
+        color: #f97316;
+        font-weight: 700;
     }
 </style>
 
@@ -299,8 +319,44 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
+            // 1. وظيفة تحديث أرقام الإشعارات
+            function syncBadges(count) {
+                const topBadge = document.getElementById("top-notif-badge");
+                if (topBadge) {
+                    if (count > 0) {
+                        topBadge.style.display = "inline";
+                        topBadge.innerText = count > 99 ? "99+" : count;
+                    } else {
+                        topBadge.style.display = "none";
+                    }
+                }
+            }
+
+            // 2. تحميل عدد الإشعارات عند فتح الصفحة
+            async function loadInitialCounts() {
+                try {
+                    const res = await fetch('/Notifications/GetUnreadCount');
+                    if (res.ok) {
+                        const count = await res.json();
+                        syncBadges(count);
+                    }
+                } catch (e) { console.log("Error loading notifications count"); }
+            }
+            loadInitialCounts();
+
+            // 3. الربط مع SignalR (إذا كان موجوداً)
+            if (typeof connection !== 'undefined') {
+                connection.on("ReceiveNotification", function (data) {
+                    const topBadge = document.getElementById("top-notif-badge");
+                    let currentCount = parseInt(topBadge.innerText) || 0;
+                    syncBadges(currentCount + 1);
+                });
+            }
+
+            // 4. وظيفة الـ Wishlist (Favorite)
             $('.favorite-toggle').on('click', function (e) {
                 e.preventDefault();
+                e.stopPropagation(); // يمنع الدخول لصفحة التفاصيل عند الضغط على القلب
 
                 var btn = $(this);
                 var itemId = btn.data('item-id');
@@ -313,27 +369,18 @@
                     success: function (response) {
                         if (response.success) {
                             if (response.status === "added") {
-                                // تغيير الأيقونة للقلب الممتلئ باللون الأحمر
                                 icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
-
-                                // أنيميشن بسيط
                                 btn.css('transform', 'scale(1.2)');
                                 setTimeout(() => btn.css('transform', 'scale(1)'), 200);
                             } else {
-                                // تغيير الأيقونة للقلب الفارغ
                                 icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
                             }
-                        } else {
-                            // ✅ لو السيرفر رجع إن اليوزر مش مسجل، يروح لصفحة الـ Login
-                            if (response.isNotLoggedIn) {
-                                window.location.href = response.redirectUrl;
-                            } else {
-                                alert(response.message || "Something went wrong.");
-                            }
+                        } else if (response.isNotLoggedIn) {
+                            window.location.href = response.redirectUrl;
                         }
                     },
                     error: function () {
-                        alert("Error connecting to the server. Check if Database is locked.");
+                        console.error("Database or Server Error");
                     }
                 });
             });

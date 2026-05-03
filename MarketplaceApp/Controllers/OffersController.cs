@@ -2,7 +2,6 @@ using MarketplaceApp.Data;
 using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
 using MarketplaceApp.Services;
-using MarketplaceApp.Services.MarketplaceApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;

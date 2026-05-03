@@ -22,15 +22,24 @@ namespace MarketplaceApp.Controllers
             _context = context;
             _webHostEnvironment = webHostEnvironment;
         }
-        //newItem = new Item
-        // GET: Items/Index
-        public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort)
+
+        public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort, string? searchTerm)
         {
             var query = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.User)
                 .Include(i => i.Images)
                 .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var normalizedSearch = searchTerm.Trim().ToLower();
+
+
+                query = query.Where(i => i.Title.ToLower().Contains(normalizedSearch) ||
+                                         i.Description.ToLower().Contains(normalizedSearch));
+            }
+
 
             if (categoryId.HasValue)
                 query = query.Where(i => i.CategoryID == categoryId.Value);
@@ -49,13 +58,13 @@ namespace MarketplaceApp.Controllers
 
             query = sort switch
             {
-             
-                "price_asc" => query.OrderBy(i => (double)i.Price),
-                "price_desc" => query.OrderByDescending(i => (double)i.Price),
+                "price_asc" => query.OrderBy(i => i.Price),
+                "price_desc" => query.OrderByDescending(i => i.Price),
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
             var items = await query.ToListAsync();
+
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
@@ -65,6 +74,7 @@ namespace MarketplaceApp.Controllers
             ViewBag.SelectedCondition = condition;
             ViewBag.SelectedListingType = listingType;
             ViewBag.SelectedSort = sort;
+            ViewBag.SearchTerm = searchTerm;
 
             if (categoryId.HasValue)
             {
@@ -74,7 +84,6 @@ namespace MarketplaceApp.Controllers
 
             return View(items);
         }
-
         // GET: Items/Details/5
         public async Task<IActionResult> Details(int? id)
         {

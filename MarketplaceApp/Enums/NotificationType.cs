@@ -5,6 +5,11 @@
         System,
         OfferCreated,
         OfferAccepted,
-        OfferRejected
+        OfferRejected,
+        Info,
+        Order,
+        Message,
+        Favorite
+
     }
 }

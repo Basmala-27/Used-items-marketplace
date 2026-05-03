@@ -1,23 +1,21 @@
 ﻿using MarketplaceApp.Data;
+using MarketplaceApp.Hubs;
 using MarketplaceApp.Models;
-using MarketplaceApp.Services; // 🔥 مهم
-using MarketplaceApp.Services.MarketplaceApp.Services;
+using MarketplaceApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// 🔹 Add MVC
 builder.Services.AddControllersWithViews();
 
-// 🔹 Connection String
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 🔹 DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// 🔹 Identity + Roles
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -27,13 +25,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// ================= 🔥 ADD THIS =================
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// ================= BUILD =================
 var app = builder.Build();
 
-// 🔹 Middleware
+app.MapHub<NotificationHub>("/notificationHub");
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -45,11 +41,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 🔹 Auth
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 🔹 Routing
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

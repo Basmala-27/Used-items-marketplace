@@ -8,7 +8,6 @@
 
 <div class="container py-5">
     <div class="row g-5">
-        <!-- قسم الصور (Carousel) - مأخوذ من التنسيق المطور -->
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 @if (Model.Images != null && Model.Images.Any())
@@ -37,7 +36,6 @@
                 }
             </div>
 
-            <!-- إضافة تاريخ الإنشاد والبريد الإلكتروني أسفل الصورة (من الكود الأول) -->
             <div class="mt-3 px-2">
                 <div class="d-flex justify-content-between small text-muted">
                     <span><i class="bi bi-person"></i> Seller: @Model.User.Email</span>
@@ -46,7 +44,6 @@
             </div>
         </div>
 
-        <!-- قسم البيانات والأزرار -->
         <div class="col-md-6">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <nav aria-label="breadcrumb">
@@ -100,13 +97,12 @@
 
             <hr class="mb-4">
 
-            <!-- أزرار التحكم والمنطق البرمجي -->
             <div class="d-flex flex-wrap gap-2">
                 @if (User.Identity.IsAuthenticated)
                 {
                     @if (Model.UserID != currentUserId)
                     {
-                        <!-- التفاوض (الشات) -->
+
                         @if (Model.IsAvailableForSale)
                         {
                             <a asp-controller="Chat" asp-action="StartConversation" asp-route-itemId="@Model.ItemID" class="btn btn-orange btn-lg px-4 flex-grow-1 shadow-sm text-white fw-bold">
@@ -114,7 +110,7 @@
                             </a>
                         }
 
-                        <!-- المقايضة (Swap) -->
+
                         @if (Model.IsAvailableForSwap)
                         {
                             <a asp-controller="Items" asp-action="CreateSwap" asp-route-targetItemId="@Model.ItemID" class="btn btn-warning btn-lg px-4 flex-grow-1 shadow-sm text-dark fw-bold">
@@ -124,7 +120,7 @@
                     }
                     else
                     {
-                        <!-- خيارات المالك -->
+
                         <a asp-action="Edit" asp-route-id="@Model.ItemID" class="btn btn-light border px-4 flex-grow-1">
                             <i class="bi bi-pencil me-2"></i> Edit My Item
                         </a>

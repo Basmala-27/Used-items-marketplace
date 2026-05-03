@@ -7,7 +7,6 @@ namespace MarketplaceApp.Models
     public class Notification
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int NotificationID { get; set; }
 
         [Required]
