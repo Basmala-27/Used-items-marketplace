@@ -7,7 +7,7 @@ namespace MarketplaceApp.Models
     public class SwapRequest
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        
         public int SwapRequestId { get; set; }
 
 

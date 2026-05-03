@@ -1,45 +1,44 @@
-@model IEnumerable<Item>
+﻿@model IEnumerable<Item>
 @{
-    ViewData["Title"] = ViewBag.CategoryName != null ? ViewBag.CategoryName + " � Items" : "All Items";
-
+    ViewData["Title"] = "Marketplace - Negotiation & Swap";
     string selectedCategory = ViewBag.SelectedCategory?.ToString() ?? "";
     string selectedCondition = ViewBag.SelectedCondition ?? "";
     string selectedListingType = ViewBag.SelectedListingType ?? "";
     string selectedSort = ViewBag.SelectedSort ?? "";
 }
 
-
 <!-- Page Header -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="mb-0">
-            @(ViewBag.CategoryName != null ? ViewBag.CategoryName : "All Items")
-        </h2>
-        <small class="text-muted">@Model.Count() item@(Model.Count() != 1 ? "s" : "") found</small>
+        <h2 class="fw-bold text-dark">@(ViewBag.CategoryName ?? "Explore Marketplace")</h2>
+        <p class="text-muted small">
+            Find <span class="fw-bold text-dark">@Model.Count()</span> item@(Model.Count() != 1 ? "s" : "") for
+            <span class="text-orange fw-bold">Negotiation</span> or <span class="text-warning fw-bold">Swap</span>
+        </p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">+ Post Item</a>
+    <a asp-action="Create" class="btn btn-orange shadow-sm px-4 rounded-pill">+ Post Item</a>
 </div>
 
-<!-- Filter Bar -->
-<form method="get" asp-action="Index" class="row g-2 mb-4">
+<!-- Filter Bar: مدمج بداخلها حقل البحث المخفي ونظام التنسيق الجديد -->
+<form method="get" asp-action="Index" class="row g-2 mb-4 bg-light p-3 rounded-3 shadow-sm border">
 
-    <!-- Hidden input to keep search results active while filtering -->
+    <!-- Hidden input to keep search results active while filtering (من الكود الأول) -->
     <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
 
-    <!-- 1. All Categories -->
+    <!-- 1. Categories -->
     <div class="col-md-3">
-        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+        <select name="categoryId" class="form-select border-0 shadow-none" onchange="this.form.submit()">
             <option value="">All Categories</option>
-            @foreach (var item in (SelectList)ViewBag.Categories)
+            @foreach (var cat in (SelectList)ViewBag.Categories)
             {
-                <option value="@item.Value" selected="@(item.Value == selectedCategory)">@item.Text</option>
+                <option value="@cat.Value" selected="@(cat.Value == selectedCategory)">@cat.Text</option>
             }
         </select>
     </div>
 
-    <!-- 2. All Conditions -->
+    <!-- 2. Conditions -->
     <div class="col-md-2">
-        <select name="condition" class="form-select" onchange="this.form.submit()">
+        <select name="condition" class="form-select border-0 shadow-none" onchange="this.form.submit()">
             <option value="all" selected="@(selectedCondition == "all")">All Conditions</option>
             <option value="Like New" selected="@(selectedCondition == "Like New")">Like New</option>
             <option value="Very Good" selected="@(selectedCondition == "Very Good")">Very Good</option>
@@ -48,152 +47,157 @@
         </select>
     </div>
 
-    <!-- 3. Sale & Swap -->
-    <div class="col-md-2">
-        <select name="listingType" class="form-select" onchange="this.form.submit()">
-            <option value="all" selected="@(selectedListingType == "all")">Sale & Swap</option>
-            <option value="Sale" selected="@(selectedListingType == "Sale")">Sale</option>
-            <option value="Swap" selected="@(selectedListingType == "Swap")">Swap</option>
+    <!-- 3. Listing Type -->
+    <div class="col-md-3">
+        <select name="listingType" class="form-select border-0 shadow-none" onchange="this.form.submit()">
+            <option value="all" selected="@(selectedListingType == "all")">Negotiation & Swap</option>
+            <option value="Sale" selected="@(selectedListingType == "Sale")">Open for Negotiation</option>
+            <option value="Swap" selected="@(selectedListingType == "Swap")">Available for Swap</option>
         </select>
     </div>
 
-    <!-- Listing Type Filter -->
-    @* <div class="col-md-2">
-        <select name="listingType" class="form-select" onchange="this.form.submit()">
-            <option value="all">Sale &amp; Swap</option>
-            @foreach (var lt in (SelectList)ViewBag.ListingTypes)
-            {
-                if (lt.Value == selectedListingType)
-                {
-                    <option value="@lt.Value" selected>@lt.Text</option>
-                }
-                else
-                {
-                    <option value="@lt.Value">@lt.Text</option>
-                }
-            }
-        </select>
-    </div> *@
-
-    <!-- Sort -->
-    <div class="col-md-2">
-        <select name="sort" class="form-select" onchange="this.form.submit()">
-            @if (selectedSort == "")
-            {
-                <option value="" selected>Newest First</option>
-            }
-            else
-            {
-                <option value="">Newest First</option>
-            }
-            @if (selectedSort == "price_asc")
-            {
-                <option value="price_asc" selected>Price: Low ? High</option>
-            }
-            else
-            {
-                <option value="price_asc">Price: Low ? High</option>
-            }
-            @if (selectedSort == "price_desc")
-            {
-                <option value="price_desc" selected>Price: High ? Low</option>
-            }
-            else
-            {
-                <option value="price_desc">Price: High ? Low</option>
-            }
+    <!-- 4. Sort -->
+    <div class="col-md-2 ms-auto">
+        <select name="sort" class="form-select border-0 shadow-none" onchange="this.form.submit()">
+            <option value="" selected="@(string.IsNullOrEmpty(selectedSort))">Newest First</option>
+            <option value="price_asc" selected="@(selectedSort == "price_asc")">Price: Low to High</option>
+            <option value="price_desc" selected="@(selectedSort == "price_desc")">Price: High to Low</option>
         </select>
     </div>
-
 </form>
 
 <!-- Items Grid -->
 @if (!Model.Any())
 {
-    <div class="text-center py-5 text-muted">
-        <p class="fs-5">No items found.</p>
-        <a asp-action="Create" class="btn btn-outline-primary">Be the first to post one!</a>
+    <div class="text-center py-5 text-muted bg-light rounded-4 border border-dashed">
+        <i class="bi bi-search display-1 mb-3 d-block"></i>
+        <p class="fs-5">No items found matching your criteria.</p>
+        <a asp-action="Create" class="btn btn-orange rounded-pill px-4">Be the first to post one!</a>
     </div>
 }
 else
 {
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         @foreach (var item in Model)
         {
             <div class="col">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative item-card">
+
+                    <!-- Status Badge (Negotiable/Swap) -->
+                    <div class="position-absolute top-0 end-0 m-2 z-index-1 d-flex flex-column gap-1 align-items-end">
+                        @if (item.IsAvailableForSale)
+                        {
+                            <span class="badge rounded-pill bg-white text-primary border border-primary shadow-sm">Negotiable</span>
+                        }
+                        @if (item.IsAvailableForSwap || item.ListingType == "Swap")
+                        {
+                            <span class="badge rounded-pill bg-warning text-dark shadow-sm">Swap</span>
+                        }
+                    </div>
 
                     <!-- Item Image -->
-                    @if (item.Images != null && item.Images.Any())
-                    {
-                        <img src="@item.Images.First().ImageUrl"
-                             class="card-img-top"
-                             alt="@item.Title"
-                             style="height: 180px; object-fit: cover;">
-                    }
-                    else
-                    {
-                        <div class="bg-light d-flex align-items-center justify-content-center"
-                             style="height: 180px;">
-                            <span class="text-muted small">No Image</span>
+                    <div class="image-container" style="height: 200px; background: #f8f9fa;">
+                        @if (item.Images != null && item.Images.Any())
+                        {
+                            <img src="@item.Images.First().ImageUrl" class="card-img-top h-100 w-100 object-fit-cover" alt="@item.Title">
+                        }
+                        else
+                        {
+                            <div class="h-100 d-flex align-items-center justify-content-center text-muted small">No Image</div>
+                        }
+                    </div>
+
+                    <div class="card-body d-flex flex-column p-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">@item.Category?.Name</small>
+                            <small class="text-muted" style="font-size: 10px;">@item.CreatedAt.ToString("MMM dd")</small>
                         </div>
-                    }
 
-                    <div class="card-body d-flex flex-column">
+                        <h6 class="fw-bold text-dark text-truncate mb-1" title="@item.Title">@item.Title</h6>
+                        <h5 class="text-orange fw-bold mb-2">$@item.Price.ToString("0.00")</h5>
 
-                        <!-- Category -->
-                        <small class="text-muted mb-1">@item.Category?.Name</small>
-
-                        <!-- Title -->
-                        <h6 class="card-title mb-1 text-truncate" title="@item.Title">
-                            @item.Title
-                        </h6>
-
-                        <!-- Price -->
-                        <p class="fw-bold mb-2">$@item.Price.ToString("0.00")</p>
-
-                        <!-- Condition + ListingType badges -->
-                        <div class="d-flex gap-1 flex-wrap mb-2">
-                            <span class="badge @(item.Condition == "Like New"     ? "bg-success"           :
-                                                                                                                     item.Condition == "Very Good" ? "bg-primary" :
-                                                                                                                     item.Condition == "Good" ? "bg-warning text-dark" :
-                                                                                                                     item.Condition == "Needs Repair" ? "bg-danger" : "bg-secondary")">
+                        <div class="d-flex gap-1 flex-wrap mb-3">
+                            <span class="badge @(item.Condition == "Like New" ? "bg-success-subtle text-success border border-success" :
+                                                                                 item.Condition == "Very Good" ? "bg-primary-subtle text-primary border border-primary" :
+                                                                                 item.Condition == "Good" ? "bg-warning-subtle text-warning border border-warning" : "bg-light text-dark border")" style="font-size: 10px;">
                         @item.Condition
                     </span>
+                </div>
 
-                    @if (item.ListingType == "Swap")
-                            {
-                                <span class="badge bg-info text-dark">Swap</span>
-                            }
-                        </div>
-
-                        <!-- Location -->
-                        @if (!string.IsNullOrEmpty(item.Location))
+                @if (!string.IsNullOrEmpty(item.Location))
                         {
-                            <small class="text-muted mb-2">?? @item.Location</small>
+                            <p class="text-muted mb-3" style="font-size: 12px;"><i class="bi bi-geo-alt"></i> @item.Location</p>
                         }
 
-                        <!-- Actions -->
-                        <div class="mt-auto d-flex gap-2">
-                            <a asp-action="Details" asp-route-id="@item.ItemID"
-                               class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
-                            <a asp-action="Edit" asp-route-id="@item.ItemID"
-                               class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@item.ItemID"
-                               class="btn btn-sm btn-outline-danger">Delete</a>
+                        <div class="mt-auto">
+                            <a asp-action="Details" asp-route-id="@item.ItemID" class="btn btn-outline-orange w-100 rounded-pill btn-sm fw-bold">View Details</a>
                         </div>
-
                     </div>
 
-                    <!-- Card Footer: seller + date -->
-                    <div class="card-footer text-muted d-flex justify-content-between"
-                         style="font-size: 11px;">
-                        <span>@item.User?.Email</span>
-                        <span>@item.CreatedAt.ToString("MMM dd, yyyy")</span>
+                    <!-- Footer للبريد الإلكتروني (من الكود الأول) -->
+                    <div class="card-footer bg-transparent border-top-0 pt-0 pb-3 px-3">
+                        <small class="text-muted d-block text-truncate" style="font-size: 10px;">
+                            <i class="bi bi-person"></i> @item.User?.Email
+                        </small>
                     </div>
-
                 </div>
             </div>
         }
     </div>
 }
+
+<style>
+    .text-orange {
+        color: #FF8C00 !important;
+    }
+
+    .btn-orange {
+        background-color: #FF8C00;
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67e00;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-orange {
+        color: #FF8C00;
+        border: 1px solid #FF8C00;
+        transition: 0.3s;
+    }
+
+        .btn-outline-orange:hover {
+            background-color: #FF8C00;
+            color: white;
+        }
+
+    .bg-warning-light {
+        background-color: #fff9e6;
+    }
+
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+
+    .item-card {
+        transition: 0.3s;
+        border: 1px solid #eee;
+    }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .z-index-1 {
+        z-index: 1;
+    }
+</style>

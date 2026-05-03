@@ -1,12 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using MarketplaceApp.Data;
+using MarketplaceApp.Enums;
+using MarketplaceApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MarketplaceApp.Data;
-using MarketplaceApp.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MarketplaceApp.Controllers
 {
@@ -159,6 +161,49 @@ namespace MarketplaceApp.Controllers
         private bool SwapRequestExists(int id)
         {
             return _context.SwapRequests.Any(e => e.SwapRequestId == id);
+        }
+
+        public async Task<IActionResult> MyRequests()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var requests = await _context.SwapRequests
+         .Include(s => s.OfferedItem)   // عشان يجيب بيانات المنتج المعروض
+         .Include(s => s.RequestedItem) // عشان يجيب بيانات منتجك
+         .Include(s => s.Requester)     // مهم جداً: عشان يجيب بيانات الشخص (Email/UserName)
+         .Where(s => s.RequestedItem.UserID == userId)
+         .ToListAsync();
+
+            return View(requests);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Respond(int id, OfferStatus status)
+        {
+            var swapRequest = await _context.SwapRequests
+                .Include(s => s.OfferedItem)
+                .Include(s => s.RequestedItem)
+                .FirstOrDefaultAsync(s => s.SwapRequestId == id);
+
+            if (swapRequest == null) return NotFound();
+
+            // تحديث حالة الطلب
+            swapRequest.Status = status;
+
+            if (status == OfferStatus.Accepted)
+            {
+                // لو وافقنا، بنخلي المنتجين غير متاحين للبيع مرة تانية
+                swapRequest.OfferedItem.Status = ItemStatus.Sold; // أو Exchanged
+                swapRequest.RequestedItem.Status = ItemStatus.Sold;
+            }
+
+            _context.Update(swapRequest);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = status == OfferStatus.Accepted ? "تم قبول الطلب بنجاح!" : "تم رفض الطلب.";
+
+            return RedirectToAction(nameof(MyRequests));
         }
     }
 }
