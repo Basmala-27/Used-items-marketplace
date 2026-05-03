@@ -49,8 +49,9 @@ namespace MarketplaceApp.Controllers
 
             query = sort switch
             {
-                "price_asc" => query.OrderBy(i => i.Price),
-                "price_desc" => query.OrderByDescending(i => i.Price),
+             
+                "price_asc" => query.OrderBy(i => (double)i.Price),
+                "price_desc" => query.OrderByDescending(i => (double)i.Price),
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
