@@ -24,7 +24,7 @@ namespace MarketplaceApp.Controllers
         }
 
         // GET: Items/Index
-        public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort)
+        public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort, string? searchTerm)
         {
             var query = _context.Items
                 .Include(i => i.Category)
@@ -32,42 +32,62 @@ namespace MarketplaceApp.Controllers
                 .Include(i => i.Images)
                 .AsQueryable();
 
-            if (categoryId.HasValue)
-                query = query.Where(i => i.CategoryID == categoryId.Value);
-
-            if (!string.IsNullOrEmpty(condition) && condition != "all")
-                query = query.Where(i => i.Condition == condition);
-
-            if (!string.IsNullOrEmpty(listingType) && listingType != "all")
-                query = query.Where(i => i.ListingType == listingType);
-
-            query = sort switch
+            // 1. Search Logic
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                "price_asc" => query.OrderBy(i => i.Price),
-                "price_desc" => query.OrderByDescending(i => i.Price),
-                _ => query.OrderByDescending(i => i.CreatedAt)
+                query = query.Where(i => i.Title!.Contains(searchTerm) || i.Description!.Contains(searchTerm));
+            }
+
+            // 2. Category Filter
+            if (categoryId.HasValue)
+            {
+                query = query.Where(i => i.CategoryID == categoryId.Value);
+                var category = await _context.Categories.FindAsync(categoryId.Value);
+                ViewBag.CategoryName = category?.Name;
+            }
+
+            // 3. Condition Filter
+            if (!string.IsNullOrEmpty(condition) && condition != "all")
+            {
+                query = query.Where(i => i.Condition == condition);
+            }
+
+            // 4. Listing Type Filter
+            if (!string.IsNullOrEmpty(listingType) && listingType != "all")
+            {
+                query = query.Where(i => i.ListingType == listingType);
+            }
+
+            // --- THE FIX STARTS HERE ---
+
+            // First, execute the filtered query to get the items into memory (List)
+            // This avoids the SQLite "decimal" sorting exception.
+            var itemsList = await query.ToListAsync();
+
+            // Now, apply the sorting to the List in memory
+            itemsList = sort switch
+            {
+                "price_asc" => itemsList.OrderBy(i => i.Price).ToList(),
+                "price_desc" => itemsList.OrderByDescending(i => i.Price).ToList(),
+                _ => itemsList.OrderByDescending(i => i.CreatedAt).ToList()
             };
 
-            var items = await query.ToListAsync();
+            // --- THE FIX ENDS HERE ---
 
-            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
-            ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
-            ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, listingType);
-
+            // Keep UI values in sync
+            ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = categoryId;
             ViewBag.SelectedCondition = condition;
             ViewBag.SelectedListingType = listingType;
             ViewBag.SelectedSort = sort;
 
-            if (categoryId.HasValue)
-            {
-                var category = await _context.Categories.FindAsync(categoryId.Value);
-                ViewBag.CategoryName = category?.Name;
-            }
+            // Repopulate SelectLists
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
+            ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
+            ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, listingType);
 
-            return View(items);
+            return View(itemsList);
         }
-
         // GET: Items/Details/5
         public async Task<IActionResult> Details(int? id)
         {

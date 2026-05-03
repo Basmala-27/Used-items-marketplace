@@ -92,6 +92,21 @@ namespace MarketplaceApp.Data
                 .HasForeignKey(n => n.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
+            // ================= TRANSACTION =================
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.HasOne(t => t.Buyer)
+                    .WithMany(u => u.Purchases)
+                    .HasForeignKey(t => t.BuyerID)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevents circular delete issues
+
+                entity.HasOne(t => t.Seller)
+                    .WithMany(u => u.Sales)
+                    .HasForeignKey(t => t.SellerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // ================= SEED DATA =================
             modelBuilder.Entity<Category>().HasData(
                 new Category

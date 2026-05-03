@@ -24,7 +24,7 @@ namespace MarketplaceApp.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // 1. عرض البروفايل (المنتجات والمفضلات)
+        // 1. عرض البروفايل (المنتجات والمفضلات والعمليات)
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -48,7 +48,14 @@ namespace MarketplaceApp.Controllers
                     .ToListAsync(),
                 ActiveOffers = await _context.Offers.CountAsync(o => o.BuyerID == user.Id),
                 SwapRequests = await _context.SwapRequests
-                    .CountAsync(s => s.RequesterId == user.Id || s.RequestedItem.UserID == user.Id)
+                    .CountAsync(s => s.RequesterId == user.Id || s.RequestedItem.UserID == user.Id),
+
+                // --- NEW: Fetch Transactions for the current user ---
+                Transactions = await _context.Transactions
+                    .Include(t => t.Item) // To show the item name
+                    .Where(t => t.BuyerID == user.Id || t.SellerID == user.Id)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .ToListAsync()
             };
 
             return View(viewModel);

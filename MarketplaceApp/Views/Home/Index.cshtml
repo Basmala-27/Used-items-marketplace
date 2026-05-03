@@ -7,15 +7,29 @@
 }
 
 <div class="hero-full-width-container">
+
     <!-- 🔎 SEARCH BAR -->
     <div class="search-wrapper">
-        <div class="search-bar input-group">
-            <span class="input-group-text bg-white border-0 ps-3">
-                <i class="bi bi-search text-muted"></i>
-            </span>
-            <input class="form-control border-0 shadow-none"
-                   placeholder="Search for items, brands, categories...">
-        </div>
+        <form asp-controller="Items" asp-action="Index" method="get" class="w-100" style="max-width: 600px;">
+            <div class="input-group search-bar shadow-lg">
+                <!-- Icon -->
+                <span class="input-group-text bg-white border-0 ps-3">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+
+                <!-- Input Field -->
+                <input type="text"
+                       name="searchTerm"
+                       class="form-control border-0 shadow-none"
+                       placeholder="Search for items, brands, categories..."
+                       value="@ViewBag.SearchTerm">
+
+                <!-- NEW: Search Button -->
+                <button class="btn btn-warning px-4 fw-bold" type="submit" id="button-search" style="border-radius: 0 50px 50px 0;">
+                    Search
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- 🟡 HERO SLIDER -->

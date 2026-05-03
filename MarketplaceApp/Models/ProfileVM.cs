@@ -14,12 +14,16 @@ namespace MarketplaceApp.Models
         public int ItemsPostedCount { get; set; }
         public IEnumerable<Item>? PostedItems { get; set; } // القائمة الفعليّة للعرض
 
-       
+        public List<Transaction> Transactions { get; set; } = new();
+
         public int FavoritesCount { get; set; }
         public IEnumerable<Item>? FavoriteItems { get; set; } // القائمة الفعليّة للعرض
 
        
         public int ActiveOffers { get; set; }
         public int SwapRequests { get; set; }
+
+
+
     }
 }

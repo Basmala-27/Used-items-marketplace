@@ -8,6 +8,7 @@
     string selectedSort = ViewBag.SelectedSort ?? "";
 }
 
+
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -22,44 +23,42 @@
 <!-- Filter Bar -->
 <form method="get" asp-action="Index" class="row g-2 mb-4">
 
-    <!-- Category Filter -->
+    <!-- Hidden input to keep search results active while filtering -->
+    <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
+
+    <!-- 1. All Categories -->
     <div class="col-md-3">
         <select name="categoryId" class="form-select" onchange="this.form.submit()">
             <option value="">All Categories</option>
-            @foreach (var cat in (SelectList)ViewBag.Categories)
+            @foreach (var item in (SelectList)ViewBag.Categories)
             {
-                if (cat.Value == selectedCategory)
-                {
-                    <option value="@cat.Value" selected>@cat.Text</option>
-                }
-                else
-                {
-                    <option value="@cat.Value">@cat.Text</option>
-                }
+                <option value="@item.Value" selected="@(item.Value == selectedCategory)">@item.Text</option>
             }
         </select>
     </div>
 
-    <!-- Condition Filter -->
+    <!-- 2. All Conditions -->
     <div class="col-md-2">
         <select name="condition" class="form-select" onchange="this.form.submit()">
-            <option value="all">All Conditions</option>
-            @foreach (var cond in (SelectList)ViewBag.Conditions)
-            {
-                if (cond.Value == selectedCondition)
-                {
-                    <option value="@cond.Value" selected>@cond.Text</option>
-                }
-                else
-                {
-                    <option value="@cond.Value">@cond.Text</option>
-                }
-            }
+            <option value="all" selected="@(selectedCondition == "all")">All Conditions</option>
+            <option value="Like New" selected="@(selectedCondition == "Like New")">Like New</option>
+            <option value="Very Good" selected="@(selectedCondition == "Very Good")">Very Good</option>
+            <option value="Good" selected="@(selectedCondition == "Good")">Good</option>
+            <option value="Needs Repair" selected="@(selectedCondition == "Needs Repair")">Needs Repair</option>
+        </select>
+    </div>
+
+    <!-- 3. Sale & Swap -->
+    <div class="col-md-2">
+        <select name="listingType" class="form-select" onchange="this.form.submit()">
+            <option value="all" selected="@(selectedListingType == "all")">Sale & Swap</option>
+            <option value="Sale" selected="@(selectedListingType == "Sale")">Sale</option>
+            <option value="Swap" selected="@(selectedListingType == "Swap")">Swap</option>
         </select>
     </div>
 
     <!-- Listing Type Filter -->
-    <div class="col-md-2">
+    @* <div class="col-md-2">
         <select name="listingType" class="form-select" onchange="this.form.submit()">
             <option value="all">Sale &amp; Swap</option>
             @foreach (var lt in (SelectList)ViewBag.ListingTypes)
@@ -74,7 +73,7 @@
                 }
             }
         </select>
-    </div>
+    </div> *@
 
     <!-- Sort -->
     <div class="col-md-2">
