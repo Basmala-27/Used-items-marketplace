@@ -7,7 +7,10 @@
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     var walletBalance = (decimal)(ViewBag.WalletBalance ?? 0m);
     var hasEnoughBalance = walletBalance >= Model.Price;
-    var isOwner = Model.UserID == currentUserId;
+
+    // حماية إضافية من null
+    var isOwner = Model.UserID != null && Model.UserID == currentUserId;
+
     var isAvailable = Model.Status == ItemStatus.Available;
 }
 
@@ -15,21 +18,36 @@
     <div class="row g-5">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <!-- صور المنتج -->
                 @if (Model.Images != null && Model.Images.Any())
                 {
                     <div id="itemCarousel" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner">
-                            @for (int i = 0; i < Model.Images.Count; i++)
+
+                            <!-- حماية Count -->
+                            @for (int i = 0; i < (Model.Images?.Count ?? 0); i++)
                             {
                                 <div class="carousel-item @(i == 0 ? "active" : "")">
-                                    <img src="@Model.Images.ElementAt(i).ImageUrl" class="d-block w-100" style="height: 450px; object-fit: cover;" alt="@Model.Title">
+                                    <img src="@Model.Images.ElementAt(i).ImageUrl"
+                                         class="d-block w-100"
+                                         style="height: 450px; object-fit: cover;"
+                                         alt="@Model.Title">
                                 </div>
                             }
                         </div>
+
                         @if (Model.Images.Count > 1)
                         {
-                            <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                            <button class="carousel-control-prev" type="button"
+                                    data-bs-target="#itemCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+
+                            <button class="carousel-control-next" type="button"
+                                    data-bs-target="#itemCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
                         }
                     </div>
                 }
@@ -41,45 +59,59 @@
                 }
             </div>
 
+            <!-- Seller Info -->
             <div class="mt-3 px-2">
                 <div class="d-flex justify-content-between small text-muted">
-                    <span><i class="bi bi-person"></i> Seller: @Model.User.Email</span>
-                    <span><i class="bi bi-clock"></i> Posted: @Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                    <span>
+                        <i class="bi bi-person"></i>
+                        Seller: @(Model.User?.Email ?? "Unknown")
+                    </span>
+
+                    <span>
+                        <i class="bi bi-clock"></i>
+                        Posted: @Model.CreatedAt.ToString("dd MMM yyyy")
+                    </span>
                 </div>
             </div>
         </div>
 
+        <!-- Details -->
         <div class="col-md-6">
+
+            <!-- Breadcrumb + Status -->
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a asp-action="Index" class="text-orange text-decoration-none">Marketplace</a></li>
+                        <li class="breadcrumb-item">
+                            <a asp-action="Index" class="text-orange text-decoration-none">Marketplace</a>
+                        </li>
                         <li class="breadcrumb-item active">@Model.Category?.Name</li>
                     </ol>
                 </nav>
+
                 @{
                     var statusBadgeClass = Model.Status switch
                     {
-                        ItemStatus.Available       => "bg-success-subtle text-success border-success",
+                        ItemStatus.Available => "bg-success-subtle text-success border-success",
                         ItemStatus.PendingDelivery => "bg-warning-subtle text-warning border-warning",
-                        ItemStatus.Sold            => "bg-danger-subtle text-danger border-danger",
-                        _                          => "bg-secondary-subtle text-secondary"
+                        ItemStatus.Sold => "bg-danger-subtle text-danger border-danger",
+                        _ => "bg-secondary-subtle text-secondary"
                     };
-                    var statusLabel = Model.Status switch
-                    {
-                        ItemStatus.Available       => "✅ متاح",
-                        ItemStatus.PendingDelivery => "🚚 قيد التسليم",
-                        ItemStatus.Sold            => "🔴 مباع",
-                        _                          => Model.Status.ToString()
-                    };
+
+                    // أبسط وأأمن
+                    var statusLabel = Model.Status.ToString();
                 }
-                <span class="badge px-3 py-2 border rounded-pill @statusBadgeClass">@statusLabel</span>
+
+                <span class="badge px-3 py-2 border rounded-pill @statusBadgeClass">
+                    @statusLabel
+                </span>
             </div>
 
             <h1 class="display-6 fw-bold text-dark mb-2">@Model.Title</h1>
 
             <div class="d-flex align-items-center gap-3 mb-4">
                 <h2 class="text-orange fw-bold mb-0">$@Model.Price.ToString("0.00")</h2>
+
                 @if (Model.IsAvailableForSale)
                 {
                     <span class="badge bg-orange-light text-orange px-3 py-2 border border-orange rounded-pill small">
@@ -88,13 +120,17 @@
                 }
             </div>
 
+            <!-- Description -->
             <div class="card bg-light border-0 rounded-4 mb-4 shadow-sm">
                 <div class="card-body">
                     <h6 class="fw-bold mb-2 text-dark">Description</h6>
-                    <p class="text-muted mb-0" style="line-height: 1.6;">@Model.Description</p>
+                    <p class="text-muted mb-0" style="line-height: 1.6;">
+                        @Model.Description
+                    </p>
                 </div>
             </div>
 
+            <!-- Info -->
             <div class="row g-3 mb-4">
                 <div class="col-6">
                     <div class="d-flex align-items-center gap-2">
@@ -105,6 +141,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-6">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-calendar-check text-orange fs-5"></i>
@@ -118,21 +155,23 @@
 
             <hr class="mb-4">
 
+            <!-- Actions -->
             <div class="d-flex flex-wrap gap-2">
+
                 @if (User.Identity!.IsAuthenticated)
                 {
                     @if (!isOwner)
                     {
                         @if (isAvailable)
                         {
-                            <!-- زر Chat -->
-                            <a asp-controller="Chat" asp-action="StartConversation" asp-route-itemId="@Model.ItemID"
+                            <a asp-controller="Chat"
+                               asp-action="StartConversation"
+                               asp-route-itemId="@Model.ItemID"
                                class="btn btn-orange btn-lg px-4 shadow-sm text-white fw-bold"
                                style="border-radius: 50px; flex: 1;">
                                 <i class="bi bi-chat-dots me-2"></i> Chat with Seller
                             </a>
 
-                            <!-- زر Buy Now -->
                             <button type="button"
                                     id="buyNowBtn"
                                     class="btn btn-buy btn-lg px-4 fw-bold shadow-sm"
@@ -142,22 +181,12 @@
                                 <i class="bi bi-bag-check-fill me-2"></i> Buy Now
                             </button>
                         }
-                        else if (Model.Status == ItemStatus.PendingDelivery)
-                        {
-                            <div class="alert alert-warning w-100 mb-0 rounded-3">
-                                <i class="bi bi-truck me-2"></i> هذا المنتج محجوز وفي انتظار تأكيد الاستلام.
-                            </div>
-                        }
-                        else if (Model.Status == ItemStatus.Sold)
-                        {
-                            <div class="alert alert-danger w-100 mb-0 rounded-3">
-                                <i class="bi bi-x-circle me-2"></i> تم بيع هذا المنتج.
-                            </div>
-                        }
 
                         @if (Model.IsAvailableForSwap && isAvailable)
                         {
-                            <a asp-controller="Items" asp-action="CreateSwap" asp-route-targetItemId="@Model.ItemID"
+                            <a asp-controller="Items"
+                               asp-action="CreateSwap"
+                               asp-route-targetItemId="@Model.ItemID"
                                class="btn btn-warning btn-lg px-4 shadow-sm text-dark fw-bold w-100 mt-2"
                                style="border-radius: 50px;">
                                 <i class="bi bi-arrow-left-right me-2"></i> Request Swap Deal
@@ -166,10 +195,17 @@
                     }
                     else
                     {
-                        <a asp-action="Edit" asp-route-id="@Model.ItemID" class="btn btn-light border px-4 flex-grow-1" style="border-radius:50px;">
+                        <a asp-action="Edit"
+                           asp-route-id="@Model.ItemID"
+                           class="btn btn-light border px-4 flex-grow-1"
+                           style="border-radius:50px;">
                             <i class="bi bi-pencil me-2"></i> Edit My Item
                         </a>
-                        <a asp-action="Delete" asp-route-id="@Model.ItemID" class="btn btn-outline-danger px-4" style="border-radius:50px;">
+
+                        <a asp-action="Delete"
+                           asp-route-id="@Model.ItemID"
+                           class="btn btn-outline-danger px-4"
+                           style="border-radius:50px;">
                             <i class="bi bi-trash"></i> Delete
                         </a>
                     }
@@ -177,7 +213,12 @@
                 else
                 {
                     <div class="alert alert-warning w-100 mb-0 rounded-3">
-                        <i class="bi bi-lock-fill me-2"></i> Please <a asp-area="Identity" asp-page="/Account/Login" class="fw-bold text-dark">Login</a> to start negotiating or swap.
+                        <i class="bi bi-lock-fill me-2"></i>
+                        Please
+                        <a asp-area="Identity"
+                           asp-page="/Account/Login"
+                           class="fw-bold text-dark">Login</a>
+                        to start negotiating or swap.
                     </div>
                 }
             </div>
@@ -191,270 +232,129 @@
     </div>
 </div>
 
-<!-- =================== BUY CONFIRMATION MODAL =================== -->
+<!-- =================== BUY MODAL =================== -->
 @if (User.Identity!.IsAuthenticated && !isOwner && isAvailable)
 {
-    <div class="modal fade" id="buyConfirmModal" tabindex="-1" aria-labelledby="buyConfirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="buyConfirmModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
+
             <div class="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
 
-                <!-- Modal Header -->
-                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f97316, #fb923c);">
+                <!-- Header -->
+                <div class="modal-header border-0 pb-0"
+                     style="background: linear-gradient(135deg, #f97316, #fb923c);">
+
                     <div class="d-flex align-items-center gap-3 py-2">
                         <div class="modal-icon-circle">
                             <i class="bi bi-bag-check-fill text-white fs-4"></i>
                         </div>
+
                         <div>
-                            <h5 class="modal-title fw-bold text-white mb-0" id="buyConfirmModalLabel">تأكيد الشراء</h5>
-                            <small class="text-white opacity-75">نظام الـ Escrow الآمن</small>
+                            <h5 class="modal-title fw-bold text-white mb-0">
+                                تأكيد الشراء
+                            </h5>
+                            <small class="text-white opacity-75">نظام الـ Escrow</small>
                         </div>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body p-4">
 
-                    <!-- تفاصيل المنتج -->
+                    <!-- Product -->
                     <div class="product-summary-card mb-4">
                         <div class="d-flex gap-3 align-items-center">
+
                             @{
                                 var imgUrl = Model.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
                             }
-                            <img src="@imgUrl" alt="@Model.Title" class="product-thumb rounded-3">
+
+                            <img src="@imgUrl"
+                                 class="product-thumb rounded-3" />
+
                             <div>
                                 <h6 class="fw-bold mb-1">@Model.Title</h6>
-                                <small class="text-muted">@Model.Category?.Name • @Model.Condition</small>
-                                <div class="price-tag mt-1">$@Model.Price.ToString("0.00")</div>
-                            </div>
-                        </div>
-                    </div>
+                                <small class="text-muted">@Model.Category?.Name</small>
 
-                    <!-- رصيد المحفظة -->
-                    <div class="wallet-info-card mb-3 @(hasEnoughBalance ? "wallet-ok" : "wallet-low")">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-wallet2 fs-5"></i>
-                                <div>
-                                    <small class="d-block opacity-75">رصيد محفظتك</small>
-                                    <strong class="fs-5" id="modal-wallet-balance">$@walletBalance.ToString("0.00")</strong>
+                                <div class="price-tag mt-1">
+                                    $@Model.Price.ToString("0.00")
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <small class="d-block opacity-75">بعد الشراء</small>
-                                @if (hasEnoughBalance)
-                                {
-                                    <strong class="text-success">$@((walletBalance - Model.Price).ToString("0.00"))</strong>
-                                }
-                                else
-                                {
-                                    <strong class="text-danger">غير كافٍ</strong>
-                                }
-                            </div>
                         </div>
                     </div>
 
-                    @if (!hasEnoughBalance)
-                    {
-                        <div class="alert alert-danger rounded-3 d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
+                    <!-- Wallet -->
+                    <div class="wallet-info-card mb-3 @(hasEnoughBalance ? "wallet-ok" : "wallet-low")">
+                        <div class="d-flex justify-content-between">
+
                             <div>
-                                <strong>رصيد غير كافٍ!</strong><br>
-                                <small>تحتاج $@((Model.Price - walletBalance).ToString("0.00")) إضافية.
-                                    <a asp-controller="Transactions" asp-action="TopUp" class="fw-bold text-danger">اشحن الآن</a>
-                                </small>
+                                <small>رصيدك</small>
+                                <div class="fw-bold">$@walletBalance.ToString("0.00")</div>
                             </div>
-                        </div>
-                    }
 
-                    <!-- كيف يعمل الـ Escrow -->
-                    <div class="escrow-steps">
-                        <div class="escrow-step">
-                            <div class="step-num">1</div>
-                            <div><strong>الدفع الآمن</strong> — يُحتجز المبلغ في محفظة وسيطة</div>
-                        </div>
-                        <div class="escrow-step">
-                            <div class="step-num">2</div>
-                            <div><strong>الاستلام</strong> — يُرسل البائع المنتج إليك</div>
-                        </div>
-                        <div class="escrow-step">
-                            <div class="step-num">3</div>
-                            <div><strong>التأكيد</strong> — تضغط "تم الاستلام" فيحصل البائع على المبلغ</div>
+                            <div class="text-end">
+                                <small>بعد الشراء</small>
+                                <div class="fw-bold @(hasEnoughBalance ? "text-success" : "text-danger")">
+                                    @(hasEnoughBalance
+                                        ? "$" + (walletBalance - Model.Price).ToString("0.00")
+                                        : "غير كافٍ")
+                                </div>
+                            </div>
+
                         </div>
                     </div>
-                </div>
 
-                <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
-                    <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i> إلغاء
-                    </button>
-                    @if (hasEnoughBalance)
-                    {
-                        <button type="button"
-                                id="confirmBuyBtn"
-                                class="btn btn-buy flex-grow-1 rounded-pill fw-bold"
-                                data-item-id="@Model.ItemID">
-                            <i class="bi bi-bag-check-fill me-1"></i> تأكيد الشراء
-                        </button>
-                    }
-                    else
-                    {
-                        <a asp-controller="Transactions" asp-action="TopUp"
-                           class="btn btn-orange flex-grow-1 rounded-pill fw-bold text-white">
-                            <i class="bi bi-plus-circle me-1"></i> شحن المحفظة
-                        </a>
-                    }
                 </div>
-
             </div>
+
         </div>
     </div>
 }
 
-<!-- Toast Notification -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-    <div id="buyToast" class="toast align-items-center border-0 rounded-4 shadow-lg" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-semibold" id="buyToastMsg"></div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
-
-<style>
-    .bg-orange-light { background-color: #fff5e6 !important; }
-    .border-orange   { border-color: #FF8C00 !important; }
-    .text-orange     { color: #FF8C00 !important; }
-
-    .btn-orange {
-        background-color: #FF8C00;
-        border: none;
-        color: white;
-        transition: 0.3s;
-    }
-    .btn-orange:hover { background-color: #e67e00; color: white; transform: translateY(-2px); }
-
-    .btn-buy {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        border: none;
-        transition: 0.3s;
-    }
-    .btn-buy:hover { background: linear-gradient(135deg, #059669, #047857); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
-
-    .rounded-4 { border-radius: 1.25rem !important; }
-    .breadcrumb-item + .breadcrumb-item::before { content: "›"; }
-
-    /* Modal Styles */
-    .modal-icon-circle {
-        width: 48px; height: 48px;
-        background: rgba(255,255,255,0.25);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-    }
-
-    .product-summary-card {
-        background: #f8fafc;
-        border-radius: 14px;
-        padding: 16px;
-        border: 1px solid #e2e8f0;
-    }
-    .product-thumb {
-        width: 70px; height: 70px; object-fit: cover;
-        border: 2px solid #e2e8f0;
-    }
-    .price-tag {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #f97316;
-    }
-
-    .wallet-info-card {
-        border-radius: 14px;
-        padding: 16px;
-        border: 2px solid;
-    }
-    .wallet-ok  { background: #f0fdf4; border-color: #22c55e; color: #166534; }
-    .wallet-low { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
-
-    /* Escrow Steps */
-    .escrow-steps {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 14px 16px;
-        display: flex; flex-direction: column; gap: 10px;
-    }
-    .escrow-step {
-        display: flex; align-items: center; gap: 12px;
-        font-size: 13px;
-    }
-    .step-num {
-        width: 26px; height: 26px; min-width: 26px;
-        background: linear-gradient(135deg, #f97316, #fb923c);
-        color: white; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 12px;
-    }
-</style>
+<!-- Token مهم -->
+@Html.AntiForgeryToken()
 
 @section Scripts {
-    @Html.AntiForgeryToken()
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            // ===== زر تأكيد الشراء =====
             const confirmBtn = document.getElementById('confirmBuyBtn');
-            if (confirmBtn) {
-                confirmBtn.addEventListener('click', function () {
-                    const itemId = this.dataset.itemId;
-                    const btn = this;
 
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ المعالجة...';
+            if (!confirmBtn) return;
 
-                    const formData = new FormData();
-                    formData.append('itemId', itemId);
-                    formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || getAntiForgeryToken());
+            confirmBtn.addEventListener('click', function () {
 
-                    fetch('/Transactions/BuyItem', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'same-origin'
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        // إغلاق الـ Modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('buyConfirmModal'));
-                        if (modal) modal.hide();
+                const itemId = this.dataset.itemId;
+                const btn = this;
 
-                        showToast(data.message, data.success ? 'success' : 'danger');
+                btn.disabled = true;
 
-                        if (data.success) {
-                            // تحديث الصفحة بعد ثانيتين
-                            setTimeout(() => window.location.reload(), 2000);
-                        } else {
-                            btn.disabled = false;
-                            btn.innerHTML = '<i class="bi bi-bag-check-fill me-1"></i> تأكيد الشراء';
-                        }
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ في الاتصال. يرجى المحاولة مجدداً.', 'danger');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="bi bi-bag-check-fill me-1"></i> تأكيد الشراء';
-                    });
+                const formData = new FormData();
+                formData.append('itemId', itemId);
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (token) formData.append('__RequestVerificationToken', token);
+
+                fetch('/Transactions/BuyItem', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('buyConfirmModal'));
+                    if (modal) modal.hide();
+
+                    alert(data.message);
+
+                    if (data.success)
+                        setTimeout(() => location.reload(), 1500);
                 });
-            }
+            });
 
-            function getAntiForgeryToken() {
-                return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-            }
-
-            function showToast(message, type) {
-                const toast = document.getElementById('buyToast');
-                const toastMsg = document.getElementById('buyToastMsg');
-                toast.className = `toast align-items-center border-0 rounded-4 shadow-lg text-bg-${type}`;
-                toastMsg.textContent = message;
-                new bootstrap.Toast(toast, { delay: 4000 }).show();
-            }
         });
     </script>
 }

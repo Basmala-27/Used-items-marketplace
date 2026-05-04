@@ -267,5 +267,68 @@ namespace MarketplaceApp.Controllers
             return View(model);
         }
 
+        // ===================== EDIT =====================
+
+        // GET: Items/Edit/5
+        public async Task<IActionResult> Edit(int id)
+        {
+            // نجيب الـ item مع الكاتيجوري (أحسن من FindAsync بس)
+            var item = await _context.Items
+                .Include(i => i.Category)
+                .FirstOrDefaultAsync(i => i.ItemID == id);
+
+            if (item == null)
+                return NotFound();
+
+            // تأكد إن اليوزر هو صاحب الـ item
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (item.UserID != userId)
+                return Unauthorized();
+
+            // تجهيز الـ dropdown
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", item.CategoryID);
+
+            return View(item);
+        }
+
+
+        // POST: Items/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Item item)
+        {
+            if (id != item.ItemID)
+                return NotFound();
+
+            // نجيب الأصل من الداتابيز (عشان نحافظ على الداتا المهمة)
+            var existingItem = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == id);
+
+            if (existingItem == null)
+                return NotFound();
+
+            // تأكد من الملكية
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (existingItem.UserID != userId)
+                return Unauthorized();
+
+            if (ModelState.IsValid)
+            {
+                // نحافظ على الداتا اللي مينفعش تتغير
+                item.UserID = existingItem.UserID;
+                item.CreatedAt = existingItem.CreatedAt;
+
+                // مهم: نجيب الـ Images القديمة عشان ما تتشالش بالغلط
+                item.Images = existingItem.Images;
+
+                _context.Update(item);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", item.CategoryID);
+            return View(item);
+        }
+
     }
 }
