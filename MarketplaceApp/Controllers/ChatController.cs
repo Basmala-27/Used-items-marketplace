@@ -1,4 +1,4 @@
-﻿using MarketplaceApp.Data;
+using MarketplaceApp.Data;
 using MarketplaceApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,10 +14,12 @@ namespace MarketplaceApp.Controllers
     public class ChatController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly Services.INotificationService _notificationService;
 
-        public ChatController(ApplicationDbContext context)
+        public ChatController(ApplicationDbContext context, Services.INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // 🔹 كل الشاتات
@@ -64,7 +66,7 @@ namespace MarketplaceApp.Controllers
         }
         // 🔹 إرسال رسالة
         [HttpPost]
-        public IActionResult SendMessage(int conversationId, string content)
+        public async Task<IActionResult> SendMessage(int conversationId, string content)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -79,7 +81,16 @@ namespace MarketplaceApp.Controllers
             };
 
             _context.Messages.Add(message);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
+            var conversation = await _context.Conversations.FindAsync(conversationId);
+            if (conversation != null)
+            {
+                var otherUserId = conversation.BuyerID == userId ? conversation.SellerID : conversation.BuyerID;
+                var senderUser = await _context.Users.FindAsync(userId);
+                string senderName = senderUser?.Name ?? "User";
+                await _notificationService.NotifyNewMessageAsync(otherUserId, conversationId, senderName);
+            }
 
             return RedirectToAction("Chat", new { id = conversationId });
         }

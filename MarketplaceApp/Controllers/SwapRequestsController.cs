@@ -89,13 +89,7 @@ namespace MarketplaceApp.Controllers
                 await _context.SaveChangesAsync();
 
                 // إشعار للمرسل
-                await _notificationService.SendAsync(
-                    swapRequest.RequesterId,
-                    NotificationType.OfferRejected,
-                    swapRequest.SwapRequestId,
-                    $"❌ تم رفض طلب تبادلك لـ \"{swapRequest.RequestedItem.Title}\".",
-                    Url.Action("MySentRequests", "SwapRequests")
-                );
+                await _notificationService.NotifySwapRequestRejectedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
                 TempData["Message"] = "تم رفض الطلب.";
                 return RedirectToAction(nameof(MyRequests));
@@ -153,13 +147,7 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
                 // 6. إشعارات للطرفين
-                await _notificationService.SendAsync(
-                    swapRequest.RequesterId,
-                    NotificationType.OfferAccepted,
-                    swapRequest.SwapRequestId,
-                    $"🔄 تم قبول طلب تبادلك! \"{swapRequest.RequestedItem.Title}\" الآن ملكك.",
-                    Url.Action("MySentRequests", "SwapRequests")
-                );
+                await _notificationService.NotifySwapRequestAcceptedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
                 await _notificationService.SendAsync(
                     userId!,

@@ -16,11 +16,13 @@ namespace MarketplaceApp.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly Services.INotificationService _notificationService;
 
-        public ItemsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public ItemsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, Services.INotificationService notificationService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort, string? searchTerm)
@@ -236,6 +238,12 @@ namespace MarketplaceApp.Controllers
 
                 _context.SwapRequests.Add(swapRequest);
                 await _context.SaveChangesAsync();
+
+                var requestedItem = await _context.Items.FindAsync(model.RequestedItemId);
+                if (requestedItem != null)
+                {
+                    await _notificationService.NotifySwapRequestAsync(requestedItem.UserID, swapRequest.SwapRequestId, requestedItem.Title);
+                }
 
                 TempData["Success"] = "تم إرسال طلب التبادل بنجاح!";
                 return RedirectToAction("Details", new { id = model.RequestedItemId });

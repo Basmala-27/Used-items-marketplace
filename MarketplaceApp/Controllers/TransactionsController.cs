@@ -178,13 +178,7 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
                 // 5. إشعار للبائع
-                await _notificationService.SendAsync(
-                    item.UserID,
-                    NotificationType.Order,
-                    buyRequest.BuyRequestId,
-                    $"🛒 طلب شراء جديد لمنتجك \"{item.Title}\" بسعر ${item.Price:0.00} — قبل أو ارفض الطلب",
-                    Url.Action("SellerRequests", "Transactions")
-                );
+                await _notificationService.NotifyBuyRequestAsync(item.UserID, buyRequest.BuyRequestId, item.Title, item.Price);
 
                 return Json(new { success = true, message = "تم إرسال طلب الشراء! في انتظار موافقة البائع. 🎉" });
             }
@@ -255,13 +249,7 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
                 // 4. إشعار للمشتري
-                await _notificationService.SendAsync(
-                    buyRequest.BuyerID,
-                    NotificationType.Order,
-                    buyRequest.BuyRequestId,
-                    $"✅ البائع قبل طلب شرائك لـ \"{buyRequest.Item.Title}\"! جارٍ الشحن. أكّد استلامك لتحرير المبلغ.",
-                    Url.Action("MyOrders", "Transactions")
-                );
+                await _notificationService.NotifyBuyRequestAcceptedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title);
 
                 return Json(new { success = true, message = $"قبلت الطلب وتم تحويل ${halfAmount:0.00} (50%) لمحفظتك فوراً! ✅" });
             }
@@ -328,13 +316,7 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
                 // 4. إشعار للمشتري
-                await _notificationService.SendAsync(
-                    buyRequest.BuyerID,
-                    NotificationType.Order,
-                    buyRequest.BuyRequestId,
-                    $"❌ رفض البائع طلب شرائك لـ \"{buyRequest.Item.Title}\". تم استرداد ${buyRequest.Amount:0.00} لمحفظتك.",
-                    Url.Action("MyOrders", "Transactions")
-                );
+                await _notificationService.NotifyBuyRequestRejectedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title, buyRequest.Amount);
 
                 return Json(new { success = true, message = "تم رفض الطلب. رُدّ المبلغ كاملاً للمشتري." });
             }
@@ -409,13 +391,7 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
                 // 5. إشعار للبائع
-                await _notificationService.SendAsync(
-                    buyRequest.SellerID,
-                    NotificationType.Order,
-                    buyRequest.BuyRequestId,
-                    $"✅ أكد المشتري استلام \"{buyRequest.Item.Title}\". تم تحويل ${remainingAmount:0.00} (50%) الأخيرة لمحفظتك!",
-                    Url.Action("Index", "Transactions")
-                );
+                await _notificationService.NotifyOrderCompletedAsync(buyRequest.SellerID, buyRequest.BuyRequestId, buyRequest.Item.Title, remainingAmount);
 
                 return Json(new { success = true, message = $"تم تأكيد الاستلام! تم تحويل ${remainingAmount:0.00} للبائع. المنتج الآن ملكك! 🎉" });
             }

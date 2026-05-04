@@ -1,4 +1,4 @@
-﻿namespace MarketplaceApp.Enums
+namespace MarketplaceApp.Enums
 {
     public enum NotificationType
     {
@@ -9,7 +9,9 @@
         Info,
         Order,
         Message,
-        Favorite
+        Favorite,
+        SwapRequest,
+        Transaction
 
     }
 }

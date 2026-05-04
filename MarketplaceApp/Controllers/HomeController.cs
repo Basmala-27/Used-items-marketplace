@@ -47,14 +47,7 @@ namespace MarketplaceApp.Controllers
                 if (userId != null)
                 {
 
-                    try
-                    {
-                        await _notificationService.SendAsync(userId, NotificationType.Info, null, "Welcome for comming Back!!");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error sending initial notification");
-                    }
+
 
 
                     userFavoriteIds = await _context.Favorites

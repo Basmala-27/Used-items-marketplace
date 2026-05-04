@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 
 using MarketplaceApp.Models;
@@ -9,13 +9,16 @@ namespace MarketplaceApp.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly Services.INotificationService _notificationService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            Services.INotificationService notificationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _notificationService = notificationService;
         }
 
         // ---------------- REGISTER ----------------
@@ -116,6 +119,11 @@ namespace MarketplaceApp.Controllers
 
             if (result.Succeeded)
             {
+                try
+                {
+                    await _notificationService.SendAsync(user.Id, Enums.NotificationType.Info, null, "Welcome for comming Back!!");
+                }
+                catch { } // Ignore if it fails
                 return RedirectToAction("Index", "Home");
             }
 
