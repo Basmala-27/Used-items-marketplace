@@ -1,4 +1,4 @@
-﻿using MarketplaceApp.Models;
+using MarketplaceApp.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
@@ -23,6 +23,7 @@ namespace MarketplaceApp.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SwapRequest> SwapRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<BuyRequest> BuyRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,6 +105,25 @@ namespace MarketplaceApp.Data
                 entity.HasOne(t => t.Seller)
                     .WithMany(u => u.Sales)
                     .HasForeignKey(t => t.SellerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ================= BUY REQUEST =================
+            modelBuilder.Entity<BuyRequest>(entity =>
+            {
+                entity.HasOne(b => b.Buyer)
+                    .WithMany()
+                    .HasForeignKey(b => b.BuyerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Seller)
+                    .WithMany()
+                    .HasForeignKey(b => b.SellerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Item)
+                    .WithMany()
+                    .HasForeignKey(b => b.ItemID)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 

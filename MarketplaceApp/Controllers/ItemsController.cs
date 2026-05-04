@@ -1,4 +1,4 @@
-﻿using MarketplaceApp.Data;
+using MarketplaceApp.Data;
 using MarketplaceApp.Models;
 using MarketplaceApp.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -96,6 +96,15 @@ namespace MarketplaceApp.Controllers
                 .FirstOrDefaultAsync(m => m.ItemID == id);
 
             if (item == null) return NotFound();
+
+            // جلب رصيد المحفظة للمستخدم الحالي (للـ Buy Modal)
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var currentUser = await _context.Users.FindAsync(userId);
+                ViewBag.WalletBalance = currentUser?.WalletBalance ?? 0;
+                ViewBag.PendingBalance = currentUser?.PendingBalance ?? 0;
+            }
 
             return View(item);
         }

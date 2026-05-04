@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -116,6 +116,22 @@
             <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
             <span>Chats</span>
         </a>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="@Url.Action("MyOrders", "Transactions")"
+               class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "active" : "")"
+               style="color: #f59e0b;">
+                <i class="bi @(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "bi-wallet-fill" : "bi-wallet2")"></i>
+                <span style="font-size:9px;">Orders</span>
+            </a>
+            <a href="@Url.Action("SellerRequests", "Transactions")"
+               class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "SellerRequests" ? "active" : "")"
+               style="color: #8b5cf6;">
+                <i class="bi @(ViewContext.RouteData.Values["action"]?.ToString() == "SellerRequests" ? "bi-inbox-fill" : "bi-inbox")"></i>
+                <span style="font-size:9px;">Requests</span>
+            </a>
+        }
 
         <a href="@(User.Identity.IsAuthenticated ? "/profile" : "/Account/Login")"
            class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "active" : "")">

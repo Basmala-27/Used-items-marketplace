@@ -1,5 +1,4 @@
-﻿using MarketplaceApp.Enums;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
+using MarketplaceApp.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,20 +7,18 @@ namespace MarketplaceApp.Models
     public class Transaction
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TransactionID { get; set; }
 
-        [Required(ErrorMessage = "Item reference is required")]
         [Display(Name = "Purchased Item")]
-        public int ItemID { get; set; }
+        public int? ItemID { get; set; }
 
         [Required]
         [Display(Name = "Buyer")]
         public string BuyerID { get; set; } = string.Empty;
 
-        [Required]
         [Display(Name = "Seller")]
-        public string SellerID { get; set; } = string.Empty;
+        public string? SellerID { get; set; }
 
         [Required(ErrorMessage = "Final sale price is required")]
         [Range(0.01, 10000000, ErrorMessage = "Price must be a positive value")]
@@ -35,7 +32,16 @@ namespace MarketplaceApp.Models
 
         [Required]
         [Display(Name = "Payment Type")]
-        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Wallet;
+
+        /// <summary>نوع العملية: شراء أو إيداع (شحن رصيد) أو استرداد</summary>
+        [Required]
+        [Display(Name = "Transaction Type")]
+        public TransactionType Type { get; set; } = TransactionType.Purchase;
+
+        [StringLength(500)]
+        [Display(Name = "Notes")]
+        public string? Notes { get; set; }
 
         [Required]
         [Display(Name = "Transaction Date")]
@@ -46,7 +52,7 @@ namespace MarketplaceApp.Models
         // --- Navigation Properties ---
 
         [ForeignKey(nameof(ItemID))]
-        public virtual Item Item { get; set; } = null!;
+        public virtual Item? Item { get; set; }
 
         [ForeignKey(nameof(BuyerID))]
         [InverseProperty("Purchases")] 
@@ -54,10 +60,7 @@ namespace MarketplaceApp.Models
 
         [ForeignKey(nameof(SellerID))]
         [InverseProperty("Sales")] 
-        public virtual ApplicationUser Seller { get; set; } = null!;
-
-  
-
+        public virtual ApplicationUser? Seller { get; set; }
 
         [Display(Name = "Customer Review")]
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

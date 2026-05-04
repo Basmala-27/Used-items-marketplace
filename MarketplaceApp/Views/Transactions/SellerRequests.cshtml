@@ -1,0 +1,415 @@
+@using MarketplaceApp.Models
+@using MarketplaceApp.Enums
+@{
+    ViewData["Title"] = "الطلبات الواردة";
+    var buyRequests  = (List<BuyRequest>)(ViewBag.BuyRequests   ?? new List<BuyRequest>());
+    var swapRequests = (List<SwapRequest>)(ViewBag.SwapRequests ?? new List<SwapRequest>());
+    int totalPending = buyRequests.Count + swapRequests.Count;
+}
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
+        <div>
+            <h1 class="fw-bold mb-1" style="font-size:2rem;">
+                <i class="bi bi-inbox-fill text-orange me-2"></i>الطلبات الواردة
+            </h1>
+            <p class="text-muted mb-0">إدارة طلبات الشراء والتبادل الخاصة بمنتجاتك</p>
+        </div>
+        @if (totalPending > 0)
+        {
+            <span class="badge bg-orange px-4 py-2 rounded-pill fs-6">@totalPending طلب جديد</span>
+        }
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success rounded-4 shadow-sm mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Message"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger rounded-4 shadow-sm mb-4">
+            <i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="requestsTabs">
+        <li class="nav-item">
+            <button class="nav-link active tab-pill" data-bs-toggle="pill" data-bs-target="#buyTab">
+                <i class="bi bi-bag-check me-1"></i>طلبات الشراء
+                @if (buyRequests.Count > 0)
+                {
+                    <span class="badge bg-danger ms-1 rounded-pill">@buyRequests.Count</span>
+                }
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link tab-pill" data-bs-toggle="pill" data-bs-target="#swapTab">
+                <i class="bi bi-arrow-left-right me-1"></i>طلبات التبادل
+                @if (swapRequests.Count > 0)
+                {
+                    <span class="badge bg-danger ms-1 rounded-pill">@swapRequests.Count</span>
+                }
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ======================== BUY REQUESTS TAB ======================== -->
+        <div class="tab-pane fade show active" id="buyTab">
+            @if (!buyRequests.Any())
+            {
+                <div class="empty-state text-center py-5">
+                    <i class="bi bi-bag-x display-1 text-muted opacity-25"></i>
+                    <h5 class="mt-4 text-muted">لا توجد طلبات شراء حالياً</h5>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-4">
+                    @foreach (var req in buyRequests)
+                    {
+                        var imgUrl = req.Item?.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
+                        var halfAmt = Math.Round(req.Amount / 2, 2);
+                        var isAccepted = req.Status == BuyRequestStatus.SellerAccepted;
+
+                        <div class="request-card @(isAccepted ? "card-accepted" : "card-pending")">
+                            <div class="row g-0 align-items-center">
+
+                                <!-- صورة المنتج -->
+                                <div class="col-auto">
+                                    <div class="req-img-wrap">
+                                        <img src="@imgUrl" alt="@req.Item?.Title" class="req-img rounded-3">
+                                    </div>
+                                </div>
+
+                                <!-- تفاصيل -->
+                                <div class="col px-4">
+                                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+                                        <div>
+                                            <h5 class="fw-bold mb-1">@req.Item?.Title</h5>
+                                            <div class="d-flex gap-3 text-muted small flex-wrap">
+                                                <span><i class="bi bi-person me-1"></i>@(req.Buyer?.Name ?? req.Buyer?.Email)</span>
+                                                <span><i class="bi bi-calendar me-1"></i>@req.CreatedAt.ToString("dd MMM yyyy - hh:mm tt")</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="req-price">$@req.Amount.ToString("0.00")</div>
+                                            @{
+                                                var statusBadge = req.Status switch {
+                                                    BuyRequestStatus.Pending        => ("badge-warn", "⏳ بانتظار ردك"),
+                                                    BuyRequestStatus.SellerAccepted => ("badge-info", "🚚 بانتظار الاستلام"),
+                                                    _ => ("badge-secondary", req.Status.ToString())
+                                                };
+                                            }
+                                            <span class="req-badge @statusBadge.Item1 mt-1 d-inline-block">@statusBadge.Item2</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Escrow Info -->
+                                    <div class="escrow-bar mt-3">
+                                        <div class="escrow-step @(isAccepted ? "done" : "active")">
+                                            <i class="bi bi-shield-check-fill me-1"></i>
+                                            <span>50% الأولى لك عند القبول: <strong>$@halfAmt.ToString("0.00")</strong></span>
+                                        </div>
+                                        <div class="escrow-sep">→</div>
+                                        <div class="escrow-step @(isAccepted ? "active" : "")">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            <span>50% الثانية بعد تأكيد المشتري: <strong>$@halfAmt.ToString("0.00")</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- أزرار -->
+                                    @if (req.Status == BuyRequestStatus.Pending)
+                                    {
+                                        <div class="d-flex gap-2 mt-3 flex-wrap">
+                                            <button type="button"
+                                                    class="btn btn-success rounded-pill fw-bold px-4 action-btn"
+                                                    data-action="accept"
+                                                    data-id="@req.BuyRequestId"
+                                                    data-title="@req.Item?.Title"
+                                                    data-half="$@halfAmt.ToString("0.00")">
+                                                <i class="bi bi-check-circle-fill me-1"></i> قبول الطلب
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger rounded-pill px-4 action-btn"
+                                                    data-action="reject"
+                                                    data-id="@req.BuyRequestId"
+                                                    data-title="@req.Item?.Title">
+                                                <i class="bi bi-x-circle me-1"></i> رفض
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (isAccepted)
+                                    {
+                                        <div class="alert-bar alert-info-bar mt-3">
+                                            <i class="bi bi-truck me-2"></i>
+                                            أرسلت المنتج؟ في انتظار تأكيد المشتري للاستلام لتحويل الـ 50% الأخيرة.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- ======================== SWAP REQUESTS TAB ======================== -->
+        <div class="tab-pane fade" id="swapTab">
+            @if (!swapRequests.Any())
+            {
+                <div class="empty-state text-center py-5">
+                    <i class="bi bi-arrow-left-right display-1 text-muted opacity-25"></i>
+                    <h5 class="mt-4 text-muted">لا توجد طلبات تبادل حالياً</h5>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-4">
+                    @foreach (var req in swapRequests)
+                    {
+                        var myItemImg     = req.RequestedItem?.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
+                        var offeredImg    = req.OfferedItem?.Images?.FirstOrDefault()?.ImageUrl   ?? "/images/no-image.png";
+
+                        <div class="request-card card-pending">
+                            <div class="row g-0 align-items-center">
+
+                                <!-- منتجي (المطلوب) -->
+                                <div class="col-md-4 p-4 text-center swap-col">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-2">منتجك</small>
+                                    <img src="@myItemImg" class="swap-thumb rounded-3 mb-2" alt="@req.RequestedItem?.Title">
+                                    <h6 class="fw-bold mb-1">@req.RequestedItem?.Title</h6>
+                                    <span class="text-orange fw-bold">$@req.RequestedItem?.Price</span>
+                                </div>
+
+                                <!-- أيقونة التبادل -->
+                                <div class="col-md-1 text-center py-3">
+                                    <div class="swap-icon-circle">
+                                        <i class="bi bi-arrow-left-right text-orange fs-5"></i>
+                                    </div>
+                                </div>
+
+                                <!-- المنتج المعروض -->
+                                <div class="col-md-4 p-4 text-center swap-col">
+                                    <small class="text-uppercase text-muted fw-bold d-block mb-2">يعرض عليك</small>
+                                    <img src="@offeredImg" class="swap-thumb rounded-3 mb-2" alt="@req.OfferedItem?.Title">
+                                    <h6 class="fw-bold mb-1">@req.OfferedItem?.Title</h6>
+                                    <span class="text-success fw-bold">$@req.OfferedItem?.Price</span>
+                                </div>
+
+                                <!-- أزرار -->
+                                <div class="col-md-3 p-4 text-center border-start">
+                                    <small class="d-block text-muted mb-3">
+                                        <i class="bi bi-person me-1"></i>@(req.Requester?.Name ?? req.Requester?.Email)
+                                    </small>
+                                    <form asp-controller="SwapRequests" asp-action="Respond" method="post" class="d-grid gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@req.SwapRequestId" />
+                                        <input type="hidden" name="status" value="Accepted" />
+                                        <button type="submit" class="btn btn-success rounded-pill fw-bold shadow-sm">
+                                            <i class="bi bi-check-circle-fill me-1"></i>قبول التبادل
+                                        </button>
+                                    </form>
+                                    <form asp-controller="SwapRequests" asp-action="Respond" method="post" class="d-grid mt-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@req.SwapRequestId" />
+                                        <input type="hidden" name="status" value="Rejected" />
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill">
+                                            رفض
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Accept Modal -->
+<div class="modal fade" id="acceptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-check-circle-fill me-2"></i>قبول الطلب</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-1">سيتم قبول طلب شراء <strong id="acceptItemTitle"></strong></p>
+                <p class="text-muted small">سيُحوَّل <strong id="acceptHalf" class="text-success"></strong> (50%) لمحفظتك فوراً.</p>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
+                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" id="doAccept" class="btn btn-success flex-grow-1 rounded-pill fw-bold">
+                    <i class="bi bi-check-circle-fill me-1"></i>نعم، قبول
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 bg-danger">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-x-circle-fill me-2"></i>رفض الطلب</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-1">هل تريد رفض طلب شراء <strong id="rejectItemTitle"></strong>؟</p>
+                <p class="text-muted small">سيُعاد المبلغ كاملاً للمشتري وسيعود المنتج للبيع.</p>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
+                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" id="doReject" class="btn btn-danger flex-grow-1 rounded-pill fw-bold">رفض الطلب</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
+    <div id="reqToast" class="toast align-items-center border-0 rounded-4 shadow-lg" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="reqToastMsg"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-orange { color: #f97316 !important; }
+    .bg-orange   { background: #f97316 !important; }
+
+    .tab-pill {
+        border-radius: 50px !important;
+        font-weight: 600;
+        padding: 10px 24px;
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+        transition: 0.2s;
+    }
+    .tab-pill.active {
+        background: linear-gradient(135deg, #f97316, #fb923c) !important;
+        color: white !important;
+    }
+
+    .request-card {
+        background: white;
+        border-radius: 20px;
+        border: 2px solid;
+        overflow: hidden;
+        transition: 0.25s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .request-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .card-pending  { border-color: #fde68a; }
+    .card-accepted { border-color: #bbf7d0; }
+
+    .req-img-wrap { width: 110px; height: 110px; margin: 16px 0 16px 16px; }
+    .req-img { width: 100%; height: 100%; object-fit: cover; border: 2px solid #e2e8f0; }
+
+    .req-price  { font-size: 1.4rem; font-weight: 800; color: #f97316; }
+    .req-badge  { padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; }
+    .badge-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    .escrow-bar {
+        display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+        background: #f8fafc; border-radius: 12px;
+        padding: 10px 14px; font-size: 13px; color: #475569;
+    }
+    .escrow-step       { display: flex; align-items: center; }
+    .escrow-step.done  { color: #16a34a; }
+    .escrow-step.active { color: #f97316; font-weight: 600; }
+    .escrow-sep        { color: #94a3b8; font-size: 1.1rem; }
+
+    .alert-bar      { border-radius: 12px; padding: 10px 14px; font-size: 13px; }
+    .alert-info-bar { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* Swap */
+    .swap-col  { border-right: 1px solid #f1f5f9; }
+    .swap-thumb { width: 80px; height: 80px; object-fit: cover; border: 2px solid #e2e8f0; }
+    .swap-icon-circle {
+        width: 45px; height: 45px;
+        background: white; border-radius: 50%;
+        border: 2px solid #f1f5f9;
+        display: inline-flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .empty-state { animation: fadeIn 0.5s ease; }
+    @@keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+</style>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        let pendingActionId = null;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        // ===== فتح Modals =====
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                pendingActionId = this.dataset.id;
+                if (this.dataset.action === 'accept') {
+                    document.getElementById('acceptItemTitle').textContent = this.dataset.title;
+                    document.getElementById('acceptHalf').textContent = this.dataset.half;
+                    new bootstrap.Modal(document.getElementById('acceptModal')).show();
+                } else {
+                    document.getElementById('rejectItemTitle').textContent = this.dataset.title;
+                    new bootstrap.Modal(document.getElementById('rejectModal')).show();
+                }
+            });
+        });
+
+        // ===== قبول =====
+        document.getElementById('doAccept')?.addEventListener('click', function () {
+            callAction('/Transactions/SellerAcceptBuy', pendingActionId, 'acceptModal', this);
+        });
+
+        // ===== رفض =====
+        document.getElementById('doReject')?.addEventListener('click', function () {
+            callAction('/Transactions/SellerRejectBuy', pendingActionId, 'rejectModal', this);
+        });
+
+        function callAction(url, id, modalId, btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ...';
+
+            const fd = new FormData();
+            fd.append('buyRequestId', id);
+            fd.append('__RequestVerificationToken', token);
+
+            fetch(url, { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById(modalId))?.hide();
+                    showToast(data.message, data.success ? 'success' : 'danger');
+                    if (data.success) setTimeout(() => location.reload(), 2000);
+                    else { btn.disabled = false; btn.innerHTML = 'إعادة'; }
+                })
+                .catch(() => {
+                    showToast('حدث خطأ في الاتصال.', 'danger');
+                    btn.disabled = false;
+                });
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('reqToast');
+            t.className = `toast align-items-center border-0 rounded-4 shadow-lg text-bg-${type}`;
+            document.getElementById('reqToastMsg').textContent = msg;
+            new bootstrap.Toast(t, { delay: 4000 }).show();
+        }
+    </script>
+}

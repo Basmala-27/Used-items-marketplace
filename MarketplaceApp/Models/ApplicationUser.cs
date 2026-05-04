@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MarketplaceApp.Models
 {
@@ -28,7 +29,18 @@ namespace MarketplaceApp.Models
        
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-      
+        // ===== محفظة الـ Escrow =====
+
+        /// <summary>الرصيد الفعلي للمستخدم (متاح للإنفاق)</summary>
+        [Column(TypeName = "decimal(10,2)")]
+        [Display(Name = "Wallet Balance")]
+        public decimal WalletBalance { get; set; } = 0;
+
+        /// <summary>المبلغ المحتجز في الـ Escrow (صفقات قيد التسليم)</summary>
+        [Column(TypeName = "decimal(10,2)")]
+        [Display(Name = "Pending Balance")]
+        public decimal PendingBalance { get; set; } = 0;
+
 
         public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 

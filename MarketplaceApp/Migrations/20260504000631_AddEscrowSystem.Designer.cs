@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504000631_AddEscrowSystem")]
+    partial class AddEscrowSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -187,49 +190,6 @@ namespace MarketplaceApp.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("MarketplaceApp.Models.BuyRequest", b =>
-                {
-                    b.Property<int>("BuyRequestId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<string>("BuyerID")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("EscrowTransactionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ItemID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SellerID")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("BuyRequestId");
-
-                    b.HasIndex("BuyerID");
-
-                    b.HasIndex("ItemID");
-
-                    b.HasIndex("SellerID");
-
-                    b.ToTable("BuyRequests");
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Category", b =>
@@ -723,33 +683,6 @@ namespace MarketplaceApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
-                });
-
-            modelBuilder.Entity("MarketplaceApp.Models.BuyRequest", b =>
-                {
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", "Buyer")
-                        .WithMany()
-                        .HasForeignKey("BuyerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", "Seller")
-                        .WithMany()
-                        .HasForeignKey("SellerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Buyer");
-
-                    b.Navigation("Item");
-
-                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
