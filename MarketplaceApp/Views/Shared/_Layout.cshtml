@@ -103,6 +103,13 @@
             <span>Categories</span>
         </a>
 
+        
+
+        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chat") : "/Account/Login")"
+           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "active" : "")">
+            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
+            <span>Chats</span>
+        </a>
         <a href="@(User.Identity.IsAuthenticated? Url.Action("Create", "Items") : "/Account/Login")"
            class="nav-item sell-btn">
             <div class="plus-icon">
@@ -110,13 +117,6 @@
             </div>
             <span>Post</span>
         </a>
-
-        <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chat") : "/Account/Login")"
-           class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "active" : "")">
-            <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
-            <span>Chats</span>
-        </a>
-
         @if (User.Identity.IsAuthenticated)
         {
             <a href="@Url.Action("MyOrders", "Transactions")"

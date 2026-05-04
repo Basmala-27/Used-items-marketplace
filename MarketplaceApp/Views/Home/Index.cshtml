@@ -42,7 +42,7 @@
     </div>
 
     <!-- 🟡 HERO SLIDER -->
-    <div id="heroSlider" class="carousel slide hero-slider" data-bs-ride="carousel">
+    <div id="heroSlider" class="carousel slide hero-slider" data-bs-ride="carousel" data-bs-interval="3000">
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <img src="~/images/categories/elc.png" alt="Electronics">
@@ -50,7 +50,8 @@
                 <div class="hero-text">
                     <h1>Amazing Deals on Electronics</h1>
                     <p>Buy & Sell Easily Near You</p>
-                    <button class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</button>
+              
+                    <a asp-controller="Items" asp-action="Index" asp-route-searchTerm="Electronics" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</a>
                 </div>
             </div>
 
@@ -60,7 +61,8 @@
                 <div class="hero-text">
                     <h1>Find Anything You Need</h1>
                     <p>Best Marketplace Experience</p>
-                    <button class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Explore</button>
+                
+                    <a asp-controller="Items" asp-action="Index" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Explore</a>
                 </div>
             </div>
         </div>
@@ -83,7 +85,7 @@
     <div class="row row-cols-2 row-cols-md-4 g-4">
         @if (Model != null)
         {
-            @foreach (var item in Model)
+           @foreach (var item in Model.Take(8))
             {
                 var imageUrl = item.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
                 var statusClass = item.Status switch
