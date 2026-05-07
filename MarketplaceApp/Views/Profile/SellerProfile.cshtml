@@ -1,0 +1,255 @@
+@model MarketplaceApp.Models.SellerProfileVM
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Seller Profile - " + Model.Seller.Name;
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container py-5">
+    <!-- Seller Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+        <div class="card-body p-5">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center mb-4 mb-md-0">
+                    @if (!string.IsNullOrEmpty(Model.Seller.ProfileImage))
+                    {
+                        <img src="@Model.Seller.ProfileImage" alt="@Model.Seller.Name" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #fff;" />
+                    }
+                    else
+                    {
+                        <img src="/images/default-avatar.png" alt="Default Avatar" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #fff;" />
+                    }
+                </div>
+                <div class="col-md-9">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap">
+                        <div>
+                            <h2 class="fw-bold mb-1">@Model.Seller.Name</h2>
+                            <p class="text-muted mb-2"><i class="bi bi-calendar3"></i> Member since @Model.Seller.CreatedAt.ToString("MMMM yyyy")</p>
+                            @if (!string.IsNullOrEmpty(Model.Seller.Location))
+                            {
+                                <p class="text-muted mb-2"><i class="bi bi-geo-alt"></i> @Model.Seller.Location</p>
+                            }
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="text-warning fs-4 me-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Round(Model.AverageRating))
+                                        {
+                                            <i class="bi bi-star-fill"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-star"></i>
+                                        }
+                                    }
+                                </div>
+                                <span class="fs-5 fw-bold text-dark">@Model.AverageRating.ToString("0.0")</span>
+                                <span class="text-muted ms-2">(@Model.TotalReviews reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Form Section (If Eligible) -->
+    @if (Model.EligibleTransactionIdToReview.HasValue)
+    {
+        <div class="card border-0 shadow-sm rounded-4 mb-5" style="background-color: #f8f9fa;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3"><i class="bi bi-pencil-square text-orange me-2"></i> Leave a Review</h4>
+                <p class="text-muted">You recently completed a transaction with @Model.Seller.Name. Please share your experience.</p>
+                
+                <form asp-controller="Reviews" asp-action="SubmitReview" method="post">
+                    <input type="hidden" name="transactionId" value="@Model.EligibleTransactionIdToReview.Value" />
+                    <input type="hidden" name="sellerId" value="@Model.Seller.Id" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rating</label>
+                        <div class="rating-input fs-3 text-warning">
+                            @for(int i = 5; i >= 1; i--)
+                            {
+                                <input type="radio" name="rating" id="star@(i)" value="@i" class="d-none" required />
+                                <label for="star@(i)"><i class="bi bi-star"></i></label>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-bold">Comment</label>
+                        <textarea class="form-control rounded-3" id="comment" name="comment" rows="3" placeholder="Tell others about your experience..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-orange rounded-pill px-4 fw-bold text-white">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- Content Tabs -->
+    <ul class="nav nav-tabs nav-fill border-0 mb-4" id="sellerTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill fw-bold" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab" aria-selected="true">
+                Available Items <span class="badge bg-secondary ms-1">@Model.AvailableItems.Count</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill fw-bold" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-selected="false">
+                Reviews <span class="badge bg-secondary ms-1">@Model.TotalReviews</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="sellerTabsContent">
+        <!-- Items Tab -->
+        <div class="tab-pane fade show active" id="items" role="tabpanel">
+            @if (Model.AvailableItems.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    @foreach (var item in Model.AvailableItems)
+                    {
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 product-card">
+                                @if (item.Images != null && item.Images.Any())
+                                {
+                                    <img src="@item.Images.First().ImageUrl" class="card-img-top rounded-top-4" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex justify-content-center align-items-center rounded-top-4" style="height: 200px;">
+                                        <i class="bi bi-image text-muted fs-1"></i>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold">@item.Title</h5>
+                                    <p class="text-orange fw-bold fs-5 mb-2">$@item.Price.ToString("0.00")</p>
+                                    <p class="card-text text-muted small text-truncate">@item.Description</p>
+                                </div>
+                                <div class="card-footer bg-white border-0 pb-3 text-center">
+                                    <a asp-controller="Items" asp-action="Details" asp-route-id="@item.ItemID" class="btn btn-outline-orange rounded-pill w-100">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-box-seam text-muted fs-1 mb-3"></i>
+                    <h5 class="text-muted">No items available currently.</h5>
+                </div>
+            }
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade" id="reviews" role="tabpanel">
+            @if (Model.Reviews.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        @if (!string.IsNullOrEmpty(review.Reviewer.ProfileImage))
+                                        {
+                                            <img src="@review.Reviewer.ProfileImage" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="@review.Reviewer.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded-circle me-3 d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
+                                                <i class="bi bi-person text-muted fs-4"></i>
+                                            </div>
+                                        }
+                                        
+                                        <div>
+                                            <h6 class="fw-bold mb-0">@review.Reviewer.Name</h6>
+                                            <small class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-warning mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <p class="mb-0">@review.Comment</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-chat-left-text text-muted fs-1 mb-3"></i>
+                    <h5 class="text-muted">No reviews yet.</h5>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-orange { color: #FF8C00 !important; }
+    .bg-orange { background-color: #FF8C00 !important; }
+    .btn-orange { background-color: #FF8C00; border-color: #FF8C00; }
+    .btn-orange:hover { background-color: #e67e00; border-color: #e67e00; }
+    .btn-outline-orange { color: #FF8C00; border-color: #FF8C00; }
+    .btn-outline-orange:hover { background-color: #FF8C00; color: white; }
+    
+    .nav-tabs .nav-link { color: #495057; background-color: #f8f9fa; border: none; margin: 0 5px; }
+    .nav-tabs .nav-link.active { color: white; background-color: #FF8C00; }
+    
+    .product-card { transition: transform 0.3s; }
+    .product-card:hover { transform: translateY(-5px); }
+
+    /* Rating Stars Radio Buttons */
+    .rating-input {
+        direction: rtl; /* This makes the stars fill from left to right properly when using general sibling combinator */
+        display: inline-block;
+    }
+    .rating-input label {
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .rating-input label i {
+        font-size: 1.5rem;
+    }
+    .rating-input input:checked ~ label i::before,
+    .rating-input label:hover i::before,
+    .rating-input label:hover ~ label i::before {
+        content: "\f586"; /* bi-star-fill */
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Simple script to handle showing toast messages if there are any
+        document.addEventListener("DOMContentLoaded", function() {
+            var successMsg = '@TempData["SuccessMessage"]';
+            var errorMsg = '@TempData["ErrorMessage"]';
+            
+            if (successMsg) {
+                // You could use a nicer toast here if the app has a global toast setup
+                alert(successMsg);
+            }
+            if (errorMsg) {
+                alert(errorMsg);
+            }
+        });
+    </script>
+}

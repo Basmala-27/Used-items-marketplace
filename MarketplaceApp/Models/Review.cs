@@ -7,7 +7,7 @@ namespace MarketplaceApp.Models
     public class Review
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ReviewID { get; set; }
 
         [Required(ErrorMessage = "Transaction reference is required")]

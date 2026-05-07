@@ -42,11 +42,18 @@
             </div>
 
             <div class="mt-3 px-2">
-                <div class="d-flex justify-content-between small text-muted">
-                    <span><i class="bi bi-person"></i> Seller: @Model.User.Email</span>
+                <div class="d-flex justify-content-between small text-muted align-items-center">
+                    <a asp-controller="Profile" asp-action="SellerProfile" asp-route-id="@Model.UserID" class="text-decoration-none text-dark fw-bold" style="transition: color 0.2s;">
+                        <i class="bi bi-person-circle fs-5 me-1 align-middle"></i> 
+                        <span class="align-middle seller-link-hover">Seller: @Model.User.Name</span>
+                    </a>
                     <span><i class="bi bi-clock"></i> Posted: @Model.CreatedAt.ToString("dd MMM yyyy")</span>
                 </div>
             </div>
+            
+            <style>
+                .seller-link-hover:hover { color: #FF8C00; }
+            </style>
         </div>
 
         <div class="col-md-6">

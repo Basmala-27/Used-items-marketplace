@@ -1,4 +1,4 @@
-﻿@model List<Message>
+@model List<Message>
 @using System.Security.Claims
 @{
     var convo = ViewBag.Conversation as Conversation;
@@ -11,7 +11,7 @@
 <div class="chat-main-wrapper">
     <header class="chat-header">
         <div class="header-info">
-            <div class="user-meta">
+            <a asp-controller="Profile" asp-action="SellerProfile" asp-route-id="@otherUser?.Id" class="user-meta text-decoration-none">
                 <!-- صورة المستخدم مع منطق الصورة الافتراضية -->
                 @if (otherUser != null && !string.IsNullOrEmpty(otherUser.ProfileImage))
                 {
@@ -22,10 +22,14 @@
                     <img src="~/images/default-avatar.png" class="header-avatar" alt="Default User" />
                 }
                 <div class="text-meta">
-                    <h6>@(otherUser?.Name ?? "User")</h6>
-                    <small>Discussion about @convo?.Item?.Title</small>
+                    <h6 class="seller-link-hover">@(otherUser?.Name ?? "User")</h6>
+                    <small class="text-muted">Discussion about @convo?.Item?.Title</small>
                 </div>
-            </div>
+            </a>
+            
+            <style>
+                .seller-link-hover:hover { color: #FF8C00 !important; }
+            </style>
         </div>
     </header>
 

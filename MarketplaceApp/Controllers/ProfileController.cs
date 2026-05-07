@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MarketplaceApp.Models;
 using MarketplaceApp.Data;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-
+using MarketplaceApp.Enums;
 namespace MarketplaceApp.Controllers
 {
     [Authorize] // لضمان أن المستخدمين المسجلين فقط هم من يصلون لهذه الأفعال
@@ -185,6 +185,66 @@ namespace MarketplaceApp.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // 7. Seller Profile (Public View)
+        [AllowAnonymous]
+        public async Task<IActionResult> SellerProfile(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var seller = await _userManager.FindByIdAsync(id);
+            if (seller == null) return NotFound();
+
+            var availableItems = await _context.Items
+                .Where(i => i.UserID == id && i.Status == ItemStatus.Available)
+                .Include(i => i.Images)
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
+
+            var reviews = await _context.Reviews
+                .Include(r => r.Reviewer)
+                .Where(r => r.SellerID == id)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            double averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+            int totalReviews = reviews.Count;
+
+            int? eligibleTransactionIdToReview = null;
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (currentUserId != null && currentUserId != id)
+                {
+                    var completedTransaction = await _context.Transactions
+                        .Where(t => t.BuyerID == currentUserId && t.SellerID == id && t.Status == OrderStatus.Completed)
+                        .OrderByDescending(t => t.CreatedAt)
+                        .FirstOrDefaultAsync();
+
+                    if (completedTransaction != null)
+                    {
+                        var hasReviewed = await _context.Reviews
+                            .AnyAsync(r => r.ReviewerID == currentUserId && r.SellerID == id);
+                        if (!hasReviewed)
+                        {
+                            eligibleTransactionIdToReview = completedTransaction.TransactionID;
+                        }
+                    }
+                }
+            }
+
+            var vm = new SellerProfileVM
+            {
+                Seller = seller,
+                AverageRating = averageRating,
+                TotalReviews = totalReviews,
+                AvailableItems = availableItems,
+                Reviews = reviews,
+                EligibleTransactionIdToReview = eligibleTransactionIdToReview
+            };
+
+            return View(vm);
         }
     }
 }

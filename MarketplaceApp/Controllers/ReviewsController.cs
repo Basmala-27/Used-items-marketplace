@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MarketplaceApp.Data;
 using MarketplaceApp.Models;
+using System.Security.Claims;
 
 namespace MarketplaceApp.Controllers
 {
@@ -159,6 +160,52 @@ namespace MarketplaceApp.Controllers
         private bool ReviewExists(int id)
         {
             return _context.Reviews.Any(e => e.ReviewID == id);
+        }
+
+        // POST: Reviews/SubmitReview
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> SubmitReview(int transactionId, string sellerId, int rating, string comment)
+        {
+            var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (currentUserId == null) return Unauthorized();
+
+            // Validate that the transaction exists, belongs to the current user, is completed, and is with the seller
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.TransactionID == transactionId && t.BuyerID == currentUserId && t.SellerID == sellerId && t.Status == MarketplaceApp.Enums.OrderStatus.Completed);
+
+            if (transaction == null)
+            {
+                TempData["ErrorMessage"] = "Invalid transaction or you are not eligible to review.";
+                return RedirectToAction("SellerProfile", "Profile", new { id = sellerId });
+            }
+
+            // Validate that the user hasn't already reviewed the seller
+            var hasReviewed = await _context.Reviews
+                .AnyAsync(r => r.ReviewerID == currentUserId && r.SellerID == sellerId);
+
+            if (hasReviewed)
+            {
+                TempData["ErrorMessage"] = "You have already reviewed this seller.";
+                return RedirectToAction("SellerProfile", "Profile", new { id = sellerId });
+            }
+
+            var review = new Review
+            {
+                TransactionID = transactionId,
+                ReviewerID = currentUserId,
+                SellerID = sellerId,
+                Rating = rating,
+                Comment = string.IsNullOrEmpty(comment) ? string.Empty : comment,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Review submitted successfully!";
+            return RedirectToAction("SellerProfile", "Profile", new { id = sellerId });
         }
     }
 }
