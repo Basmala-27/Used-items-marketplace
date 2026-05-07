@@ -13,33 +13,24 @@
         <div class="col-md-10">
             <dl class="row">
 
-                <!-- Title -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Title)</dt>
                 <dd class="col-sm-9 fw-bold">@Html.DisplayFor(model => model.Title)</dd>
 
-                <!-- Description -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Description)</dt>
                 <dd class="col-sm-9 text-muted">@Html.DisplayFor(model => model.Description)</dd>
 
-                <!-- Price -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Price)</dt>
                 <dd class="col-sm-9 text-success fw-bold">@Model.Price.ToString("C")</dd>
 
-                <!-- Condition & Location -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Condition)</dt>
                 <dd class="col-sm-9">@Html.DisplayFor(model => model.Condition)</dd>
 
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Location)</dt>
                 <dd class="col-sm-9">@Html.DisplayFor(model => model.Location)</dd>
 
-                <!-- Category -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Category)</dt>
-                <dd class="col-sm-9">
-                    @* Õ„«Ì… „‰ null ·Ê „›Ì‘ Include *@
-                    @Model.Category?.Name
-                </dd>
+                <dd class="col-sm-9">@Model.Category?.Name</dd>
 
-                <!-- Available For -->
                 <dt class="col-sm-3">Available For</dt>
                 <dd class="col-sm-9">
                     @if (Model.IsAvailableForSale)
@@ -52,7 +43,6 @@
                     }
                 </dd>
 
-                <!-- Status -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Status)</dt>
                 <dd class="col-sm-9">
                     <span class="badge border text-dark bg-light">
@@ -60,13 +50,9 @@
                     </span>
                 </dd>
 
-                <!-- Owner -->
                 <dt class="col-sm-3">Owner</dt>
-                <dd class="col-sm-9">
-                    @Model.User?.Email
-                </dd>
+                <dd class="col-sm-9">@Model.User?.Email</dd>
 
-                <!-- Date -->
                 <dt class="col-sm-3">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
                 <dd class="col-sm-9">@Html.DisplayFor(model => model.CreatedAt)</dd>
 
@@ -75,6 +61,8 @@
             <div class="mt-4 shadow-sm p-3 bg-light rounded border">
 
                 <form asp-action="Delete"
+                      asp-route-id="@Model.ItemID"
+                      method="post"
                       onsubmit="return confirm('Are you sure you want to delete this item?');">
 
                     <input type="hidden" asp-for="ItemID" />
