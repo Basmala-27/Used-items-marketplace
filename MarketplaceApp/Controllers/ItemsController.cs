@@ -227,6 +227,7 @@ namespace MarketplaceApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // Include all navigation properties that could block deletion
             var item = await _context.Items
                 .Include(i => i.Images)
                 .FirstOrDefaultAsync(i => i.ItemID == id);
@@ -236,13 +237,13 @@ namespace MarketplaceApp.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != userId) return Unauthorized();
 
+            // 1. Delete Physical Image Files from the Server
             if (item.Images != null)
             {
                 foreach (var img in item.Images)
                 {
                     var relativePath = img.ImageUrl?.TrimStart('/');
                     var filePath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath ?? "");
-
                     if (!string.IsNullOrEmpty(relativePath) && System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
@@ -250,10 +251,25 @@ namespace MarketplaceApp.Controllers
                 }
             }
 
+            // 2. Handle Related Records Manually (Insurance for SQLite)
+
+            // Remove Favorites linked to this item
+            var favorites = _context.Favorites.Where(f => f.ItemID == id);
+            _context.Favorites.RemoveRange(favorites);
+
+            // Remove Conversations (and their Messages via Cascade) linked to this item
+            var conversations = _context.Conversations.Where(c => c.ItemID == id);
+            _context.Conversations.RemoveRange(conversations);
+
+            // Remove BuyRequests linked to this item
+            var buyRequests = _context.BuyRequests.Where(b => b.ItemID == id);
+            _context.BuyRequests.RemoveRange(buyRequests);
+
+            // 3. Finally, remove the item
             _context.Items.Remove(item);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Item deleted successfully.";
+            TempData["Success"] = "Item and all related data deleted successfully.";
             return RedirectToAction("Index", "Home");
         }
     }

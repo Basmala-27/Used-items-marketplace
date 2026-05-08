@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508141719_AddComplaintsSystem")]
+    partial class AddComplaintsSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -365,9 +368,6 @@ namespace MarketplaceApp.Migrations
                     b.Property<int>("ItemID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("ItemID1")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("UserID")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -375,8 +375,6 @@ namespace MarketplaceApp.Migrations
                     b.HasKey("FavoriteID");
 
                     b.HasIndex("ItemID");
-
-                    b.HasIndex("ItemID1");
 
                     b.HasIndex("UserID", "ItemID")
                         .IsUnique();
@@ -862,14 +860,10 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Favorite", b =>
                 {
                     b.HasOne("Item", "Item")
-                        .WithMany()
+                        .WithMany("Favorites")
                         .HasForeignKey("ItemID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Item", null)
-                        .WithMany("Favorites")
-                        .HasForeignKey("ItemID1");
 
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "User")
                         .WithMany("Favorites")

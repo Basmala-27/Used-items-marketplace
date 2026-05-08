@@ -48,6 +48,13 @@
                                 <span class="fs-5 fw-bold text-dark">@Model.AverageRating.ToString("0.0")</span>
                                 <span class="text-muted ms-2">(@Model.TotalReviews reviews)</span>
                             </div>
+                            
+                            @if (User.Identity!.IsAuthenticated && currentUserId != Model.Seller.Id)
+                            {
+                                <a asp-controller="Complaints" asp-action="Create" asp-route-targetUserId="@Model.Seller.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3 mt-2">
+                                    <i class="bi bi-flag-fill"></i> Report Seller
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

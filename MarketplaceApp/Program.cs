@@ -64,7 +64,7 @@ using (var scope = app.Services.CreateScope())
     }
 
     // 2. البحث عن المستخدم اللي إيميله كذا عشان نرقّيه
-    var adminEmail = "tasneem@admin.com"; // اكتبي إيميلك الحقيقي هنا
+    var adminEmail = "basmala7@gmail.com"; // اكتبي إيميلك الحقيقي هنا
     var user = await userManager.FindByEmailAsync(adminEmail);
 
     // 3. لو اليوزر موجود ولسه مش أدمن، خليه أدمن فوراً

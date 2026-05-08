@@ -1,4 +1,4 @@
-﻿using MarketplaceApp.Models;
+using MarketplaceApp.Models;
 using MarketplaceApp.Enums;
 using System;
 using System.Collections.Generic;
@@ -86,4 +86,6 @@ public class Item
     public virtual ICollection<SwapRequest> RequestedInSwaps { get; set; } = new List<SwapRequest>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+    public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
 }

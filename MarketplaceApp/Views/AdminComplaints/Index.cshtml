@@ -1,0 +1,110 @@
+@model IEnumerable<MarketplaceApp.ViewModels.AdminComplaintListVM>
+@using MarketplaceApp.Models
+
+@{
+    ViewData["Title"] = "Admin Complaints Dashboard";
+    Layout = "_AdminLayout";
+    var currentStatus = ViewBag.CurrentStatus as ComplaintStatus?;
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-shield-exclamation text-danger me-2"></i> Complaints Management
+        </h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-2 align-items-center">
+                <label class="fw-bold mb-0">Filter by Status:</label>
+                
+                <div class="btn-group" role="group">
+                    <a asp-action="Index" asp-route-status="" class="btn @(currentStatus == null ? "btn-dark" : "btn-outline-dark")">All</a>
+                    <a asp-action="Index" asp-route-status="@ComplaintStatus.Pending" class="btn @(currentStatus == ComplaintStatus.Pending ? "btn-warning text-dark" : "btn-outline-warning")">Pending</a>
+                    <a asp-action="Index" asp-route-status="@ComplaintStatus.UnderReview" class="btn @(currentStatus == ComplaintStatus.UnderReview ? "btn-info text-white" : "btn-outline-info")">Under Review</a>
+                    <a asp-action="Index" asp-route-status="@ComplaintStatus.Resolved" class="btn @(currentStatus == ComplaintStatus.Resolved ? "btn-success" : "btn-outline-success")">Resolved</a>
+                    <a asp-action="Index" asp-route-status="@ComplaintStatus.Dismissed" class="btn @(currentStatus == ComplaintStatus.Dismissed ? "btn-secondary" : "btn-outline-secondary")">Dismissed</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Complainant</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var rowClass = !item.IsReadByAdmin ? "table-warning fw-bold" : "";
+                            <tr class="@rowClass">
+                                <td>#@item.Id</td>
+                                <td>
+                                    @item.Title
+                                    @if (!item.IsReadByAdmin)
+                                    {
+                                        <span class="badge bg-danger ms-1">New</span>
+                                    }
+                                </td>
+                                <td>@item.ComplainantName</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.TargetUserName))
+                                    {
+                                        <span class="badge bg-light text-dark border"><i class="bi bi-person me-1"></i> @item.TargetUserName</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.TargetItemTitle))
+                                    {
+                                        <span class="badge bg-light text-dark border ms-1"><i class="bi bi-box me-1"></i> @item.TargetItemTitle</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.Status switch
+                                        {
+                                            ComplaintStatus.Pending => "bg-warning text-dark",
+                                            ComplaintStatus.UnderReview => "bg-info text-white",
+                                            ComplaintStatus.Resolved => "bg-success",
+                                            ComplaintStatus.Dismissed => "bg-secondary",
+                                            _ => "bg-primary"
+                                        };
+                                    }
+                                    <span class="badge rounded-pill @badgeClass">@item.Status</span>
+                                </td>
+                                <td>@item.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-dark rounded-pill">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No complaints found for the selected filter.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

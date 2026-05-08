@@ -207,6 +207,12 @@
                                 <i class="bi bi-arrow-left-right me-2"></i> Request Swap Deal
                             </a>
                         }
+                        
+                        <div class="w-100 text-center mt-3">
+                            <a asp-controller="Complaints" asp-action="Create" asp-route-targetItemId="@Model.ItemID" class="text-danger text-decoration-none small">
+                                <i class="bi bi-flag-fill"></i> Report Item
+                            </a>
+                        </div>
                     }
                     else
                     {

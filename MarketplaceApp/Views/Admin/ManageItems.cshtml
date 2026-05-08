@@ -1,8 +1,9 @@
-﻿@using MarketplaceApp.Models
+@using MarketplaceApp.Models
 @model IEnumerable<Item>
 
 @{
     ViewData["Title"] = "Manage Items";
+    Layout = "_AdminLayout"; // تأكد أن هذا الاسم يطابق ملف اللايوت الجديد
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -35,9 +36,29 @@
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
-                                        <img src="@(item.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png")"
+                                        @{
+                                            // منطق جلب الصورة وإصلاح المسار
+                                            var firstImage = item.Images?.FirstOrDefault()?.ImageUrl;
+                                            string finalSrc = "/images/no-image.png"; // صورة افتراضية لو مفيش صورة
+
+                                            if (!string.IsNullOrEmpty(firstImage))
+                                            {
+                                                if (firstImage.StartsWith("http"))
+                                                {
+                                                    finalSrc = firstImage;
+                                                }
+                                                else
+                                                {
+                                                    // نضمن أن المسار يبدأ بـ / لكي يبحث في wwwroot مباشرة
+                                                    finalSrc = firstImage.StartsWith("/") ? firstImage : "/" + firstImage;
+                                                }
+                                            }
+                                        }
+                                        <img src="@finalSrc"
                                              class="rounded-3 border me-3"
-                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.src='/images/no-image.png';">
+                                        
                                         <div>
                                             <div class="fw-bold">@item.Title</div>
                                             <small class="text-muted">ID: #@item.ItemID</small>
@@ -45,7 +66,7 @@
                                     </div>
                                 </td>
                                 <td class="fw-bold text-success">$@item.Price</td>
-                                <td><i class="bi bi-person me-1"></i>@item.User?.UserName</td>
+                                <td><i class="bi bi-person me-1"></i>@(item.User?.UserName ?? "Unknown")</td>
                                 <td><span class="badge rounded-pill bg-info text-dark px-3">@item.Status</span></td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
@@ -65,6 +86,15 @@
                             </tr>
                         }
                     }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                No items found in the database.
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -72,30 +102,31 @@
 </div>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // 1. التعامل مع زرار الحذف بشكل شيك
-        $('.btn-delete').on('click', function (e) {
-            var form = $(this).closest('form');
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!',
-                border: 'none'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+        $(document).ready(function () {
+            // التعامل مع زر الحذف
+            $('.btn-delete').on('click', function (e) {
+                var form = $(this).closest('form');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
-        });
 
-        // 2. إظهار رسالة النجاح بعد الحذف
-        @if (TempData["Success"] != null)
-        {
+            // إظهار رسائل النجاح
+            @if (TempData["Success"] != null)
+            {
                 <text>
                 Swal.fire({
                     icon: 'success',
@@ -105,6 +136,7 @@
                     showConfirmButton: false
                 });
                 </text>
-        }
+            }
+        });
     </script>
 }
