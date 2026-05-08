@@ -1,11 +1,13 @@
 using MarketplaceApp.Data;
-using MarketplaceApp.Models;
 using MarketplaceApp.Enums;
+using MarketplaceApp.Models;
+using MarketplaceApp.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -25,6 +27,7 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
+        // ===================== INDEX =====================
         public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort, string? searchTerm)
         {
             var query = _context.Items
@@ -36,12 +39,9 @@ namespace MarketplaceApp.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 var normalizedSearch = searchTerm.Trim().ToLower();
-
-
                 query = query.Where(i => i.Title.ToLower().Contains(normalizedSearch) ||
                                          i.Description.ToLower().Contains(normalizedSearch));
             }
-
 
             if (categoryId.HasValue)
                 query = query.Where(i => i.CategoryID == categoryId.Value);
@@ -57,7 +57,6 @@ namespace MarketplaceApp.Controllers
                     query = query.Where(i => i.IsAvailableForSale);
             }
 
-
             query = sort switch
             {
                 "price_asc" => query.OrderBy(i => i.Price),
@@ -66,7 +65,6 @@ namespace MarketplaceApp.Controllers
             };
 
             var items = await query.ToListAsync();
-
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
@@ -78,15 +76,10 @@ namespace MarketplaceApp.Controllers
             ViewBag.SelectedSort = sort;
             ViewBag.SearchTerm = searchTerm;
 
-            if (categoryId.HasValue)
-            {
-                var category = await _context.Categories.FindAsync(categoryId.Value);
-                ViewBag.CategoryName = category?.Name;
-            }
-
             return View(items);
         }
-        // GET: Items/Details/5
+
+        // ===================== DETAILS =====================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -99,19 +92,10 @@ namespace MarketplaceApp.Controllers
 
             if (item == null) return NotFound();
 
-            // جلب رصيد المحفظة للمستخدم الحالي (للـ Buy Modal)
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var currentUser = await _context.Users.FindAsync(userId);
-                ViewBag.WalletBalance = currentUser?.WalletBalance ?? 0;
-                ViewBag.PendingBalance = currentUser?.PendingBalance ?? 0;
-            }
-
             return View(item);
         }
 
-        // GET: Items/Create
+        // ===================== CREATE =====================
         public IActionResult Create()
         {
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name");
@@ -120,7 +104,6 @@ namespace MarketplaceApp.Controllers
             return View();
         }
 
-        // POST: Items/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ItemCreateViewModel vm)
@@ -137,7 +120,7 @@ namespace MarketplaceApp.Controllers
                     CategoryID = vm.CategoryID,
                     IsAvailableForSale = vm.IsAvailableForSale,
                     IsAvailableForSwap = vm.IsAvailableForSwap,
-                    Status = ItemStatus.Available, // FIXED: enum instead of string
+                    Status = ItemStatus.Available,
                     CreatedAt = DateTime.Now,
                     UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
                 };
@@ -145,127 +128,133 @@ namespace MarketplaceApp.Controllers
                 if (vm.ImageFiles != null && vm.ImageFiles.Count > 0)
                 {
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-
                     if (!Directory.Exists(uploadsFolder))
                         Directory.CreateDirectory(uploadsFolder);
 
                     foreach (var file in vm.ImageFiles)
                     {
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                        string uniqueFileName = Guid.NewGuid() + "_" + Path.GetFileName(file.FileName);
                         string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            await file.CopyToAsync(fileStream);
+                            await file.CopyToAsync(stream);
                         }
 
-                        newItem.Images.Add(new ItemImage
-                        {
-                            ImageUrl = "/uploads/" + uniqueFileName
-                        });
+                        newItem.Images.Add(new ItemImage { ImageUrl = "/uploads/" + uniqueFileName });
                     }
                 }
 
                 _context.Add(newItem);
                 await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
-
-            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
-            ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
-
 
             return View(vm);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> CreateSwap(int targetItemId)
+        // ===================== EDIT =====================
+        public async Task<IActionResult> Edit(int id)
         {
-            var targetItem = await _context.Items.FindAsync(targetItemId);
-            if (targetItem == null) return NotFound();
+            var item = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == id);
+            if (item == null) return NotFound();
 
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // 1. هنجيب كل منتجاتك بدون أي شروط عشان نتأكد إن الـ UserID صح
-            var allMyItems = await _context.Items
-                .Where(i => i.UserID == currentUserId)
-                .ToListAsync();
-
-            // 2. هنجيب المنتجات اللي بتحقق الشرط بس (سعر + متاح)
-            decimal priceTolerance = targetItem.Price * 0.20m;
-            decimal minPrice = targetItem.Price - priceTolerance;
-            decimal maxPrice = targetItem.Price + priceTolerance;
-
-            var filteredItems = allMyItems
-                .Where(i => i.Status == ItemStatus.Available &&
-                            i.Price >= minPrice &&
-                            i.Price <= maxPrice)
-                .ToList();
-
-            // نبعت البيانات للـ View
-            ViewBag.TotalMyItems = allMyItems.Count; // عدد منتجاتك الكلي
-            ViewBag.MinAllowedPrice = minPrice;
-            ViewBag.MaxAllowedPrice = maxPrice;
-
-            var viewModel = new CreateSwapViewModel
+            var vm = new ItemEditViewModel
             {
-                RequestedItemId = targetItem.ItemID,
-                RequestedItemName = targetItem.Title,
-                RequestedItemPrice = targetItem.Price,
-                MyAvailableItems = filteredItems // اللي هيظهر في الـ Dropdown
+                ItemID = item.ItemID,
+                Title = item.Title,
+                Description = item.Description,
+                Price = item.Price,
+                Condition = item.Condition,
+                Location = item.Location,
+                Status = item.Status,
+                CategoryID = item.CategoryID,
+                UserID = item.UserID
             };
 
-            return View(viewModel);
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
+            ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
+
+            return View(vm);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateSwap(CreateSwapViewModel model)
+        public async Task<IActionResult> Edit(ItemEditViewModel vm)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var item = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == vm.ItemID);
+            if (item == null) return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var swapRequest = new SwapRequest
-                {
-                    RequesterId = currentUserId,
-                    OfferedItemId = model.OfferedItemId,
-                    RequestedItemId = model.RequestedItemId,
-                    Status = OfferStatus.Pending,
-                    CreatedAt = DateTime.Now
-                };
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
+                ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
 
-                _context.SwapRequests.Add(swapRequest);
-                await _context.SaveChangesAsync();
-
-                var requestedItem = await _context.Items.FindAsync(model.RequestedItemId);
-                if (requestedItem != null)
-                {
-                    await _notificationService.NotifySwapRequestAsync(requestedItem.UserID, swapRequest.SwapRequestId, requestedItem.Title);
-                }
-
-                TempData["Success"] = "تم إرسال طلب التبادل بنجاح!";
-                return RedirectToAction("Details", new { id = model.RequestedItemId });
+                return View(vm);
             }
 
-            // --- لو وصلنا هنا يبقى فيه خطأ (Validation Error) ---
+            item.Title = vm.Title;
+            item.Description = vm.Description;
+            item.Price = vm.Price;
+            item.Condition = vm.Condition;
+            item.Location = vm.Location;
+            item.Status = vm.Status;
+            item.CategoryID = vm.CategoryID;
 
-            // 1. اجمعي كل الأخطاء وحطيها في الـ ViewBag عشان تظهر في الصفحة
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            ViewBag.ValidationErrors = errors;
+            await _context.SaveChangesAsync();
 
-            // 2. لازم نعيد تحميل البيانات عشان الـ Dropdown ما تضربش
-            var targetItem = await _context.Items.FindAsync(model.RequestedItemId);
-            model.RequestedItemName = targetItem?.Title ?? "Unknown";
-            model.RequestedItemPrice = targetItem?.Price ?? 0;
-
-            model.MyAvailableItems = await _context.Items
-                .Where(i => i.UserID == currentUserId && i.Status == ItemStatus.Available)
-                .ToListAsync();
-
-            return View(model);
+            return RedirectToAction("Index", "Home");
         }
 
+        // ===================== DELETE =====================
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var item = await _context.Items
+                .Include(i => i.Category)
+                .FirstOrDefaultAsync(i => i.ItemID == id);
+
+            if (item == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (item.UserID != userId) return Unauthorized();
+
+            return View(item);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var item = await _context.Items
+                .Include(i => i.Images)
+                .FirstOrDefaultAsync(i => i.ItemID == id);
+
+            if (item == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (item.UserID != userId) return Unauthorized();
+
+            if (item.Images != null)
+            {
+                foreach (var img in item.Images)
+                {
+                    var relativePath = img.ImageUrl?.TrimStart('/');
+                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath ?? "");
+
+                    if (!string.IsNullOrEmpty(relativePath) && System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+            }
+
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Item deleted successfully.";
+            return RedirectToAction("Index", "Home");
+        }
     }
 }
