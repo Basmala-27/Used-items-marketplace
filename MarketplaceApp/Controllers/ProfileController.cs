@@ -196,8 +196,17 @@ namespace MarketplaceApp.Controllers
             var seller = await _userManager.FindByIdAsync(id);
             if (seller == null) return NotFound();
 
-            var availableItems = await _context.Items
-                .Where(i => i.UserID == id && i.Status == ItemStatus.Available)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isOwner = currentUserId == id;
+
+            var itemsQuery = _context.Items.Where(i => i.UserID == id);
+            
+            if (!isOwner)
+            {
+                itemsQuery = itemsQuery.Where(i => i.Status == ItemStatus.Available);
+            }
+
+            var availableItems = await itemsQuery
                 .Include(i => i.Images)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
@@ -214,7 +223,6 @@ namespace MarketplaceApp.Controllers
             int? eligibleTransactionIdToReview = null;
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (currentUserId != null && currentUserId != id)
                 {
                     var completedTransaction = await _context.Transactions

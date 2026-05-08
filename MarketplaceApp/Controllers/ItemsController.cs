@@ -34,6 +34,7 @@ namespace MarketplaceApp.Controllers
                 .Include(i => i.Category)
                 .Include(i => i.User)
                 .Include(i => i.Images)
+                .Where(i => i.Status == ItemStatus.Available)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -91,6 +92,36 @@ namespace MarketplaceApp.Controllers
                 .FirstOrDefaultAsync(m => m.ItemID == id);
 
             if (item == null) return NotFound();
+
+            // Privacy Protection Logic
+            if (item.Status != ItemStatus.Available)
+            {
+                bool canAccess = false;
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                if (User.IsInRole("Admin") || item.UserID == currentUserId)
+                {
+                    canAccess = true;
+                }
+                else if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    bool isTransactionBuyer = await _context.Transactions
+                        .AnyAsync(t => t.ItemID == item.ItemID && t.BuyerID == currentUserId);
+
+                    bool isAcceptedBuyerRequest = await _context.BuyRequests
+                        .AnyAsync(br => br.ItemID == item.ItemID && br.BuyerID == currentUserId && br.Status == BuyRequestStatus.SellerAccepted);
+
+                    if (isTransactionBuyer || isAcceptedBuyerRequest)
+                    {
+                        canAccess = true;
+                    }
+                }
+
+                if (!canAccess)
+                {
+                    return View("ItemUnavailable");
+                }
+            }
 
             return View(item);
         }

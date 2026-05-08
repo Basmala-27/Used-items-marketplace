@@ -36,6 +36,7 @@ namespace MarketplaceApp.Controllers
              .Include(i => i.Images)
              .Include(i => i.User)
              .Include(i => i.Category)
+             .Where(i => i.Status == ItemStatus.Available)
              .OrderByDescending(i => i.CreatedAt)
              .ToListAsync();
 
