@@ -7,22 +7,16 @@
 }
 
 <div class="hero-full-width-container">
-    <!-- 🔎 SEARCH BAR & NOTIFICATION ICON -->
     <div class="search-wrapper">
-        <div class="d-flex align-items-center w-100 px-3" style="max-width: 650px; gap: 15px;">
+        <div class="d-flex align-items-center w-100 px-3" style="max-width: 850px; gap: 15px;">
 
-            <!-- زر الإشعارات المطور -->
-            <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Notifications") : "/Account/Login")"
-               class="top-notif-btn position-relative">
-                <i class="bi bi-bell-fill fs-3 text-white shadow-sm"></i>
-                <span id="top-notif-badge"
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white shadow-sm"
-                      style="display:none; font-size:10px;">
-                    0
-                </span>
-            </a>
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Index" class="admin-top-btn" title="Admin Dashboard">
+                    <i class="bi bi-shield-lock-fill fs-2 text-warning shadow-sm"></i>
+                </a>
+            }
 
-            <!-- شريط البحث بالتصميم الأنيق -->
             <form asp-controller="Items" asp-action="Index" method="get" class="flex-grow-1">
                 <div class="input-group search-bar shadow-lg">
                     <span class="input-group-text bg-white border-0 ps-3">
@@ -38,10 +32,19 @@
                     </button>
                 </div>
             </form>
+
+            <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Notifications") : "/Account/Login")"
+               class="top-notif-btn position-relative">
+                <i class="bi bi-bell-fill fs-3 text-white shadow-sm"></i>
+                <span id="top-notif-badge"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white shadow-sm"
+                      style="display:none; font-size:10px;">
+                    0
+                </span>
+            </a>
         </div>
     </div>
 
-    <!-- 🟡 HERO SLIDER -->
     <div id="heroSlider" class="carousel slide hero-slider" data-bs-ride="carousel" data-bs-interval="3000">
         <div class="carousel-inner">
             <div class="carousel-item active">
@@ -50,7 +53,6 @@
                 <div class="hero-text">
                     <h1>Amazing Deals on Electronics</h1>
                     <p>Buy & Sell Easily Near You</p>
-              
                     <a asp-controller="Items" asp-action="Index" asp-route-searchTerm="Electronics" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</a>
                 </div>
             </div>
@@ -61,7 +63,6 @@
                 <div class="hero-text">
                     <h1>Find Anything You Need</h1>
                     <p>Best Marketplace Experience</p>
-                
                     <a asp-controller="Items" asp-action="Index" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Explore</a>
                 </div>
             </div>
@@ -82,10 +83,10 @@
         <a asp-controller="Items" asp-action="Index" class="view-all text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
     </div>
 
-    <div class="row row-cols-2 row-cols-md-4 g-4">
+    <div class="row row-cols-2 row-cols-md-4 g-4 mb-5">
         @if (Model != null)
         {
-           @foreach (var item in Model.Take(8))
+            @foreach (var item in Model.Take(8))
             {
                 var imageUrl = item.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
                 var statusClass = item.Status switch
@@ -123,9 +124,7 @@
 
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="price text-orange fw-bold fs-5">$@item.Price</span>
-                                <span class="badge-status @statusClass">
-                                    @item.Status.ToString()
-                                </span>
+                                <span class="badge-status @statusClass">@item.Status.ToString()</span>
                             </div>
 
                             <div class="mb-2">
@@ -151,7 +150,6 @@
         font-family: 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* --- Hero & Search --- */
     .hero-full-width-container {
         width: 100vw;
         position: relative;
@@ -162,6 +160,7 @@
         overflow: hidden;
     }
 
+    /* --- Search & Icons Styling --- */
     .search-wrapper {
         position: absolute;
         top: 25px;
@@ -174,8 +173,25 @@
     .search-bar {
         border-radius: 50px !important;
         background: white;
+        height: 45px;
     }
 
+    .admin-top-btn, .top-notif-btn {
+        transition: transform 0.2s;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+        .admin-top-btn:hover, .top-notif-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .admin-top-btn i, .top-notif-btn i {
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
+        }
+
+    /* --- Hero Slider --- */
     .hero-slider img {
         width: 100%;
         height: 350px;
@@ -201,17 +217,7 @@
             font-size: 2.2rem;
         }
 
-    /* --- Notification Button --- */
-    .top-notif-btn {
-        transition: transform 0.2s;
-        cursor: pointer;
-    }
-
-        .top-notif-btn:hover {
-            transform: scale(1.1);
-        }
-
-    /* --- Product Cards --- */
+    /* --- Cards --- */
     .product-card {
         border: none;
         border-radius: 20px;
@@ -239,24 +245,13 @@
             border-radius: 16px;
         }
 
-    /* --- Badges & Status --- */
-    .badges-overlay {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        display: flex;
-        gap: 5px;
-    }
-
-    .custom-badge {
-        font-size: 10px;
-        padding: 5px 10px;
-        border-radius: 50px;
-    }
-
     .bg-orange {
         background-color: #f97316;
         color: white;
+    }
+
+    .text-orange {
+        color: #f97316 !important;
     }
 
     .badge-status {
@@ -285,7 +280,6 @@
         font-weight: 600;
     }
 
-    /* --- Wishlist Button --- */
     .wishlist-btn {
         position: absolute;
         top: 18px;
@@ -298,17 +292,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: 0.2s;
         z-index: 10;
-    }
-
-        .wishlist-btn:hover {
-            transform: scale(1.1);
-            background: #fef2f2;
-        }
-
-    .text-orange {
-        color: #f97316 !important;
+        transition: 0.2s;
     }
 
     .view-all {
@@ -321,68 +306,37 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            // 1. وظيفة تحديث أرقام الإشعارات
-            function syncBadges(count) {
-                const topBadge = document.getElementById("top-notif-badge");
-                if (topBadge) {
-                    if (count > 0) {
-                        topBadge.style.display = "inline";
-                        topBadge.innerText = count > 99 ? "99+" : count;
-                    } else {
-                        topBadge.style.display = "none";
-                    }
-                }
-            }
-
-            // 2. تحميل عدد الإشعارات عند فتح الصفحة
+            // تحديث الإشعارات
             async function loadInitialCounts() {
                 try {
                     const res = await fetch('/Notifications/GetUnreadCount');
                     if (res.ok) {
                         const count = await res.json();
-                        syncBadges(count);
+                        const topBadge = document.getElementById("top-notif-badge");
+                        if (topBadge && count > 0) {
+                            topBadge.style.display = "inline";
+                            topBadge.innerText = count > 99 ? "99+" : count;
+                        }
                     }
-                } catch (e) { console.log("Error loading notifications count"); }
+                } catch (e) { }
             }
             loadInitialCounts();
 
-            // 3. الربط مع SignalR (إذا كان موجوداً)
-            if (typeof connection !== 'undefined') {
-                connection.on("ReceiveNotification", function (data) {
-                    const topBadge = document.getElementById("top-notif-badge");
-                    let currentCount = parseInt(topBadge.innerText) || 0;
-                    syncBadges(currentCount + 1);
-                });
-            }
-
-            // 4. وظيفة الـ Wishlist (Favorite)
+            // المفضلة
             $('.favorite-toggle').on('click', function (e) {
                 e.preventDefault();
-                e.stopPropagation(); // يمنع الدخول لصفحة التفاصيل عند الضغط على القلب
-
                 var btn = $(this);
                 var itemId = btn.data('item-id');
                 var icon = btn.find('i');
-
-                $.ajax({
-                    url: '/Favorites/ToggleFavorite',
-                    type: 'POST',
-                    data: { itemId: itemId },
-                    success: function (response) {
-                        if (response.success) {
-                            if (response.status === "added") {
-                                icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
-                                btn.css('transform', 'scale(1.2)');
-                                setTimeout(() => btn.css('transform', 'scale(1)'), 200);
-                            } else {
-                                icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
-                            }
-                        } else if (response.isNotLoggedIn) {
-                            window.location.href = response.redirectUrl;
+                $.post('/Favorites/ToggleFavorite', { itemId: itemId }, function (response) {
+                    if (response.success) {
+                        if (response.status === "added") {
+                            icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                        } else {
+                            icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
                         }
-                    },
-                    error: function () {
-                        console.error("Database or Server Error");
+                    } else if (response.isNotLoggedIn) {
+                        window.location.href = '/Account/Login';
                     }
                 });
             });

@@ -50,5 +50,28 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+// فتح "بوابة" للوصول لخدمات قاعدة البيانات والـ Identity
+using (var scope = app.Services.CreateScope())
+{
+    // استدعاء الأجهزة المسؤولة عن الرتب (Roles) والمستخدمين (Users)
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // 1. التأكد من أن رتبة "Admin" موجودة في الدفتر (قاعدة البيانات)
+    if (!await roleManager.RoleExistsAsync("Admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    }
+
+    // 2. البحث عن المستخدم اللي إيميله كذا عشان نرقّيه
+    var adminEmail = "tasneem@admin.com"; // اكتبي إيميلك الحقيقي هنا
+    var user = await userManager.FindByEmailAsync(adminEmail);
+
+    // 3. لو اليوزر موجود ولسه مش أدمن، خليه أدمن فوراً
+    if (user != null && !await userManager.IsInRoleAsync(user, "Admin"))
+    {
+        await userManager.AddToRoleAsync(user, "Admin");
+    }
+}
 
 app.Run();

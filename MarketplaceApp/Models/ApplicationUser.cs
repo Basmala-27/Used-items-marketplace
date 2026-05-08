@@ -40,6 +40,7 @@ namespace MarketplaceApp.Models
         [Column(TypeName = "decimal(10,2)")]
         [Display(Name = "Pending Balance")]
         public decimal PendingBalance { get; set; } = 0;
+        public bool IsBlocked { get; set; } = false;
 
 
         public virtual ICollection<Item> Items { get; set; } = new List<Item>();

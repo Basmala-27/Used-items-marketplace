@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
-
 using MarketplaceApp.Models;
 
 namespace MarketplaceApp.Controllers
@@ -28,28 +27,18 @@ namespace MarketplaceApp.Controllers
         {
             return View(new RegisterVM());
         }
-        [HttpPost]
-        // ضيفي ده في الـ Constructor فوق مع الـ UserManager
-        // private readonly IWebHostEnvironment _webHostEnvironment;
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterVM model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
-            // الصورة افتراضية في البداية
             string fileName = "default-avatar.png";
 
-            // التحقق لو اليوزر رفع صورة (Optional)
             if (model.ImageFile != null && model.ImageFile.Length > 0)
             {
                 fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
                 string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                // التأكد من وجود الفولدر
                 var directory = Path.GetDirectoryName(uploadPath);
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
@@ -66,9 +55,9 @@ namespace MarketplaceApp.Controllers
                 Name = model.Name,
                 Location = model.Location,
                 PhoneNumber = model.PhoneNumber,
-                // لو مرفعش صورة، الـ fileName هيفضل default-avatar.png
                 ProfileImage = "/uploads/" + fileName,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                IsBlocked = false // التأكد من أنه غير محظور عند التسجيل
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -84,8 +73,10 @@ namespace MarketplaceApp.Controllers
 
             return View(model);
         }
+
         // ---------------- LOGIN ----------------
 
+      
         [HttpGet]
         public IActionResult Login()
         {
@@ -96,62 +87,52 @@ namespace MarketplaceApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
+            if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
+
             if (user == null)
             {
                 ModelState.AddModelError("Email", "This email address is not registered.");
                 return View(model);
             }
 
+           
+            if (user.IsBlocked)
+            {
+                ModelState.AddModelError("Email", "Your account has been blocked by the admin.");
+                return View(model);
+            }
 
             var result = await _signInManager.PasswordSignInAsync(
-                model.Email,
+                user,
                 model.Password,
                 model.RememberMe,
                 lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                try
-                {
-                    await _notificationService.SendAsync(user.Id, Enums.NotificationType.Info, null, "Welcome for comming Back!!");
-                }
-                catch { } // Ignore if it fails
+                try { await _notificationService.SendAsync(user.Id, Enums.NotificationType.Info, null, "Welcome back!"); } catch { }
                 return RedirectToAction("Index", "Home");
             }
 
-
             if (result.IsLockedOut)
-            {
-                ModelState.AddModelError(string.Empty, "Account locked due to too many failed attempts.");
-            }
+                ModelState.AddModelError(string.Empty, "Account locked.");
             else
-            {
-                ModelState.AddModelError("Password", "Incorrect password. Please try again.");
-            }
+                ModelState.AddModelError("Password", "Incorrect password.");
 
             return View(model);
         }
+
         // ---------------- LOGOUT ----------------
 
-        [HttpPost] 
+        [HttpPost]
         [ValidateAntiForgeryToken]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index", "Home");
         }
-
-
-
-
     }
 }
