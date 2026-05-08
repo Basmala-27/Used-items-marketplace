@@ -1,0 +1,93 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa; /* لون خلفية هادي */
+    }
+
+    .admin-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-10px); /* الكارت يترفع لفوق لما تقربي بالماوس */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+
+    .icon-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .bg-primary-soft {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+    }
+
+    .bg-success-soft {
+        background-color: #e6f7ef;
+        color: #198754;
+    }
+
+    .btn-custom {
+        border-radius: 12px;
+        padding: 10px 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary px-3 py-2 mb-3 rounded-pill">Admin Management</span>
+        <h1 class="display-5 fw-bold text-dark">Welcome back, Admin!</h1>
+        <p class="text-muted">What would you like to manage today?</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-5">
+            <div class="card admin-card shadow-sm p-4">
+                <div class="card-body text-center">
+                    <div class="icon-box bg-primary-soft">
+                        <i class="bi bi-box-seam-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Items Management</h3>
+                    <p class="text-muted mb-4">Monitor all marketplace listings. Keep the platform clean and professional.</p>
+                    <a asp-action="ManageItems" class="btn btn-primary btn-custom w-100 shadow-sm">
+                        <i class="bi bi-eye me-2"></i> Explore Items
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card admin-card shadow-sm p-4">
+                <div class="card-body text-center">
+                    <div class="icon-box bg-success-soft">
+                        <i class="bi bi-people-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Users Control</h3>
+                    <p class="text-muted mb-4">Manage your community members. Take action on reports or block bad users.</p>
+                    <a asp-action="ManageUsers" class="btn btn-success btn-custom w-100 shadow-sm">
+                        <i class="bi bi-shield-check me-2"></i> Manage Community
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
