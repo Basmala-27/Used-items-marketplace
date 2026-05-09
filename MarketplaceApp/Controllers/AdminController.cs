@@ -29,8 +29,8 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> ManageItems()
         {
             var items = await _context.Items
-                .Include(i => i.User)   // جلب بيانات المستخدم
-                .Include(i => i.Images) // السطر الناقص: جلب الصور المرتبطة بالمنتج
+                .Include(i => i.User)
+                .Include(i => i.Images)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
 

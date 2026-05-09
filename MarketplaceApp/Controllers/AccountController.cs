@@ -58,7 +58,7 @@ namespace MarketplaceApp.Controllers
                 PhoneNumber = model.PhoneNumber,
                 ProfileImage = "/uploads/" + fileName,
                 CreatedAt = DateTime.Now,
-                IsBlocked = false // التأكد من أنه غير محظور عند التسجيل
+                IsBlocked = false
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -113,7 +113,7 @@ namespace MarketplaceApp.Controllers
 
             if (result.Succeeded)
             {
-             
+
                 return RedirectToAction("Index", "Home");
             }
 

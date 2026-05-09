@@ -19,7 +19,7 @@ namespace MarketplaceApp.Controllers
             _context = context;
         }
 
-        // GET: Favorites (??? ????? ???????? ?????? ?????? ???)
+        // GET: Favorites
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,7 +38,7 @@ namespace MarketplaceApp.Controllers
             return View(favorites);
         }
 
-        // POST: Favorites/ToggleFavorite (??? Action ???? ??????? ??? AJAX)
+        // POST: Favorites/ToggleFavorite
         [HttpPost]
         public async Task<IActionResult> ToggleFavorite(int itemId)
         {
@@ -78,7 +78,7 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-        // GET: Favorites/Delete/5 (????? ?? ???? ????????)
+        // GET: Favorites/Delete/5 
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
