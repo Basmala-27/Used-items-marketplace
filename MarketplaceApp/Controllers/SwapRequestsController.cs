@@ -24,7 +24,7 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // GET: SwapRequests/MyRequests — طلبات التبادل الواردة للمستخدم
+        // GET: SwapRequests/MyRequests — Inbound swap requests for the user
         public async Task<IActionResult> MyRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -40,7 +40,7 @@ namespace MarketplaceApp.Controllers
             return View(requests);
         }
 
-        // GET: SwapRequests/MySentRequests — الطلبات التي أرسلها المستخدم
+        // GET: SwapRequests/MySentRequests — Requests sent by the user
         public async Task<IActionResult> MySentRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -57,8 +57,8 @@ namespace MarketplaceApp.Controllers
         }
 
         // =====================================================================
-        //  POST: SwapRequests/Respond — قبول أو رفض طلب التبادل
-        //  مع EF Transaction حقيقي لضمان تبادل الملكية بشكل آمن
+        //  POST: SwapRequests/Respond — Accept or Reject a Swap Request
+        //  Uses EF Transaction to ensure safe ownership exchange + Reputation updates
         // =====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -73,117 +73,117 @@ namespace MarketplaceApp.Controllers
                 .FirstOrDefaultAsync(s => s.SwapRequestId == id);
 
             if (swapRequest == null)
-                return Json(new { success = false, message = "الطلب غير موجود." });
+                return Json(new { success = false, message = "Request not found." });
 
-            // التحقق أن المستجيب هو صاحب المنتج المطلوب
+            // Verify the respondent is the owner of the requested item
             if (swapRequest.RequestedItem.UserID != userId)
-                return Json(new { success = false, message = "غير مصرح لك بالرد على هذا الطلب." });
+                return Json(new { success = false, message = "Unauthorized." });
 
             if (swapRequest.Status != OfferStatus.Pending)
-                return Json(new { success = false, message = "هذا الطلب سبق معالجته." });
+                return Json(new { success = false, message = "Request already processed." });
 
             if (status == OfferStatus.Rejected)
             {
-                // رفض بسيط — لا يحتاج transaction معقد
                 swapRequest.Status = OfferStatus.Rejected;
                 await _context.SaveChangesAsync();
 
-                // إشعار للمرسل
+                // Notify sender using the service
                 await _notificationService.NotifySwapRequestRejectedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
-                TempData["Message"] = "تم رفض الطلب.";
+                TempData["Message"] = "Swap request rejected.";
                 return RedirectToAction(nameof(MyRequests));
             }
 
             // ===========================================================
-            // قبول الطلب — داخل EF Transaction لضمان الـ Atomicity
+            // Accept Request — Real-time ownership exchange via Transaction
             // ===========================================================
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
-                var offeredItemOwnerId  = swapRequest.OfferedItem.UserID;   // الشخص الطالب
-                var requestedItemOwnerId = swapRequest.RequestedItem.UserID; // الشخص المستجيب
+                var offeredItemOwnerId = swapRequest.OfferedItem.UserID;    // Original Requester
+                var requestedItemOwnerId = swapRequest.RequestedItem.UserID; // Original Owner (Respondent)
 
-                var sellerOfferedItem = await _context.Users.FindAsync(offeredItemOwnerId);
-                var sellerRequestedItem = await _context.Users.FindAsync(requestedItemOwnerId);
-                if (sellerOfferedItem == null || sellerRequestedItem == null)
+                // 1. Fetch Users for Reputation Update
+                var sender = await _context.Users.FindAsync(offeredItemOwnerId);
+                var respondent = await _context.Users.FindAsync(requestedItemOwnerId);
+
+                if (sender == null || respondent == null)
                 {
                     await dbTx.RollbackAsync();
-                    TempData["Error"] = "تعذر العثور على أحد المستخدمين.";
+                    TempData["Error"] = "User data not found.";
                     return RedirectToAction(nameof(MyRequests));
                 }
 
-                sellerOfferedItem.Rating += 1;
-                sellerRequestedItem.Rating += 1;
+                // 2. Increment Ratings for both parties
+                sender.Rating += 1;
+                respondent.Rating += 1;
 
-                // 1. تبادل الملكية
-                swapRequest.OfferedItem.UserID  = requestedItemOwnerId;  // المنتج المعروض يصبح ملك المستجيب
-                swapRequest.RequestedItem.UserID = offeredItemOwnerId;    // المنتج المطلوب يصبح ملك الطالب
+                // 3. Swap Ownership ✅
+                swapRequest.OfferedItem.UserID = requestedItemOwnerId;   // Offered item now belongs to respondent
+                swapRequest.RequestedItem.UserID = offeredItemOwnerId;    // Requested item now belongs to requester
 
-                // 2. تغيير حالة المنتجين
-                swapRequest.OfferedItem.Status  = ItemStatus.Swapped;
+                // 4. Update Status to Swapped
+                swapRequest.OfferedItem.Status = ItemStatus.Swapped;
                 swapRequest.RequestedItem.Status = ItemStatus.Swapped;
 
-                // 3. تحديث حالة الطلب
+                // 5. Update Request Status
                 swapRequest.Status = OfferStatus.Accepted;
 
-                // 4. سجل مالي للطرف الأول (الشخص الطالب)
+                // 6. Financial Records (Transaction logs for history)
                 _context.Transactions.Add(new Transaction
                 {
-                    BuyerID       = offeredItemOwnerId,   // الطالب "أعطى" OfferedItem
-                    SellerID      = requestedItemOwnerId,  // المستجيب "أعطى" RequestedItem
-                    ItemID        = swapRequest.OfferedItemId,
-                    FinalPrice    = swapRequest.OfferedItem.Price,
-                    Status        = OrderStatus.Completed,
+                    BuyerID = offeredItemOwnerId,
+                    SellerID = requestedItemOwnerId,
+                    ItemID = swapRequest.OfferedItemId,
+                    FinalPrice = swapRequest.OfferedItem.Price,
+                    Status = OrderStatus.Completed,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.SwapRecord,
-                    Notes         = $"تبادل: أعطى \"{swapRequest.OfferedItem.Title}\" وأخذ \"{swapRequest.RequestedItem.Title}\"",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.SwapRecord,
+                    Notes = $"Swap: Gave \"{swapRequest.OfferedItem.Title}\" for \"{swapRequest.RequestedItem.Title}\"",
+                    CreatedAt = DateTime.Now
                 });
 
-                // 5. سجل مالي للطرف الثاني (الشخص المستجيب)
                 _context.Transactions.Add(new Transaction
                 {
-                    BuyerID       = requestedItemOwnerId,  // المستجيب "أعطى" RequestedItem
-                    SellerID      = offeredItemOwnerId,    // الطالب "أعطى" OfferedItem
-                    ItemID        = swapRequest.RequestedItemId,
-                    FinalPrice    = swapRequest.RequestedItem.Price,
-                    Status        = OrderStatus.Completed,
+                    BuyerID = requestedItemOwnerId,
+                    SellerID = offeredItemOwnerId,
+                    ItemID = swapRequest.RequestedItemId,
+                    FinalPrice = swapRequest.RequestedItem.Price,
+                    Status = OrderStatus.Completed,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.SwapRecord,
-                    Notes         = $"تبادل: أعطى \"{swapRequest.RequestedItem.Title}\" وأخذ \"{swapRequest.OfferedItem.Title}\"",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.SwapRecord,
+                    Notes = $"Swap: Gave \"{swapRequest.RequestedItem.Title}\" for \"{swapRequest.OfferedItem.Title}\"",
+                    CreatedAt = DateTime.Now
                 });
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                // 6. إشعارات للطرفين
+                // 7. Notify both parties
+                // To the Requester
                 await _notificationService.NotifySwapRequestAcceptedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
+                // To the Respondent (Current User)
                 await _notificationService.SendAsync(
                     userId!,
                     NotificationType.Order,
                     swapRequest.SwapRequestId,
-                    $"🔄 تم إتمام التبادل! \"{swapRequest.OfferedItem.Title}\" الآن ملكك.",
+                    $"🔄 Swap Complete! \"{swapRequest.OfferedItem.Title}\" is now yours.",
                     Url.Action("MyRequests", "SwapRequests")
                 );
 
-                TempData["Message"] = "تم قبول الطلب وإتمام التبادل بنجاح! 🎉";
+                TempData["Message"] = "Swap completed successfully! 🎉";
                 return RedirectToAction(nameof(MyRequests));
             }
             catch (Exception)
             {
                 await dbTx.RollbackAsync();
-                TempData["Error"] = "حدث خطأ أثناء معالجة التبادل. يرجى المحاولة مجدداً.";
+                TempData["Error"] = "Error processing swap. Please try again.";
                 return RedirectToAction(nameof(MyRequests));
             }
         }
 
-        // =====================================================================
-        //  GET/POST: Index, Details, Create, Edit, Delete (CRUD بسيط)
-        // =====================================================================
-
+        // Simple CRUD Actions
         public async Task<IActionResult> Index()
         {
             var swapRequests = await _context.SwapRequests
@@ -208,8 +208,5 @@ namespace MarketplaceApp.Controllers
 
             return View(swapRequest);
         }
-
-        private bool SwapRequestExists(int id)
-            => _context.SwapRequests.Any(e => e.SwapRequestId == id);
     }
 }

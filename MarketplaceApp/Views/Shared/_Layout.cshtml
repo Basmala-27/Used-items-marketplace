@@ -91,21 +91,23 @@
     </div>
 
     <nav class="bottom-nav">
+        <!-- Home -->
         <a href="@Url.Action("Index", "Home")"
            class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
             <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "bi-house-door-fill" : "bi-house-door")"></i>
             <span>Home</span>
         </a>
 
+        <!-- Categories -->
         <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Categories") : "/Account/Login")"
            class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "active" : "")">
             <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Categories" ? "bi-grid-fill" : "bi-grid")"></i>
             <span>Categories</span>
         </a>
 
+        <!-- Requests (Conditional) -->
         @if (User.Identity.IsAuthenticated)
         {
-            
             <a href="@Url.Action("SellerRequests", "Transactions")"
                class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "SellerRequests" ? "active" : "")"
                style="color: #8b5cf6;">
@@ -114,6 +116,7 @@
             </a>
         }
 
+        <!-- Post Button (Center) -->
         <a href="@(User.Identity.IsAuthenticated? Url.Action("Create", "Items") : "/Account/Login")"
            class="nav-item sell-btn">
             <div class="plus-icon">
@@ -121,6 +124,8 @@
             </div>
             <span>Post</span>
         </a>
+
+        <!-- Orders (Conditional) -->
         @if (User.Identity.IsAuthenticated)
         {
             <a href="@Url.Action("MyOrders", "Transactions")"
@@ -129,19 +134,16 @@
                 <i class="bi @(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "bi-wallet-fill" : "bi-wallet2")"></i>
                 <span style="font-size:9px;">Orders</span>
             </a>
-
         }
 
-        
-
+        <!-- Chats -->
         <a href="@(User.Identity.IsAuthenticated? Url.Action("Index", "Chat") : "/Account/Login")"
            class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "active" : "")">
             <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chat" ? "bi-chat-left-text-fill" : "bi-chat-left-text")"></i>
             <span>Chats</span>
         </a>
-       
-        
 
+        <!-- Profile -->
         <a href="@(User.Identity.IsAuthenticated ? "/profile" : "/Account/Login")"
            class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "active" : "")">
             <i class="bi @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "bi-person-fill" : "bi-person")"></i>
@@ -170,24 +172,24 @@
 
         @if (User.Identity.IsAuthenticated)
         {
-                    <text>
-                    const connection = new signalR.HubConnectionBuilder()
-                        .withUrl("/notificationHub")
-                        .withAutomaticReconnect()
-                        .build();
+                <text>
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/notificationHub")
+                    .withAutomaticReconnect()
+                    .build();
 
-                    connection.on("ReceiveNotification", function (data) {
-                        const badge = document.getElementById("top-notif-badge");
-                        if (badge) {
-                            let currentCount = parseInt(badge.innerText) || 0;
-                            updateTopBadge(currentCount + 1);
-                        }
-                    });
+                connection.on("ReceiveNotification", function (data) {
+                    const badge = document.getElementById("top-notif-badge");
+                    if (badge) {
+                        let currentCount = parseInt(badge.innerText) || 0;
+                        updateTopBadge(currentCount + 1);
+                    }
+                });
 
-                    connection.start()
-                        .then(() => console.log("SignalR Connected"))
-                        .catch(err => console.error(err));
-                    </text>
+                connection.start()
+                    .then(() => console.log("SignalR Connected"))
+                    .catch(err => console.error(err));
+                </text>
         }
     </script>
 </body>

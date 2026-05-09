@@ -39,7 +39,7 @@ namespace MarketplaceApp.Controllers
         }
 
         // =====================================================================
-        //  GET: Transactions/MyOrders — طلبات المستخدم كمشترٍ
+        //  GET: Transactions/MyOrders — Orders as a Buyer
         // =====================================================================
         public async Task<IActionResult> MyOrders()
         {
@@ -53,20 +53,20 @@ namespace MarketplaceApp.Controllers
                 .ToListAsync();
 
             var user = await _context.Users.FindAsync(userId);
-            ViewBag.WalletBalance  = user?.WalletBalance  ?? 0;
+            ViewBag.WalletBalance = user?.WalletBalance ?? 0;
             ViewBag.PendingBalance = user?.PendingBalance ?? 0;
 
             return View(buyRequests);
         }
 
         // =====================================================================
-        //  GET: Transactions/SellerRequests — الطلبات الواردة للبائع
+        //  GET: Transactions/SellerRequests — Inbound Requests for Seller
         // =====================================================================
         public async Task<IActionResult> SellerRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Buy Requests للبائع
+            // Buy Requests for Seller
             var buyRequests = await _context.BuyRequests
                 .Include(b => b.Item).ThenInclude(i => i.Images)
                 .Include(b => b.Buyer)
@@ -75,7 +75,7 @@ namespace MarketplaceApp.Controllers
                 .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
 
-            // Swap Requests للبائع
+            // Swap Requests for Seller
             var swapRequests = await _context.SwapRequests
                 .Include(s => s.OfferedItem).ThenInclude(i => i.Images)
                 .Include(s => s.RequestedItem).ThenInclude(i => i.Images)
@@ -84,400 +84,225 @@ namespace MarketplaceApp.Controllers
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 
-            ViewBag.BuyRequests  = buyRequests;
+            ViewBag.BuyRequests = buyRequests;
             ViewBag.SwapRequests = swapRequests;
 
             return View();
         }
 
         // =====================================================================
-        //  GET: Transactions/Details/5
-        // =====================================================================
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var transaction = await _context.Transactions
-                .Include(t => t.Buyer)
-                .Include(t => t.Item)
-                .Include(t => t.Seller)
-                .FirstOrDefaultAsync(m => m.TransactionID == id);
-
-            if (transaction == null) return NotFound();
-
-            return View(transaction);
-        }
-
-        // =====================================================================
         //  POST: Transactions/BuyItem
-        //  المشتري يضغط Buy → خصم 100% → Reserved → BuyRequest (Pending)
+        //  Step 1: Buyer reserves item -> 100% funds moved to Pending (Escrow)
         // =====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuyItem(int itemId)
         {
             var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var item = await _context.Items.FindAsync(itemId);
-            if (item == null)
-                return Json(new { success = false, message = "المنتج غير موجود." });
 
-            if (item.UserID == buyerId)
-                return Json(new { success = false, message = "لا يمكنك شراء منتجك الخاص." });
-
-            if (item.Status != ItemStatus.Available)
-                return Json(new { success = false, message = "هذا المنتج غير متاح للشراء حالياً." });
+            if (item == null) return Json(new { success = false, message = "Item not found." });
+            if (item.UserID == buyerId) return Json(new { success = false, message = "You cannot buy your own item." });
+            if (item.Status != ItemStatus.Available) return Json(new { success = false, message = "Item is not available." });
 
             var buyer = await _context.Users.FindAsync(buyerId);
-            if (buyer == null)
-                return Json(new { success = false, message = "لم يتم العثور على المستخدم." });
+            if (buyer == null) return Json(new { success = false, message = "User not found." });
 
             if (buyer.WalletBalance < item.Price)
-                return Json(new { success = false, message = $"رصيدك غير كافٍ. رصيدك: ${buyer.WalletBalance:0.00} | السعر: ${item.Price:0.00}" });
+                return Json(new { success = false, message = "Insufficient balance." });
 
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. خصم المبلغ كاملاً وحفظه في Escrow
-                buyer.WalletBalance  -= item.Price;
+                // 1. Move funds to Escrow
+                buyer.WalletBalance -= item.Price;
                 buyer.PendingBalance += item.Price;
 
-                // 2. حجز المنتج (لا يظهر لأحد آخر)
+                // 2. Reserve the item
                 item.Status = ItemStatus.Reserved;
 
-                // 3. سجل مالي — حجز Escrow
+                // 3. Log Initial Transaction
                 var escrowTx = new Transaction
                 {
-                    BuyerID       = buyerId!,
-                    SellerID      = item.UserID,
-                    ItemID        = item.ItemID,
-                    FinalPrice    = item.Price,
-                    Status        = OrderStatus.Pending,
+                    BuyerID = buyerId!,
+                    SellerID = item.UserID,
+                    ItemID = item.ItemID,
+                    FinalPrice = item.Price,
+                    Status = OrderStatus.Pending,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.Purchase,
-                    Notes         = $"حجز Escrow كامل — {item.Title} — بانتظار قبول البائع",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.Purchase,
+                    Notes = $"Escrow Hold: {item.Title}",
+                    CreatedAt = DateTime.Now
                 };
                 _context.Transactions.Add(escrowTx);
-                await _context.SaveChangesAsync(); // نحتاج الـ ID
+                await _context.SaveChangesAsync();
 
-                // 4. إنشاء BuyRequest
+                // 4. Create Buy Request
                 var buyRequest = new BuyRequest
                 {
-                    BuyerID            = buyerId!,
-                    SellerID           = item.UserID,
-                    ItemID             = item.ItemID,
-                    Amount             = item.Price,
-                    Status             = BuyRequestStatus.Pending,
+                    BuyerID = buyerId!,
+                    SellerID = item.UserID,
+                    ItemID = item.ItemID,
+                    Amount = item.Price,
+                    Status = BuyRequestStatus.Pending,
                     EscrowTransactionId = escrowTx.TransactionID,
-                    CreatedAt          = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
                 _context.BuyRequests.Add(buyRequest);
                 await _context.SaveChangesAsync();
 
                 await dbTx.CommitAsync();
 
-                // 5. إشعار للبائع
+                // 5. Notify Seller
                 await _notificationService.NotifyBuyRequestAsync(item.UserID, buyRequest.BuyRequestId, item.Title, item.Price);
 
-                return Json(new { success = true, message = "تم إرسال طلب الشراء! في انتظار موافقة البائع. 🎉" });
+                return Json(new { success = true, message = "Buy request sent! Waiting for seller approval. 🎉" });
             }
-            catch (Exception)
+            catch
             {
                 await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ. يرجى المحاولة لاحقاً." });
+                return Json(new { success = false, message = "An error occurred. Please try again." });
             }
         }
 
         // =====================================================================
-        //  POST: Transactions/SellerAcceptBuy — البائع يقبل الطلب → 50% فوراً
+        //  POST: Transactions/SellerAcceptBuy 
+        //  Step 2: Seller accepts -> First 50% released to Seller
         // =====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SellerAcceptBuy(int buyRequestId)
         {
             var sellerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var buyRequest = await _context.BuyRequests
                 .Include(b => b.Item)
                 .Include(b => b.Buyer)
                 .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
 
-            if (buyRequest == null)
-                return Json(new { success = false, message = "الطلب غير موجود." });
-
-            if (buyRequest.SellerID != sellerId)
-                return Json(new { success = false, message = "غير مصرح لك." });
+            if (buyRequest == null || buyRequest.SellerID != sellerId)
+                return Json(new { success = false, message = "Unauthorized or request not found." });
 
             if (buyRequest.Status != BuyRequestStatus.Pending)
-                return Json(new { success = false, message = "لا يمكن قبول هذا الطلب." });
+                return Json(new { success = false, message = "This request cannot be accepted." });
 
-            var buyer  = await _context.Users.FindAsync(buyRequest.BuyerID);
+            var buyer = await _context.Users.FindAsync(buyRequest.BuyerID);
             var seller = await _context.Users.FindAsync(sellerId);
-            if (buyer == null || seller == null)
-                return Json(new { success = false, message = "بيانات المستخدمين غير صحيحة." });
 
             var halfAmount = Math.Round(buyRequest.Amount / 2, 2);
 
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. تحويل 50% من Escrow للبائع
-                buyer.PendingBalance  -= halfAmount;
-                seller.WalletBalance  += halfAmount;
+                // 1. Release 50% from Escrow to Seller
+                buyer.PendingBalance -= halfAmount;
+                seller.WalletBalance += halfAmount;
 
-                // 2. تحديث حالات
-                buyRequest.Status      = BuyRequestStatus.SellerAccepted;
-                buyRequest.UpdatedAt   = DateTime.Now;
+                // 2. Update Statuses
+                buyRequest.Status = BuyRequestStatus.SellerAccepted;
+                buyRequest.UpdatedAt = DateTime.Now;
                 buyRequest.Item.Status = ItemStatus.PendingDelivery;
 
-                // 3. سجل مالي — الدفعة الأولى (50%)
+                // 3. Log Partial Payment
                 _context.Transactions.Add(new Transaction
                 {
-                    BuyerID       = buyRequest.BuyerID,
-                    SellerID      = sellerId!,
-                    ItemID        = buyRequest.ItemID,
-                    FinalPrice    = halfAmount,
-                    Status        = OrderStatus.PartiallyPaid,
+                    BuyerID = buyRequest.BuyerID,
+                    SellerID = sellerId!,
+                    ItemID = buyRequest.ItemID,
+                    FinalPrice = halfAmount,
+                    Status = OrderStatus.PartiallyPaid,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.PartialPayment,
-                    Notes         = $"دفعة أولى (50%) — {buyRequest.Item.Title} — بعد قبول البائع",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.PartialPayment,
+                    Notes = $"Partial Payment (50%) for: {buyRequest.Item.Title}",
+                    CreatedAt = DateTime.Now
                 });
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                // 4. إشعار للمشتري
+                // 4. Notify Buyer
                 await _notificationService.NotifyBuyRequestAcceptedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title);
 
-                return Json(new { success = true, message = $"قبلت الطلب وتم تحويل ${halfAmount:0.00} (50%) لمحفظتك فوراً! ✅" });
+                return Json(new { success = true, message = $"Request accepted! ${halfAmount:0.00} transferred to your wallet. ✅" });
             }
-            catch (Exception)
+            catch
             {
                 await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ. يرجى المحاولة لاحقاً." });
-            }
-        }
-
-        // =====================================================================
-        //  POST: Transactions/SellerRejectBuy — البائع يرفض → استرداد كامل
-        // =====================================================================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SellerRejectBuy(int buyRequestId)
-        {
-            var sellerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var buyRequest = await _context.BuyRequests
-                .Include(b => b.Item)
-                .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
-
-            if (buyRequest == null)
-                return Json(new { success = false, message = "الطلب غير موجود." });
-
-            if (buyRequest.SellerID != sellerId)
-                return Json(new { success = false, message = "غير مصرح لك." });
-
-            if (buyRequest.Status != BuyRequestStatus.Pending)
-                return Json(new { success = false, message = "لا يمكن رفض هذا الطلب." });
-
-            var buyer = await _context.Users.FindAsync(buyRequest.BuyerID);
-            if (buyer == null)
-                return Json(new { success = false, message = "بيانات المشتري غير صحيحة." });
-
-            await using var dbTx = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                // 1. إعادة المبلغ كاملاً للمشتري
-                buyer.PendingBalance -= buyRequest.Amount;
-                buyer.WalletBalance  += buyRequest.Amount;
-
-                // 2. تحرير المنتج (يعود للبيع)
-                buyRequest.Item.Status = ItemStatus.Available;
-                buyRequest.Status      = BuyRequestStatus.RejectedBySeller;
-                buyRequest.UpdatedAt   = DateTime.Now;
-
-                // 3. سجل مالي — استرداد
-                _context.Transactions.Add(new Transaction
-                {
-                    BuyerID       = buyRequest.BuyerID,
-                    SellerID      = sellerId!,
-                    ItemID        = buyRequest.ItemID,
-                    FinalPrice    = buyRequest.Amount,
-                    Status        = OrderStatus.RejectedBySeller,
-                    PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.Refund,
-                    Notes         = $"استرداد كامل — رفض البائع طلب شراء \"{buyRequest.Item.Title}\"",
-                    CreatedAt     = DateTime.Now
-                });
-
-                await _context.SaveChangesAsync();
-                await dbTx.CommitAsync();
-
-                // 4. إشعار للمشتري
-                await _notificationService.NotifyBuyRequestRejectedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title, buyRequest.Amount);
-
-                return Json(new { success = true, message = "تم رفض الطلب. رُدّ المبلغ كاملاً للمشتري." });
-            }
-            catch (Exception)
-            {
-                await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ. يرجى المحاولة لاحقاً." });
+                return Json(new { success = false, message = "An error occurred." });
             }
         }
 
         // =====================================================================
         //  POST: Transactions/ConfirmDelivery
-        //  المشتري يؤكد الاستلام → 50% الثانية للبائع + Sold + نقل الملكية
+        //  Step 3: Buyer confirms -> Final 50% released + Ownership Transfer + Reputation Boost
         // =====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmDelivery(int buyRequestId)
         {
             var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var buyRequest = await _context.BuyRequests
                 .Include(b => b.Item)
                 .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
 
-            if (buyRequest == null)
-                return Json(new { success = false, message = "الطلب غير موجود." });
-
-            if (buyRequest.BuyerID != buyerId)
-                return Json(new { success = false, message = "غير مصرح لك." });
+            if (buyRequest == null || buyRequest.BuyerID != buyerId)
+                return Json(new { success = false, message = "Unauthorized." });
 
             if (buyRequest.Status != BuyRequestStatus.SellerAccepted)
-                return Json(new { success = false, message = "لا يمكن تأكيد الاستلام في هذه المرحلة." });
+                return Json(new { success = false, message = "Delivery cannot be confirmed at this stage." });
 
-            var buyer  = await _context.Users.FindAsync(buyerId);
+            var buyer = await _context.Users.FindAsync(buyerId);
             var seller = await _context.Users.FindAsync(buyRequest.SellerID);
-            if (buyer == null || seller == null)
-                return Json(new { success = false, message = "بيانات المستخدمين غير صحيحة." });
 
-            // الـ 50% الثانية (ما تبقى في PendingBalance)
             var remainingAmount = Math.Round(buyRequest.Amount / 2, 2);
 
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. تحويل الـ 50% الثانية من Escrow للبائع
-                buyer.PendingBalance  -= remainingAmount;
-                seller.WalletBalance  += remainingAmount;
+                // 1. Release final 50% to Seller
+                buyer.PendingBalance -= remainingAmount;
+                seller.WalletBalance += remainingAmount;
 
+                // 2. Reputation update
                 seller.Rating += 1;
-
                 if (seller.TrustScore < 5.0)
                 {
                     seller.TrustScore = Math.Min(5.0, seller.TrustScore + 0.5);
                 }
 
-                // 2. تحديث حالة المنتج + نقل الملكية ✅
+                // 3. Complete the cycle: Sold status + TRANSFER OWNERSHIP ✅
                 buyRequest.Item.Status = ItemStatus.Sold;
-                buyRequest.Item.UserID = buyerId!;   // نقل الملكية للمشتري
+                buyRequest.Item.UserID = buyerId!;
 
-                // 3. إغلاق BuyRequest
-                buyRequest.Status    = BuyRequestStatus.Completed;
+                buyRequest.Status = BuyRequestStatus.Completed;
                 buyRequest.UpdatedAt = DateTime.Now;
 
-                // 4. سجل مالي — الدفعة الأخيرة (50%)
+                // 4. Log Final Payment
                 _context.Transactions.Add(new Transaction
                 {
-                    BuyerID       = buyerId!,
-                    SellerID      = buyRequest.SellerID,
-                    ItemID        = buyRequest.ItemID,
-                    FinalPrice    = remainingAmount,
-                    Status        = OrderStatus.Completed,
+                    BuyerID = buyerId!,
+                    SellerID = buyRequest.SellerID,
+                    ItemID = buyRequest.ItemID,
+                    FinalPrice = remainingAmount,
+                    Status = OrderStatus.Completed,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.FinalPayment,
-                    Notes         = $"دفعة أخيرة (50%) — {buyRequest.Item.Title} — بعد تأكيد الاستلام",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.FinalPayment,
+                    Notes = $"Final Payment (50%) for: {buyRequest.Item.Title}",
+                    CreatedAt = DateTime.Now
                 });
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                // 5. إشعار للبائع
+                // 5. Notify Seller
                 await _notificationService.NotifyOrderCompletedAsync(buyRequest.SellerID, buyRequest.BuyRequestId, buyRequest.Item.Title, remainingAmount);
 
-                return Json(new { success = true, message = $"تم تأكيد الاستلام! تم تحويل ${remainingAmount:0.00} للبائع. المنتج الآن ملكك! 🎉" });
+                return Json(new { success = true, message = "Delivery confirmed! The item is now yours. 🎉" });
             }
-            catch (Exception)
+            catch
             {
                 await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ. يرجى المحاولة لاحقاً." });
+                return Json(new { success = false, message = "Error during confirmation." });
             }
-        }
-
-        // =====================================================================
-        //  POST: Transactions/CancelBuyRequest — المشتري يلغي قبل قبول البائع
-        // =====================================================================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelBuyRequest(int buyRequestId)
-        {
-            var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var buyRequest = await _context.BuyRequests
-                .Include(b => b.Item)
-                .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
-
-            if (buyRequest == null)
-                return Json(new { success = false, message = "الطلب غير موجود." });
-
-            if (buyRequest.BuyerID != buyerId)
-                return Json(new { success = false, message = "غير مصرح لك." });
-
-            if (buyRequest.Status != BuyRequestStatus.Pending)
-                return Json(new { success = false, message = "لا يمكن إلغاء هذا الطلب (البائع سبق وردّ عليه)." });
-
-            var buyer = await _context.Users.FindAsync(buyerId);
-            if (buyer == null)
-                return Json(new { success = false, message = "المستخدم غير موجود." });
-
-            await using var dbTx = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                buyer.PendingBalance   -= buyRequest.Amount;
-                buyer.WalletBalance    += buyRequest.Amount;
-                buyRequest.Item.Status  = ItemStatus.Available;
-                buyRequest.Status       = BuyRequestStatus.Cancelled;
-                buyRequest.UpdatedAt    = DateTime.Now;
-
-                _context.Transactions.Add(new Transaction
-                {
-                    BuyerID       = buyerId!,
-                    ItemID        = buyRequest.ItemID,
-                    FinalPrice    = buyRequest.Amount,
-                    Status        = OrderStatus.Cancelled,
-                    PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.Refund,
-                    Notes         = $"إلغاء طلب شراء من المشتري — {buyRequest.Item.Title}",
-                    CreatedAt     = DateTime.Now
-                });
-
-                await _context.SaveChangesAsync();
-                await dbTx.CommitAsync();
-
-                return Json(new { success = true, message = "تم إلغاء الطلب. رُدّ المبلغ لمحفظتك." });
-            }
-            catch (Exception)
-            {
-                await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ. يرجى المحاولة لاحقاً." });
-            }
-        }
-
-        // =====================================================================
-        //  GET: Transactions/TopUp
-        // =====================================================================
-        [HttpGet]
-        public async Task<IActionResult> TopUp()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.FindAsync(userId);
-            ViewBag.CurrentBalance = user?.WalletBalance ?? 0;
-            return View();
         }
 
         // =====================================================================
@@ -488,50 +313,37 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> TopUpWallet(decimal amount)
         {
             if (amount <= 0 || amount > 10000)
-                return Json(new { success = false, message = "المبلغ يجب أن يكون بين $1 و$10,000." });
+                return Json(new { success = false, message = "Amount must be between $1 and $10,000." });
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-                return Json(new { success = false, message = "المستخدم غير موجود." });
+            if (user == null) return Json(new { success = false, message = "User not found." });
 
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
                 user.WalletBalance += amount;
-
                 _context.Transactions.Add(new Transaction
                 {
-                    BuyerID       = userId!,
-                    FinalPrice    = amount,
-                    Status        = OrderStatus.Completed,
+                    BuyerID = userId!,
+                    FinalPrice = amount,
+                    Status = OrderStatus.Completed,
                     PaymentMethod = PaymentMethod.Wallet,
-                    Type          = TransactionType.Deposit,
-                    Notes         = $"شحن رصيد بمبلغ ${amount:0.00}",
-                    CreatedAt     = DateTime.Now
+                    Type = TransactionType.Deposit,
+                    Notes = $"Wallet Deposit: ${amount:0.00}",
+                    CreatedAt = DateTime.Now
                 });
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                return Json(new { success = true, message = $"تم شحن محفظتك بمبلغ ${amount:0.00}! رصيدك الجديد: ${user.WalletBalance:0.00}" });
+                return Json(new { success = true, message = "Wallet topped up successfully!" });
             }
-            catch (Exception)
+            catch
             {
                 await dbTx.RollbackAsync();
-                return Json(new { success = false, message = "حدث خطأ أثناء شحن الرصيد." });
+                return Json(new { success = false, message = "Deposit failed." });
             }
-        }
-
-        // =====================================================================
-        //  GET: Transactions/GetWalletBalance — API
-        // =====================================================================
-        [HttpGet]
-        public async Task<IActionResult> GetWalletBalance()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.FindAsync(userId);
-            return Json(new { balance = user?.WalletBalance ?? 0, pending = user?.PendingBalance ?? 0 });
         }
     }
 }
