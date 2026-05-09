@@ -24,9 +24,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // ==========================================
-        //  VIEW: My Orders (Buyer Perspective)
-        // ==========================================
         public async Task<IActionResult> MyOrders()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -53,9 +50,7 @@ namespace MarketplaceApp.Controllers
             return View(buyRequests);
         }
 
-        // ==========================================
-        //  VIEW: Seller Requests (Inbound)
-        // ==========================================
+
         public async Task<IActionResult> SellerRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,9 +77,7 @@ namespace MarketplaceApp.Controllers
             return View();
         }
 
-        // ==========================================
-        //  ACTION: Buy Item (Initiate Escrow)
-        // ==========================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BuyItem(int itemId)
@@ -148,9 +141,7 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-        // ==========================================
-        //  ACTION: Seller Accepts (Release 50%)
-        // ==========================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SellerAcceptBuy(int buyRequestId)
@@ -199,9 +190,7 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-        // ==========================================
-        //  ACTION: Confirm Delivery (Release Final 50%)
-        // ==========================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmDelivery(int buyRequestId)
@@ -369,9 +358,7 @@ namespace MarketplaceApp.Controllers
             return lookup;
         }
 
-        // ==========================================
-        // ACTION: Cancel Buy Request
-        // ==========================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelBuyRequest(int buyRequestId)
@@ -437,9 +424,6 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-        // ==========================================
-        //  GET: TopUp Page
-        // ==========================================
         [HttpGet]
         public async Task<IActionResult> TopUp()
         {
@@ -449,9 +433,6 @@ namespace MarketplaceApp.Controllers
             return View();
         }
 
-        // ==========================================
-        //  POST: TopUp Logic
-        // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TopUpWallet(decimal amount)
@@ -484,6 +465,57 @@ namespace MarketplaceApp.Controllers
             {
                 await dbTx.RollbackAsync();
                 return Json(new { success = false, message = "Transaction failed." });
+            }
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SellerRejectBuy(int buyRequestId)
+        {
+            var sellerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var buyRequest = await _context.BuyRequests
+                .Include(b => b.Item)
+                .Include(b => b.Buyer)
+                .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
+
+            if (buyRequest == null || buyRequest.SellerID != sellerId)
+                return Json(new { success = false, message = "Unauthorized or request not found." });
+
+            if (buyRequest.Status != BuyRequestStatus.Pending)
+                return Json(new { success = false, message = "Only pending requests can be rejected." });
+
+            var buyer = buyRequest.Buyer;
+
+            await using var dbTx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+
+                buyer.PendingBalance -= buyRequest.Amount;
+                buyer.WalletBalance += buyRequest.Amount;
+
+
+                buyRequest.Item.Status = ItemStatus.Available;
+                buyRequest.Status = BuyRequestStatus.RejectedBySeller;
+
+                await _context.SaveChangesAsync();
+                await dbTx.CommitAsync();
+
+
+                await _notificationService.NotifyBuyRequestRejectedAsync(
+                    buyRequest.BuyerID,
+                    buyRequest.BuyRequestId,
+                    buyRequest.Item.Title,
+                    buyRequest.Amount
+                );
+
+                return Json(new { success = true, message = "Request rejected and funds refunded." });
+            }
+            catch (Exception)
+            {
+                await dbTx.RollbackAsync();
+                return Json(new { success = false, message = "An error occurred." });
             }
         }
     }

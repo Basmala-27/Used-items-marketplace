@@ -1,3 +1,4 @@
+
 @model IEnumerable<MarketplaceApp.ViewModels.AdminComplaintListVM>
 @using MarketplaceApp.Models
 
@@ -14,12 +15,11 @@
         </h2>
     </div>
 
-    <!-- Filters -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
             <form method="get" class="d-flex gap-2 align-items-center">
                 <label class="fw-bold mb-0">Filter by Status:</label>
-                
+
                 <div class="btn-group" role="group">
                     <a asp-action="Index" asp-route-status="" class="btn @(currentStatus == null ? "btn-dark" : "btn-outline-dark")">All</a>
                     <a asp-action="Index" asp-route-status="@ComplaintStatus.Pending" class="btn @(currentStatus == ComplaintStatus.Pending ? "btn-warning text-dark" : "btn-outline-warning")">Pending</a>
@@ -31,7 +31,6 @@
         </div>
     </div>
 
-    <!-- Data Table -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">

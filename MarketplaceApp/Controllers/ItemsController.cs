@@ -2,7 +2,7 @@ using MarketplaceApp.Data;
 using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
 using MarketplaceApp.ViewModels;
-using MarketplaceApp.Services; // Ensure this is available
+using MarketplaceApp.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -28,7 +28,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // ===================== INDEX (Marketplace) =====================
         public async Task<IActionResult> Index(int? categoryId, string? condition, string? listingType, string? sort, string? searchTerm)
         {
             var query = _context.Items
@@ -62,21 +61,17 @@ namespace MarketplaceApp.Controllers
 
             query = sort switch
             {
-                // من الأقل سعراً إلى الأعلى (Low to High)
                 "price_asc" => query.OrderBy(i => i.PriceSortValue),
 
-                // من الأعلى سعراً إلى الأقل (High to Low)
                 "price_desc" => query.OrderByDescending(i => i.PriceSortValue),
 
-                // الترتيب الافتراضي (الأحدث أولاً)
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
             var items = await query.ToListAsync();
 
-           
 
-            // Populate ViewBags for Filter SelectLists
+
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
             ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, listingType);
@@ -93,7 +88,6 @@ namespace MarketplaceApp.Controllers
             return View(items);
         }
 
-        // ===================== DETAILS =====================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -108,7 +102,6 @@ namespace MarketplaceApp.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Privacy Protection: Only Available items or those involved in a transaction can be seen
             if (item.Status != ItemStatus.Available)
             {
                 bool canAccess = false;
@@ -130,7 +123,6 @@ namespace MarketplaceApp.Controllers
                 if (!canAccess) return View("ItemUnavailable");
             }
 
-            // Wallet balance for the "Buy Modal" in Details view
             if (User.Identity?.IsAuthenticated == true)
             {
                 var currentUser = await _context.Users.FindAsync(currentUserId);
@@ -141,7 +133,6 @@ namespace MarketplaceApp.Controllers
             return View(item);
         }
 
-        // ===================== CREATE =====================
         public IActionResult Create()
         {
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name");
@@ -191,7 +182,6 @@ namespace MarketplaceApp.Controllers
             return View(vm);
         }
 
-        // ===================== EDIT =====================
         public async Task<IActionResult> Edit(int id)
         {
             var item = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == id);
@@ -210,7 +200,7 @@ namespace MarketplaceApp.Controllers
                 Location = item.Location,
                 Status = item.Status,
                 CategoryID = item.CategoryID,
-                UserID = item.UserID // تأكد أن الـ ViewModel فيه الخاصية دي
+                UserID = item.UserID
             };
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
@@ -218,16 +208,13 @@ namespace MarketplaceApp.Controllers
             return View(vm);
         }
 
-        // ===================== EDIT (POST) =====================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ItemEditViewModel vm)
         {
-            // 1. جلب العنصر الأصلي من الداتابيز أولاً
             var item = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == vm.ItemID);
             if (item == null) return NotFound();
 
-            // 2. التحقق من الصلاحية (الأمان)
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != currentUserId) return Unauthorized();
 
@@ -253,16 +240,11 @@ namespace MarketplaceApp.Controllers
                 }
             }
 
-            // لو الـ ModelState مش تمام، لازم نرجع الـ ViewBags تاني
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
             return View(vm);
         }
 
-        // ===================== DELETE (Action Fix) =====================
-        // ضيف الميثود دي عشان صفحة الـ Delete تفتح أصلاً (GET)
-        // ===================== DELETE (GET) =====================
-        // دي الميثود اللي بتعرض صفحة التأكيد
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -281,11 +263,10 @@ namespace MarketplaceApp.Controllers
             return View(item);
         }
 
-        // ===================== DELETE (POST) =====================
-        // دي الميثود اللي بتنفذ الحذف الفعلي
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int ItemID) // اتأكد أن الاسم هنا ItemID زي الـ Hidden Input
+        public async Task<IActionResult> DeleteConfirmed(int ItemID)
         {
             var item = await _context.Items
                 .Include(i => i.Images)
@@ -296,7 +277,6 @@ namespace MarketplaceApp.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != userId) return Unauthorized();
 
-            // 1. مسح الملفات الفيزيائية (الصور)
             if (item.Images != null)
             {
                 foreach (var img in item.Images)
@@ -306,12 +286,10 @@ namespace MarketplaceApp.Controllers
                 }
             }
 
-            // 2. تنظيف العلاقات (Cascade Cleanup)
             _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
             _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
             _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
 
-            // 3. مسح العنصر نفسه
             _context.Items.Remove(item);
             await _context.SaveChangesAsync();
 
@@ -319,7 +297,6 @@ namespace MarketplaceApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ===================== SWAP LOGIC =====================
         [HttpGet]
         public async Task<IActionResult> CreateSwap(int targetItemId)
         {
@@ -328,7 +305,6 @@ namespace MarketplaceApp.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Filter items within 20% price range
             decimal priceTolerance = targetItem.Price * 0.20m;
             var filteredItems = await _context.Items
                 .Where(i => i.UserID == currentUserId && i.Status == ItemStatus.Available &&

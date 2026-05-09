@@ -11,7 +11,6 @@ namespace MarketplaceApp.Data
         {
         }
 
-        // ================= DB SETS =================
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemImage> ItemImages { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -30,15 +29,12 @@ namespace MarketplaceApp.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ================= ITEM =================
-            // Ensures that when an Item is deleted, its images, favorites, and conversations are also removed.
             modelBuilder.Entity<Item>()
                 .HasMany(i => i.Images)
                 .WithOne(img => img.Item)
                 .HasForeignKey(img => img.ItemID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ================= CONVERSATION =================
             modelBuilder.Entity<Conversation>(entity =>
             {
                 entity.HasOne(c => c.Buyer)
@@ -51,7 +47,6 @@ namespace MarketplaceApp.Data
                     .HasForeignKey(c => c.SellerID)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Added Cascade delete so conversations vanish when the Item is deleted
                 entity.HasOne(c => c.Item)
                     .WithMany()
                     .HasForeignKey(c => c.ItemID)
@@ -61,7 +56,6 @@ namespace MarketplaceApp.Data
                     .IsUnique();
             });
 
-            // ================= MESSAGE =================
             modelBuilder.Entity<Message>(entity =>
             {
                 entity.HasOne(m => m.Sender)
@@ -75,20 +69,17 @@ namespace MarketplaceApp.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ================= FAVORITE =================
             modelBuilder.Entity<Favorite>(entity =>
             {
                 entity.HasIndex(f => new { f.UserID, f.ItemID })
                     .IsUnique();
 
-                // Cascade delete favorites when the item is deleted
                 entity.HasOne(f => f.Item)
                     .WithMany()
                     .HasForeignKey(f => f.ItemID)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ================= SWAP REQUEST =================
             modelBuilder.Entity<SwapRequest>()
                 .HasOne(s => s.Requester)
                 .WithMany()
@@ -97,21 +88,18 @@ namespace MarketplaceApp.Data
 
 
 
-            // ================= REVIEW =================
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Transaction)
                 .WithMany(t => t.Reviews)
                 .HasForeignKey(r => r.TransactionID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ================= NOTIFICATION =================
             modelBuilder.Entity<Notification>()
                 .HasOne(n => n.User)
                 .WithMany()
                 .HasForeignKey(n => n.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ================= TRANSACTION =================
             modelBuilder.Entity<Transaction>(entity =>
             {
                 entity.HasOne(t => t.Buyer)
@@ -125,7 +113,6 @@ namespace MarketplaceApp.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ================= BUY REQUEST =================
             modelBuilder.Entity<BuyRequest>(entity =>
             {
                 entity.HasOne(b => b.Buyer)
@@ -144,7 +131,6 @@ namespace MarketplaceApp.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ================= COMPLAINT =================
             modelBuilder.Entity<Complaint>(entity =>
             {
                 entity.HasOne(c => c.Complainant)
@@ -163,7 +149,6 @@ namespace MarketplaceApp.Data
                     .OnDelete(DeleteBehavior.SetNull); // Safe for Item deletion
             });
 
-            // ================= SEED DATA =================
            modelBuilder.Entity<Category>().HasData(
     new Category { CategoryID = 1, Name = "Electronics", ImageUrl = "/images/categories/electronics.jpg" },
     new Category { CategoryID = 2, Name = "Furniture", ImageUrl = "/images/categories/furniture.jpg" },

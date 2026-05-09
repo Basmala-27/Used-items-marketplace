@@ -26,7 +26,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // GET: AdminComplaints
         public async Task<IActionResult> Index(ComplaintStatus? status)
         {
             var query = _context.Complaints
@@ -59,7 +58,6 @@ namespace MarketplaceApp.Controllers
             return View(complaints);
         }
 
-        // GET: AdminComplaints/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var complaint = await _context.Complaints
@@ -73,7 +71,6 @@ namespace MarketplaceApp.Controllers
                 return NotFound();
             }
 
-            // Mark as read
             if (!complaint.IsReadByAdmin)
             {
                 complaint.IsReadByAdmin = true;
@@ -162,14 +159,12 @@ namespace MarketplaceApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteItem(int id)
         {
-            // 1. Find the complaint (using 'Id' which is an int, matching the parameter 'id')
             var complaint = await _context.Complaints
                 .Include(c => c.TargetItem)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (complaint == null || complaint.TargetItemId == null) return NotFound();
 
-            // 2. Find the item
             var item = await _context.Items
                 .Include(i => i.Images)
                 .FirstOrDefaultAsync(i => i.ItemID == complaint.TargetItemId);
@@ -178,7 +173,6 @@ namespace MarketplaceApp.Controllers
             {
                 try
                 {
-                    // 3. MANUAL CLEANUP for SQLite
                     var favorites = _context.Favorites.Where(f => f.ItemID == item.ItemID);
                     _context.Favorites.RemoveRange(favorites);
 
@@ -188,14 +182,13 @@ namespace MarketplaceApp.Controllers
                     var buyRequests = _context.BuyRequests.Where(b => b.ItemID == item.ItemID);
                     _context.BuyRequests.RemoveRange(buyRequests);
 
-                    // Fix: Ensure comparison uses 'Id' and the closing parenthesis is present
                     var otherComplaints = _context.Complaints.Where(c => c.TargetItemId == item.ItemID && c.Id != id);
                     foreach (var oc in otherComplaints)
                     {
                         oc.TargetItemId = null;
                     }
 
-                    // 4. DELETE
+
                     _context.Items.Remove(item);
 
                     complaint.Status = ComplaintStatus.Resolved;

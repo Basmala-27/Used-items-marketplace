@@ -22,7 +22,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        //  كل الشاتات
         public IActionResult Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,7 +37,6 @@ namespace MarketplaceApp.Controllers
             return View(conversations);
         }
 
-        //  فتح شات
         public IActionResult Chat(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -64,7 +62,6 @@ namespace MarketplaceApp.Controllers
 
             return View(messages);
         }
-        //  إرسال رسالة
         [HttpPost]
         public async Task<IActionResult> SendMessage(int conversationId, string content)
         {
@@ -99,7 +96,6 @@ namespace MarketplaceApp.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            //  نجيب الـ item
             var item = _context.Items.Find(itemId);
 
             if (item == null)
@@ -107,11 +103,9 @@ namespace MarketplaceApp.Controllers
 
             var sellerId = item.UserID;
 
-            //  تمنعي user يكلم نفسه
             if (sellerId == userId)
                 return BadRequest("You can't chat with yourself");
 
-            //  هل في conversation موجودة؟
             var conversation = _context.Conversations
     .FirstOrDefault(c =>
         c.BuyerID == userId &&
@@ -119,7 +113,6 @@ namespace MarketplaceApp.Controllers
         c.ItemID == itemId
     );
 
-            // لو مش موجودة نعمل واحدة
             if (conversation == null)
             {
                 conversation = new Conversation
@@ -134,7 +127,6 @@ namespace MarketplaceApp.Controllers
                 _context.SaveChanges();
             }
 
-            //  نروح للشات
             return RedirectToAction("Chat", new { id = conversation.ConversationID });
         }
     }

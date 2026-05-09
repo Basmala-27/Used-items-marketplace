@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MarketplaceApp.Models.Category>
+﻿
+@model IEnumerable<MarketplaceApp.Models.Category>
 
 <section class="categories-section">
     <div class="container">
@@ -11,7 +12,7 @@
             {
                 <div class="col-lg-4 col-md-6">
                     <div class="category-item-card">
-                        <!-- Image and title area -->
+
                         <div class="category-img-box">
                             <img src="@cat.ImageUrl" alt="@cat.Name">
                             <div class="category-text-overlay">
@@ -19,12 +20,12 @@
                                 <small>@cat.Items.Count items</small>
                             </div>
                         </div>
-                        <!-- Bottom link footer -->
-                        <div class="category-link-footer">
+
+                        =                        <div class="category-link-footer">
                             <span>Browse @cat.Name</span>
                             <i class="bi bi-chevron-right"></i>
                         </div>
-                        <!-- Stretched link: clicking anywhere on the card goes to Items filtered by this category -->
+
                         <a asp-controller="Items"
                            asp-action="Index"
                            asp-route-categoryId="@cat.CategoryID"

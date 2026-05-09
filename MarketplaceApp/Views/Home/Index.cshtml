@@ -1,4 +1,5 @@
-﻿@using MarketplaceApp.Models
+
+@using MarketplaceApp.Models
 @using MarketplaceApp.Enums
 @model List<Item>
 
@@ -53,7 +54,7 @@
                 <div class="hero-text">
                     <h1>Amazing Deals on Electronics</h1>
                     <p>Buy & Sell Easily Near You</p>
-                    <a asp-controller="Items" asp-action="Index" asp-route-searchTerm="Electronics" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</a>
+                    <a asp-controller="Items" asp-action="Index" class="btn btn-warning rounded-pill px-4 fw-bold mt-2">Shop Now</a>
                 </div>
             </div>
 
@@ -160,7 +161,6 @@
         overflow: hidden;
     }
 
-    /* --- Search & Icons Styling --- */
     .search-wrapper {
         position: absolute;
         top: 25px;
@@ -191,7 +191,6 @@
             filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
         }
 
-    /* --- Hero Slider --- */
     .hero-slider img {
         width: 100%;
         height: 350px;
@@ -217,7 +216,6 @@
             font-size: 2.2rem;
         }
 
-    /* --- Cards --- */
     .product-card {
         border: none;
         border-radius: 20px;
@@ -306,7 +304,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            // تحديث الإشعارات
             async function loadInitialCounts() {
                 try {
                     const res = await fetch('/Notifications/GetUnreadCount');
@@ -322,7 +319,6 @@
             }
             loadInitialCounts();
 
-            // المفضلة
             $('.favorite-toggle').on('click', function (e) {
                 e.preventDefault();
                 var btn = $(this);

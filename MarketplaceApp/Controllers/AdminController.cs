@@ -48,9 +48,7 @@ namespace MarketplaceApp.Controllers
 
                 if (item != null)
                 {
-                    // 1. Delete the item (EF Core will cascade delete Images due to DbContext config)
 
-                    // 2. Manual cleanup for SQLite
                     var favorites = _context.Favorites.Where(f => f.ItemID == id);
                     _context.Favorites.RemoveRange(favorites);
 
@@ -66,7 +64,6 @@ namespace MarketplaceApp.Controllers
                         oc.TargetItemId = null;
                     }
 
-                    // 3. Delete the item (EF Core will cascade delete Images due to DbContext config)
                     _context.Items.Remove(item);
                     await _context.SaveChangesAsync();
 
@@ -84,21 +81,18 @@ namespace MarketplaceApp.Controllers
 
             return RedirectToAction(nameof(ManageItems));
         }
-        // 4. عرض كل المستخدمين للتحكم في البلوك
         public async Task<IActionResult> ManageUsers()
         {
             var users = await _context.Users.ToListAsync();
             return View(users);
         }
 
-        // 5. أكشن عمل بلوك أو فك البلوك عن يوزر
         [HttpPost]
         public async Task<IActionResult> ToggleBlockUser(string userId)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
-                // بنعكس الحالة: لو true تبقى false والعكس
                 user.IsBlocked = !user.IsBlocked;
                 await _context.SaveChangesAsync();
 

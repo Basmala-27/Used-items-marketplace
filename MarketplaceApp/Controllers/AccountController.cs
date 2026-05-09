@@ -21,7 +21,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // ---------------- REGISTER ----------------
 
         [HttpGet]
         public IActionResult Register()
@@ -58,7 +57,7 @@ namespace MarketplaceApp.Controllers
                 PhoneNumber = model.PhoneNumber,
                 ProfileImage = "/uploads/" + fileName,
                 CreatedAt = DateTime.Now,
-                IsBlocked = false
+                IsBlocked = false // ?????? ?? ??? ??? ????? ??? ???????
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -75,7 +74,6 @@ namespace MarketplaceApp.Controllers
             return View(model);
         }
 
-        // ---------------- LOGIN ----------------
 
 
         [HttpGet]
@@ -125,7 +123,6 @@ namespace MarketplaceApp.Controllers
             return View(model);
         }
 
-        // ---------------- LOGOUT ----------------
 
         [HttpPost]
         [ValidateAntiForgeryToken]

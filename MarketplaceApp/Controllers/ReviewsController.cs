@@ -20,7 +20,6 @@ namespace MarketplaceApp.Controllers
             _context = context;
         }
 
-        // POST: Reviews/SubmitReview
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Microsoft.AspNetCore.Authorization.Authorize]
@@ -34,7 +33,6 @@ namespace MarketplaceApp.Controllers
                 return Unauthorized();
             }
 
-            // Validate that the transaction exists, belongs to the current user, is completed, and is with the seller
             var transaction = await _context.Transactions
                 .FirstOrDefaultAsync(t => t.TransactionID == transactionId && t.BuyerID == currentUserId && t.SellerID == sellerId && t.Status == MarketplaceApp.Enums.OrderStatus.Completed);
 
@@ -45,7 +43,6 @@ namespace MarketplaceApp.Controllers
                 return RedirectToAction("SellerProfile", "Profile", new { id = sellerId });
             }
 
-            // Validate that the user hasn't already reviewed the seller
             var hasReviewed = await _context.Reviews
                 .AnyAsync(r => r.ReviewerID == currentUserId && r.SellerID == sellerId);
 

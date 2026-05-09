@@ -1,4 +1,5 @@
-﻿@model MarketplaceApp.ViewModels.ItemEditViewModel
+﻿
+@model MarketplaceApp.ViewModels.ItemEditViewModel
 
 @{
     ViewData["Title"] = "Edit Item";
@@ -9,7 +10,6 @@
         <div class="col-lg-9">
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
 
-                @* Header بتصميم جذاب *@
                 <div class="card-header bg-primary bg-gradient py-3">
                     <h3 class="mb-0 text-white fw-bold text-center">
                         <i class="bi bi-pencil-square me-2"></i> Edit Item Details
@@ -25,7 +25,6 @@
 
                         <div class="row g-4">
 
-                            @* Title *@
                             <div class="col-md-8">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-tag-fill me-1 text-primary"></i> Title
@@ -34,7 +33,6 @@
                                 <span asp-validation-for="Title" class="text-danger small"></span>
                             </div>
 
-                            @* Price *@
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-currency-dollar me-1 text-primary"></i> Price
@@ -46,7 +44,6 @@
                                 <span asp-validation-for="Price" class="text-danger small"></span>
                             </div>
 
-                            @* Description *@
                             <div class="col-12">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-card-text me-1 text-primary"></i> Description
@@ -55,7 +52,6 @@
                                 <span asp-validation-for="Description" class="text-danger small"></span>
                             </div>
 
-                            @* Category *@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-grid-fill me-1 text-primary"></i> Category
@@ -64,7 +60,6 @@
                                 </select>
                             </div>
 
-                            @* Condition *@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-stars me-1 text-primary"></i> Condition
@@ -73,7 +68,6 @@
                                 </select>
                             </div>
 
-                            @* Location *@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-geo-alt-fill me-1 text-primary"></i> Location
@@ -82,7 +76,7 @@
                                 <span asp-validation-for="Location" class="text-danger small"></span>
                             </div>
 
-                            @* Status *@
+
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-secondary">
                                     <i class="bi bi-info-circle-fill me-1 text-primary"></i> Current Status
@@ -94,7 +88,7 @@
 
                         </div>
 
-                        @* الأزرار *@
+
                         <div class="mt-5 d-flex flex-column flex-md-row gap-3">
                             <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow fw-bold flex-grow-1">
                                 <i class="bi bi-check-circle-fill me-2"></i> Save All Changes
@@ -113,7 +107,6 @@
 </div>
 
 @section Scripts {
-    @* تم إضافة مكتبة التحقق لضمان تجربة مستخدم جيدة *@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

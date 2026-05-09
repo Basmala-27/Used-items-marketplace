@@ -1,3 +1,4 @@
+
 @model Item
 
 @{
@@ -8,7 +9,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                @* Header القسم العلوي *@
+
                 <div class="card-header bg-danger bg-gradient py-3 text-center">
                     <h4 class="text-white mb-0 fw-bold">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Deletion
@@ -42,7 +43,6 @@
                         </div>
                     </div>
 
-                    @* Form الحذف *@
                     <form id="deleteForm" asp-action="Delete" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="ItemID" value="@Model.ItemID" />
@@ -63,7 +63,6 @@
 </div>
 
 @section Scripts {
-    @* إضافة مكتبة SweetAlert2 *@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -84,7 +83,7 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // إذا وافق المستخدم، نقوم بإرسال الفورم
+
                     document.getElementById('deleteForm').submit();
                 }
             });

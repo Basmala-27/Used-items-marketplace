@@ -9,7 +9,7 @@ using System.Security.Claims;
 using MarketplaceApp.Enums;
 namespace MarketplaceApp.Controllers
 {
-    [Authorize] // لضمان أن المستخدمين المسجلين فقط هم من يصلون لهذه الأفعال
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,7 +25,6 @@ namespace MarketplaceApp.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // 1. عرض البروفايل (المنتجات والمفضلات والعمليات)
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -51,9 +50,8 @@ namespace MarketplaceApp.Controllers
                 SwapRequests = await _context.SwapRequests
                     .CountAsync(s => s.RequesterId == user.Id || s.RequestedItem.UserID == user.Id),
 
-                // --- NEW: Fetch Transactions for the current user ---
                 Transactions = await _context.Transactions
-                    .Include(t => t.Item) // To show the item name
+                    .Include(t => t.Item)
                     .Where(t => t.BuyerID == user.Id || t.SellerID == user.Id)
                     .OrderByDescending(t => t.CreatedAt)
                     .ToListAsync()
@@ -62,7 +60,6 @@ namespace MarketplaceApp.Controllers
             return View(viewModel);
         }
 
-        // 2. GET: تعديل البيانات الأساسية
         [HttpGet]
         public async Task<IActionResult> Edit()
         {
@@ -79,7 +76,6 @@ namespace MarketplaceApp.Controllers
             return View(model);
         }
 
-        // 3. POST: حفظ تعديلات البيانات الأساسية والصورة
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditProfileVM model)
@@ -93,7 +89,6 @@ namespace MarketplaceApp.Controllers
             {
                 if (model.ProfileImage != null)
                 {
-                    // فحص الامتداد للأمان
                     var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
                     var extension = Path.GetExtension(model.ProfileImage.FileName).ToLower();
 
@@ -137,11 +132,9 @@ namespace MarketplaceApp.Controllers
             return View(model);
         }
 
-        // 4. GET: صفحة تغيير الباسورد
         [HttpGet]
         public IActionResult ChangePassword() => View();
 
-        // 5. POST: تغيير الباسورد (مهندل بشروط الـ Identity)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordVM model)
@@ -151,7 +144,6 @@ namespace MarketplaceApp.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            // ميثود Identity الجاهزة للتحقق من القديم وعمل Hash للجديد
             var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
 
             if (result.Succeeded)
@@ -162,14 +154,12 @@ namespace MarketplaceApp.Controllers
 
             foreach (var error in result.Errors)
             {
-                // هنا الـ Identity هيطلع Errors لو الباسورد الجديد مش فيه Capital Letters مثلاً
                 ModelState.AddModelError(string.Empty, error.Description);
             }
 
             return View(model);
         }
 
-        // 6. حذف من المفضلات
         [HttpPost]
         public async Task<IActionResult> RemoveFromFavorites(int itemId)
         {
@@ -188,7 +178,6 @@ namespace MarketplaceApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // 7. Seller Profile (Public View)
         [AllowAnonymous]
         public async Task<IActionResult> SellerProfile(string id)
         {

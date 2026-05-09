@@ -25,7 +25,6 @@ namespace MarketplaceApp.Controllers
             _notificationService = notificationService;
         }
 
-        // GET: SwapRequests/MyRequests — Inbound swap requests for the user
         public async Task<IActionResult> MyRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -41,7 +40,6 @@ namespace MarketplaceApp.Controllers
             return View(requests);
         }
 
-        // GET: SwapRequests/MySentRequests — Requests sent by the user
         public async Task<IActionResult> MySentRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -58,7 +56,6 @@ namespace MarketplaceApp.Controllers
         }
 
 
-        //  POST: SwapRequests/Respond — Accept or Reject a Swap Request
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Respond(int id, SwapRequestStatus status)
@@ -74,7 +71,6 @@ namespace MarketplaceApp.Controllers
             if (swapRequest == null)
                 return Json(new { success = false, message = "Request not found." });
 
-            // Verify the respondent is the owner of the requested item
             if (swapRequest.RequestedItem.UserID != userId)
                 return Json(new { success = false, message = "Unauthorized." });
 
@@ -86,23 +82,18 @@ namespace MarketplaceApp.Controllers
                 swapRequest.Status = SwapRequestStatus.Rejected;
                 await _context.SaveChangesAsync();
 
-                // Notify sender using the service
                 await _notificationService.NotifySwapRequestRejectedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
                 TempData["Message"] = "Swap request rejected.";
                 return RedirectToAction(nameof(MyRequests));
             }
 
-
-            // Accept Request — Real-time ownership exchange via Transaction
-
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
-                var offeredItemOwnerId = swapRequest.OfferedItem.UserID;
-                var requestedItemOwnerId = swapRequest.RequestedItem.UserID;
+                var offeredItemOwnerId = swapRequest.OfferedItem.UserID;    // Original Requester
+                var requestedItemOwnerId = swapRequest.RequestedItem.UserID; // Original Owner (Respondent)
 
-                // 1. Fetch Users for Reputation Update
                 var sender = await _context.Users.FindAsync(offeredItemOwnerId);
                 var respondent = await _context.Users.FindAsync(requestedItemOwnerId);
 
@@ -113,22 +104,17 @@ namespace MarketplaceApp.Controllers
                     return RedirectToAction(nameof(MyRequests));
                 }
 
-                // 2. Increment Ratings for both parties
                 sender.Rating += 1;
                 respondent.Rating += 1;
 
-                // 3. Swap Ownership ✅
-                swapRequest.OfferedItem.UserID = requestedItemOwnerId;
-                swapRequest.RequestedItem.UserID = offeredItemOwnerId;
+                swapRequest.OfferedItem.UserID = requestedItemOwnerId;   // Offered item now belongs to respondent
+                swapRequest.RequestedItem.UserID = offeredItemOwnerId;    // Requested item now belongs to requester
 
-                // 4. Update Status to Swapped
                 swapRequest.OfferedItem.Status = ItemStatus.Swapped;
                 swapRequest.RequestedItem.Status = ItemStatus.Swapped;
 
-                // 5. Update Request Status
                 swapRequest.Status = SwapRequestStatus.Accepted;
 
-                // 6. Financial Records (Transaction logs for history)
                 _context.Transactions.Add(new Transaction
                 {
                     BuyerID = offeredItemOwnerId,
@@ -158,11 +144,9 @@ namespace MarketplaceApp.Controllers
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                // 7. Notify both parties
-                // To the Requester
+
                 await _notificationService.NotifySwapRequestAcceptedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
 
-                // To the Respondent (Current User)
                 await _notificationService.SendAsync(
                     userId!,
                     NotificationType.Order,

@@ -81,7 +81,7 @@ namespace MarketplaceApp.Services
         {
             await SendAsync(sellerId, NotificationType.Transaction, buyRequestId,
                 $"✅ The buyer confirmed receiving \"{itemTitle}\". The final ${amount:0.00} (50%) has been transferred to your wallet!",
-                $"/Transactions");
+                $"/Profile#transactions");
         }
 
         public async Task NotifySwapRequestAsync(string userId, int swapRequestId, string requestedItemTitle)

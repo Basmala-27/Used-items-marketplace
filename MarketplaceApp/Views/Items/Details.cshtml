@@ -1,4 +1,5 @@
-﻿@model Item
+﻿
+@model Item
 @using System.Security.Claims
 @using MarketplaceApp.Enums
 
@@ -155,7 +156,6 @@
                     {
                         if (isAvailable)
                         {
-                            @* تعديل جزء الشات: يظهر فقط إذا كان البائع مفعلاً لخيار التفاوض *@
                             @if (Model.IsAvailableForSale)
                             {
                                 <a asp-controller="Chat" asp-action="StartConversation" asp-route-itemId="@Model.ItemID"
@@ -213,7 +213,6 @@
     </div>
 </div>
 
-@* Modal تأكيد الشراء *@
 <div class="modal fade" id="buyConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg">
@@ -259,7 +258,7 @@
     </div>
 </div>
 
-@* Toast للرسائل *@
+
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="buyToast" class="toast align-items-center border-0 rounded-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">

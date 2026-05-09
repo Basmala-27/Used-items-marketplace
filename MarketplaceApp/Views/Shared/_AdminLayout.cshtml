@@ -1,3 +1,5 @@
+
+
 @{
     Layout = "_Layout";
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
@@ -5,14 +7,13 @@
 }
 
 <style>
-    /* Cinematic Sidebar Styles */
     .admin-sidebar {
         background: linear-gradient(180deg, #1e1e2f 0%, #2a2a40 100%);
-        min-height: calc(100vh - 62px); 
+        min-height: calc(100vh - 62px);
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
     }
-    
+
     .admin-nav-link {
         color: #a0a0b5;
         border-radius: 12px;
@@ -23,29 +24,29 @@
         align-items: center;
         justify-content: space-between;
     }
-    
-    .admin-nav-link i.main-icon {
-        font-size: 1.2rem;
-        width: 30px;
-    }
 
-    .admin-nav-link:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.05);
-        transform: translateX(5px);
-    }
+        .admin-nav-link i.main-icon {
+            font-size: 1.2rem;
+            width: 30px;
+        }
 
-    .admin-nav-link.active {
-        color: #ffffff;
-        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-    }
-    
-    .admin-nav-link.active-danger {
-        color: #ffffff;
-        background: linear-gradient(135deg, #dc3545, #b02a37);
-        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-    }
+        .admin-nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .admin-nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+        }
+
+        .admin-nav-link.active-danger {
+            color: #ffffff;
+            background: linear-gradient(135deg, #dc3545, #b02a37);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
 
     .sidebar-header {
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -63,6 +64,7 @@
             min-height: auto;
             padding-bottom: 20px;
         }
+
         .admin-nav-link:hover {
             transform: none;
         }
@@ -70,7 +72,6 @@
 </style>
 
 <div class="d-flex flex-column flex-md-row">
-    <!-- Sidebar -->
     <div class="admin-sidebar p-4 col-md-3 col-lg-2">
         <div class="sidebar-header d-flex align-items-center">
             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow" style="width: 45px; height: 45px;">
@@ -78,7 +79,7 @@
             </div>
             <h5 class="fw-bold text-white mb-0">Admin Panel</h5>
         </div>
-        
+
         <ul class="nav flex-column gap-2">
             <li class="nav-item">
                 <a class="nav-link admin-nav-link @(currentController == "Admin" && currentAction == "Index" ? "active" : "")" href="@Url.Action("Index", "Admin")">
@@ -88,7 +89,7 @@
                     </div>
                 </a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link admin-nav-link @(currentController == "Admin" && currentAction == "ManageItems" ? "active" : "")" href="@Url.Action("ManageItems", "Admin")">
                     <div>
@@ -97,7 +98,7 @@
                     </div>
                 </a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link admin-nav-link @(currentController == "Admin" && currentAction == "ManageUsers" ? "active" : "")" href="@Url.Action("ManageUsers", "Admin")">
                     <div>
@@ -106,7 +107,7 @@
                     </div>
                 </a>
             </li>
-            
+
             <li class="nav-item mt-3 pt-3 border-top border-secondary">
                 <a class="nav-link admin-nav-link @(currentController == "AdminComplaints" ? "active-danger" : "")" href="@Url.Action("Index", "AdminComplaints")">
                     <div>
@@ -119,11 +120,9 @@
         </ul>
     </div>
 
-    <!-- Main Content -->
     <div class="flex-grow-1 admin-content p-4 p-md-5">
         @RenderBody()
     </div>
 </div>
 
-@* --- FIX ADDED BELOW --- *@
 @await RenderSectionAsync("Scripts", required: false)

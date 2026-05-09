@@ -1,9 +1,10 @@
+
 @using MarketplaceApp.Models
 @model IEnumerable<Item>
 
 @{
     ViewData["Title"] = "Manage Items";
-    Layout = "_AdminLayout"; // تأكد أن هذا الاسم يطابق ملف اللايوت الجديد
+    Layout = "_AdminLayout";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -37,9 +38,9 @@
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
                                         @{
-                                            // منطق جلب الصورة وإصلاح المسار
+
                                             var firstImage = item.Images?.FirstOrDefault()?.ImageUrl;
-                                            string finalSrc = "/images/no-image.png"; // صورة افتراضية لو مفيش صورة
+                                            string finalSrc = "/images/no-image.png";
 
                                             if (!string.IsNullOrEmpty(firstImage))
                                             {
@@ -49,7 +50,6 @@
                                                 }
                                                 else
                                                 {
-                                                    // نضمن أن المسار يبدأ بـ / لكي يبحث في wwwroot مباشرة
                                                     finalSrc = firstImage.StartsWith("/") ? firstImage : "/" + firstImage;
                                                 }
                                             }
@@ -58,7 +58,7 @@
                                              class="rounded-3 border me-3"
                                              style="width: 50px; height: 50px; object-fit: cover;"
                                              onerror="this.src='/images/no-image.png';">
-                                        
+
                                         <div>
                                             <div class="fw-bold">@item.Title</div>
                                             <small class="text-muted">ID: #@item.ItemID</small>
@@ -106,7 +106,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
-            // التعامل مع زر الحذف
+
             $('.btn-delete').on('click', function (e) {
                 var form = $(this).closest('form');
                 Swal.fire({
@@ -124,18 +124,17 @@
                 });
             });
 
-            // إظهار رسائل النجاح
             @if (TempData["Success"] != null)
             {
-                <text>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Done!',
-                    text: '@TempData["Success"]',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                </text>
+                    <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Done!',
+                        text: '@TempData["Success"]',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    </text>
             }
         });
     </script>

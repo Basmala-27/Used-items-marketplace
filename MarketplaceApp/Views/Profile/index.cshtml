@@ -1,9 +1,11 @@
+
+
 @model MarketplaceApp.ViewModels.ProfileVM
 @{
     ViewData["Title"] = "My Profile";
 }
 <style>
-    
+
     .tabs-wrapper {
         display: flex;
         justify-content: flex-start;
@@ -13,7 +15,7 @@
     .tabs-container {
         display: inline-flex;
         padding: 6px;
-        background-color: #f1f3f5; /* لون خلفية أهدى مطابق للصورة */
+        background-color: #f1f3f5;
         border-radius: 50px;
         border: 1px solid #e9ecef;
     }
@@ -23,7 +25,7 @@
         font-weight: 600;
         font-size: 15px;
         border: none;
-        padding: 10px 30px; /* زيادة البادينج لعرض التبويب */
+        padding: 10px 30px;
         transition: all 0.2s ease-in-out;
         background: transparent;
         border-radius: 50px !important;
@@ -35,7 +37,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
         }
 
-    /* تنسيق الكروت - تم تصغيرها لتناسب العرض الكامل */
+
     .product-card {
         border: none;
         border-radius: 15px;
@@ -85,7 +87,6 @@
 </style>
 
 <div class="container-fluid px-0">
-    <!-- 1. الـ Header -->
     <div class="profile-header text-white p-5 shadow-sm" style="background-color: #FF6600;">
         <div class="row align-items-center mb-5 mx-0">
             <div class="col-md-auto text-center">
@@ -98,12 +99,10 @@
                 <p class="mb-0 opacity-75 small"><i class="bi bi-calendar3 me-2"></i>Member since @Model.MemberSince.ToString("MMM yyyy")</p>
             </div>
             <div class="col-md-auto mt-3 mt-md-0 d-flex gap-2">
-                <!-- زرار الـ Edit Profile هيفضل زي ما هو -->
                 <a asp-controller="Profile" asp-action="Edit" class="btn btn-outline-light rounded-pill px-4">
                     <i class="bi bi-pencil-square me-2"></i>Edit Profile
                 </a>
 
-                <!-- زرار الـ Logout الجديد هيتضاف جنبه -->
                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-light text-danger rounded-pill px-4 shadow-sm">
@@ -144,7 +143,7 @@
         </div>
     </div>
 
-   
+
     <div class="mt-4 px-3 px-md-5">
         <div class="tabs-wrapper mb-4">
             <div class="tabs-container">
@@ -163,9 +162,7 @@
         </div>
 
         <div class="tab-content" id="profileTabsContent">
-            <!-- تاب المنتجات الخاصة بي -->
             <div class="tab-pane fade show active" id="my-items">
-                <!-- التعديل هنا: row-cols-xl-7 لزيادة عدد الكروت في العرض -->
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 row-cols-xl-7 g-3">
                     @if (Model.PostedItems != null && Model.PostedItems.Any())
                     {
@@ -195,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- تاب المفضلات -->
             <div class="tab-pane fade" id="favorites">
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 row-cols-xl-7 g-3" id="favorites-grid">
                     @if (Model.FavoriteItems != null && Model.FavoriteItems.Any())
@@ -229,7 +225,6 @@
                 </div>
             </div>
 
-            <!-- تاب العمليات - Optimized for Soft Aesthetics -->
             <div class="tab-pane fade" id="transactions">
                 @if (Model.Transactions == null || !Model.Transactions.Any())
                 {
@@ -260,7 +255,6 @@
                                             </td>
                                             <td>
                                                 @{
-                                                    // Creating the soft pill colors from image_50ced4.png
                                                     var statusClass = trans.Status.ToString() switch
                                                     {
                                                         "Completed" => "bg-success-subtle text-success border-success-subtle",
@@ -279,7 +273,6 @@
                                             </td>
                                             <td class="text-end pe-4">
                                                 @{
-                                                    // Logic to identify if this was a Sale (Income) or Purchase
                                                     var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                                                     var isSale = trans.SellerID == currentUserId;
                                                 }
@@ -297,65 +290,63 @@
             </div>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Check if there's a hash in the URL and activate the corresponding tab
-            var hash = window.location.hash;
-            if (hash) {
-                var targetBtn = document.querySelector('button[data-bs-target="' + hash + '"]');
-                if (targetBtn) {
-                    var tabInstance = new bootstrap.Tab(targetBtn);
-                    tabInstance.show();
-                }
-            }
-
-            // Update the URL hash when a tab is clicked
-            $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
-                var target = $(e.target).data('bs-target');
-                if (history.pushState) {
-                    history.pushState(null, null, target);
-                } else {
-                    window.location.hash = target;
-                }
-            });
-        });
-
-        function removeFromFav(itemId) {
-            var icon = $(`#heart-icon-${itemId}`);
-            var card = $(`#fav-item-${itemId}`);
-            icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
-
-            $.ajax({
-                url: '/Favorites/ToggleFavorite',
-                type: 'POST',
-                data: { itemId: itemId },
-                success: function (response) {
-                    if (response.success && response.status === "removed") {
-                        card.addClass('removing-item');
-                        setTimeout(function() {
-                            card.remove();
-                            $('.favorites-count').each(function() {
-                                var current = parseInt($(this).text());
-                                if (current > 0) $(this).text(current - 1);
-                            });
-                            if ($('#favorites-grid .product-card').length === 0) {
-                                $('#favorites-grid').html(`
-                                    <div class="col-12 text-center py-5 opacity-50">
-                                        <i class="bi bi-heartbreak fs-1"></i>
-                                        <p class="mt-2">Your wishlist is empty.</p>
-                                    </div>
-                                `);
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script>
+                    $(document).ready(function () {
+                        var hash = window.location.hash;
+                        if (hash) {
+                            var targetBtn = document.querySelector('button[data-bs-target="' + hash + '"]');
+                            if (targetBtn) {
+                                var tabInstance = new bootstrap.Tab(targetBtn);
+                                tabInstance.show();
                             }
-                        }, 300);
-                    } else {
-                        icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                        }
+
+                        $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+                            var target = $(e.target).data('bs-target');
+                            if (history.pushState) {
+                                history.pushState(null, null, target);
+                            } else {
+                                window.location.hash = target;
+                            }
+                        });
+                    });
+
+                    function removeFromFav(itemId) {
+                        var icon = $(`#heart-icon-${itemId}`);
+                        var card = $(`#fav-item-${itemId}`);
+                        icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
+
+                        $.ajax({
+                            url: '/Favorites/ToggleFavorite',
+                            type: 'POST',
+                            data: { itemId: itemId },
+                            success: function (response) {
+                                if (response.success && response.status === "removed") {
+                                    card.addClass('removing-item');
+                                    setTimeout(function() {
+                                        card.remove();
+                                        $('.favorites-count').each(function() {
+                                            var current = parseInt($(this).text());
+                                            if (current > 0) $(this).text(current - 1);
+                                        });
+                                        if ($('#favorites-grid .product-card').length === 0) {
+                                            $('#favorites-grid').html(`
+                                                <div class="col-12 text-center py-5 opacity-50">
+                                                    <i class="bi bi-heartbreak fs-1"></i>
+                                                    <p class="mt-2">Your wishlist is empty.</p>
+                                                </div>
+                                            `);
+                                        }
+                                    }, 300);
+                                } else {
+                                    icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                                }
+                            },
+                            error: function () {
+                                icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                            }
+                        });
                     }
-                },
-                error: function () {
-                    icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
-                }
-            });
-        }
-    </script>
+                </script>
 }

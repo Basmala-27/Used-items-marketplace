@@ -1,3 +1,5 @@
+
+
 @model MarketplaceApp.ViewModels.ItemCreateViewModel
 
 @{
@@ -5,7 +7,6 @@
 }
 
 <div class="container mt-4 mb-5" style="max-width: 850px;">
-    <!-- الهيدر المدمج -->
     <div class="mb-4 text-center">
         <h2 class="fw-bold">Post a New Item</h2>
         <p class="text-muted">Fill in the details to list your item on the marketplace</p>
@@ -15,13 +16,11 @@
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body p-4 p-md-5">
 
-                <!-- قسم الصور: يجمع بين منطق الـ JS من النسخة 1 والتصميم من النسخة 2 -->
                 <div class="mb-4">
                     <label class="form-label fw-bold">Item Photos <span class="text-danger">*</span></label>
                     <div class="upload-container text-center p-4 border-dashed rounded-3" id="drop-zone" style="cursor: pointer; background-color: #fafafa; border: 2px dashed #d1d5db; transition: 0.3s;">
 
                         <div id="image-preview-container" class="mb-3 d-flex flex-wrap justify-content-center gap-2">
-                            <!-- الصور ستظهر هنا بالـ JavaScript -->
                         </div>
 
                         <div id="upload-status" class="text-success fw-bold small mb-2" style="display:none;">
@@ -39,14 +38,12 @@
                     <span asp-validation-for="ImageFiles" class="text-danger small"></span>
                 </div>
 
-                <!-- العنوان -->
                 <div class="mb-4">
                     <label asp-for="Title" class="form-label fw-bold">Item Title <span class="text-danger">*</span></label>
                     <input asp-for="Title" class="form-control form-control-lg rounded-3" placeholder="e.g., Sony WH-1000XM4 Wireless Headphones" />
                     <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
 
-                <!-- القسم والحالة -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label asp-for="CategoryID" class="form-label fw-bold">Category <span class="text-danger">*</span></label>
@@ -64,14 +61,12 @@
                     </div>
                 </div>
 
-                <!-- الوصف -->
                 <div class="mb-4">
                     <label asp-for="Description" class="form-label fw-bold">Description <span class="text-danger">*</span></label>
                     <textarea asp-for="Description" class="form-control rounded-3" rows="5" placeholder="Tell buyers more about your item..."></textarea>
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-                <!-- السعر والموقع -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label asp-for="Price" class="form-label fw-bold">Price (USD) <span class="text-danger">*</span></label>
@@ -91,7 +86,6 @@
                     </div>
                 </div>
 
-                <!-- خيارات التعامل (Negotiation & Swap) - التنسيق الملون من النسخة 2 -->
                 <div class="mb-4 p-3 rounded-3" style="background-color: #fff9f0; border: 1px solid #ffe8cc;">
                     <label class="form-label fw-bold text-orange d-block mb-3"><i class="bi bi-gear-wide-connected"></i> Deal Options</label>
 
@@ -117,7 +111,6 @@
                     </div>
                 </div>
 
-                <!-- أزرار التحكم -->
                 <div class="d-flex flex-column flex-md-row gap-3 mt-5">
                     <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3 fw-bold shadow-sm rounded-pill">
                         <i class="bi bi-plus-circle me-2"></i> Post My Item
@@ -231,7 +224,6 @@
             fileInput.files = dataTransfer.files;
         }
 
-        // Drag & Drop
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#FF8C00'; });
         dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#d1d5db'; });
         dropZone.addEventListener('drop', (e) => {
