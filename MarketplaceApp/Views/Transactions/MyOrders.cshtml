@@ -1,10 +1,14 @@
 @model List<MarketplaceApp.Models.BuyRequest>
 @using MarketplaceApp.Enums
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "طلباتي";
     var walletBalance  = (decimal)(ViewBag.WalletBalance  ?? 0m);
     var pendingBalance = (decimal)(ViewBag.PendingBalance ?? 0m);
+    var reviewableBuyRequestIds = ((IEnumerable<int>?)ViewBag.ReviewableBuyRequestIds ?? Enumerable.Empty<int>()).ToHashSet();
+    var reviewTransactionIds = (IDictionary<int, int>?)ViewBag.ReviewTransactionIds ?? new Dictionary<int, int>();
+    var pendingReviewPromptJson = ViewBag.PendingReviewPrompt != null ? JsonSerializer.Serialize(ViewBag.PendingReviewPrompt) : "null";
 }
 
 <div class="container py-5">
@@ -163,6 +167,22 @@
                                         <i class="bi bi-check-circle-fill me-1"></i>تم الاستلام ✅
                                     </button>
                                 }
+                                else if (req.Status == BuyRequestStatus.Completed && reviewableBuyRequestIds.Contains(req.BuyRequestId))
+                                {
+                                    var transactionIdForReview = reviewTransactionIds.TryGetValue(req.BuyRequestId, out var txId) ? txId : 0;
+                                    if (transactionIdForReview > 0)
+                                    {
+                                        <button type="button"
+                                                class="btn btn-outline-warning btn-sm rounded-pill open-review-btn"
+                                                data-buyrequest-id="@req.BuyRequestId"
+                                                data-seller-id="@req.SellerID"
+                                                data-seller-name="@(req.Seller?.Name ?? req.Seller?.UserName ?? "Seller")"
+                                                data-item-title="@(req.Item?.Title ?? "Item")"
+                                                data-transaction-id="@transactionIdForReview">
+                                            <i class="bi bi-star-fill me-1"></i>Rate seller
+                                        </button>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>
@@ -192,6 +212,46 @@
                 <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">إلغاء</button>
                 <button type="button" id="doConfirm" class="btn btn-success flex-grow-1 rounded-pill fw-bold">
                     <i class="bi bi-check-circle-fill me-1"></i>نعم، أكّد الاستلام
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true" lang="en" dir="ltr">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#f59e0b,#f97316);">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-star-fill me-2"></i>Review seller</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-1">Would you like to review <strong id="reviewSellerName"></strong>?</p>
+                <p class="text-muted small mb-3">Your feedback helps other buyers and appears on this seller's profile.</p>
+                <form id="reviewForm">
+                    <input type="hidden" id="reviewTransactionId" />
+                    <input type="hidden" id="reviewSellerId" />
+                    <div class="mb-3">
+                        <label for="reviewRating" class="form-label fw-semibold">Rating</label>
+                        <select id="reviewRating" class="form-select" required>
+                            <option value="5">5 — Excellent</option>
+                            <option value="4">4 — Very good</option>
+                            <option value="3">3 — Good</option>
+                            <option value="2">2 — Fair</option>
+                            <option value="1">1 — Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-1">
+                        <label for="reviewComment" class="form-label fw-semibold">Comment (optional)</label>
+                        <textarea id="reviewComment" class="form-control" rows="3" maxlength="500" placeholder="Share your experience with this seller"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
+                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">Skip for now</button>
+                <button type="button" id="doSubmitReview" class="btn btn-warning text-white flex-grow-1 rounded-pill fw-bold">
+                    <i class="bi bi-send-fill me-1"></i>Submit review
                 </button>
             </div>
         </div>
@@ -288,7 +348,9 @@
     @Html.AntiForgeryToken()
     <script>
         let pendingId = null;
+        let activeReviewPrompt = null;
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const pendingReviewPrompt = @Html.Raw(pendingReviewPromptJson);
 
         // ===== Confirm Delivery =====
         document.querySelectorAll('.confirm-btn').forEach(btn => {
@@ -301,7 +363,17 @@
         });
 
         document.getElementById('doConfirm')?.addEventListener('click', function () {
-            sendAction('/Transactions/ConfirmDelivery', { buyRequestId: pendingId }, 'confirmModal', this);
+            sendAction('/Transactions/ConfirmDelivery', { buyRequestId: pendingId }, 'confirmModal', this, {
+                successBtnText: '<i class="bi bi-check-circle-fill me-1"></i>تم الاستلام ✅',
+                onSuccess: (data) => {
+                    if (data.reviewPrompt?.canReview) {
+                        openReviewModal(data.reviewPrompt);
+                        return;
+                    }
+
+                    setTimeout(() => location.reload(), 2200);
+                }
+            });
         });
 
         // ===== Cancel Request =====
@@ -314,10 +386,50 @@
         });
 
         document.getElementById('doCancel')?.addEventListener('click', function () {
-            sendAction('/Transactions/CancelBuyRequest', { buyRequestId: pendingId }, 'cancelModal', this);
+            sendAction('/Transactions/CancelBuyRequest', { buyRequestId: pendingId }, 'cancelModal', this, {
+                successBtnText: 'إلغاء الطلب',
+                onSuccess: () => setTimeout(() => location.reload(), 2200)
+            });
         });
 
-        function sendAction(url, params, modalId, btn) {
+        document.querySelectorAll('.open-review-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const payload = {
+                    buyRequestId: parseInt(this.dataset.buyrequestId, 10),
+                    sellerId: this.dataset.sellerId,
+                    sellerName: this.dataset.sellerName,
+                    itemTitle: this.dataset.itemTitle,
+                    transactionId: parseInt(this.dataset.transactionId || '0', 10),
+                    canReview: true
+                };
+                openReviewModal(payload);
+            });
+        });
+
+        document.getElementById('doSubmitReview')?.addEventListener('click', function () {
+            if (!activeReviewPrompt?.transactionId || !activeReviewPrompt?.sellerId) {
+                showToast('Could not load review details. Refresh the page and try again.', 'danger');
+                return;
+            }
+
+            const rating = Number(document.getElementById('reviewRating').value || 0);
+            const comment = (document.getElementById('reviewComment').value || '').trim();
+            sendAction('/Reviews/SubmitReview', {
+                transactionId: activeReviewPrompt.transactionId,
+                sellerId: activeReviewPrompt.sellerId,
+                rating,
+                comment
+            }, 'reviewModal', this, {
+                successBtnText: '<i class="bi bi-send-fill me-1"></i>Submit review',
+                onSuccess: () => setTimeout(() => location.reload(), 1500)
+            }, true);
+        });
+
+        if (pendingReviewPrompt?.canReview) {
+            openReviewModal(pendingReviewPrompt);
+        }
+
+        function sendAction(url, params, modalId, btn, options = {}, isAjaxRequest = false) {
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ...';
 
@@ -325,18 +437,41 @@
             Object.entries(params).forEach(([k,v]) => fd.append(k, v));
             fd.append('__RequestVerificationToken', token);
 
-            fetch(url, { method: 'POST', body: fd })
+            const fetchOptions = { method: 'POST', body: fd, headers: {} };
+            if (isAjaxRequest) {
+                fetchOptions.headers['X-Requested-With'] = 'XMLHttpRequest';
+            }
+
+            fetch(url, fetchOptions)
                 .then(r => r.json())
                 .then(data => {
                     bootstrap.Modal.getInstance(document.getElementById(modalId))?.hide();
                     showToast(data.message, data.success ? 'success' : 'danger');
-                    if (data.success) setTimeout(() => location.reload(), 2200);
-                    else { btn.disabled = false; btn.innerHTML = 'إعادة'; }
+                    if (data.success && typeof options.onSuccess === 'function') {
+                        options.onSuccess(data);
+                        return;
+                    }
+
+                    if (!data.success) {
+                        btn.disabled = false;
+                        btn.innerHTML = options.successBtnText || 'إعادة';
+                    }
                 })
                 .catch(() => {
                     showToast('حدث خطأ في الاتصال.', 'danger');
                     btn.disabled = false;
+                    btn.innerHTML = options.successBtnText || 'إعادة';
                 });
+        }
+
+        function openReviewModal(promptData) {
+            activeReviewPrompt = promptData;
+            document.getElementById('reviewSellerName').textContent = promptData.sellerName || 'this seller';
+            document.getElementById('reviewTransactionId').value = promptData.transactionId || '';
+            document.getElementById('reviewSellerId').value = promptData.sellerId || '';
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('reviewRating').value = '5';
+            new bootstrap.Modal(document.getElementById('reviewModal')).show();
         }
 
         function showToast(msg, type) {
