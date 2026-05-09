@@ -57,13 +57,7 @@
     </div>
 
     <!-- 4. Sort -->
-    <div class="col-md-2 ms-auto">
-        <select name="sort" class="form-select border-0 shadow-none" onchange="this.form.submit()">
-            <option value="" selected="@(string.IsNullOrEmpty(selectedSort))">Newest First</option>
-            <option value="price_asc" selected="@(selectedSort == "price_asc")">Price: Low to High</option>
-            <option value="price_desc" selected="@(selectedSort == "price_desc")">Price: High to Low</option>
-        </select>
-    </div>
+    
 </form>
 
 <!-- Items Grid -->

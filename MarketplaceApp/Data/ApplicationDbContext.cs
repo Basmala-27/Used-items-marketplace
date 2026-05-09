@@ -164,11 +164,19 @@ namespace MarketplaceApp.Data
             });
 
             // ================= SEED DATA =================
-            modelBuilder.Entity<Category>().HasData(
-                new Category { CategoryID = 1, Name = "Electronics", ImageUrl = "/images/categories/electronics.jpg" },
-                new Category { CategoryID = 2, Name = "Furniture", ImageUrl = "/images/categories/furniture.jpg" },
-                new Category { CategoryID = 3, Name = "Fashion", ImageUrl = "/images/categories/fashion.jpg" }
-            );
+           modelBuilder.Entity<Category>().HasData(
+    new Category { CategoryID = 1, Name = "Electronics", ImageUrl = "/images/categories/electronics.jpg" },
+    new Category { CategoryID = 2, Name = "Furniture", ImageUrl = "/images/categories/furniture.jpg" },
+    new Category { CategoryID = 3, Name = "Clothes", ImageUrl = "/images/categories/fashion.jpg" },
+
+    new Category { CategoryID = 4, Name = "Phones", ImageUrl = "/images/categories/phones.jpg" },
+    new Category { CategoryID = 5, Name = "Laptops", ImageUrl = "/images/categories/laptops.jpg" },
+    new Category { CategoryID = 6, Name = "Accessories", ImageUrl = "/images/categories/accessories.jpg" },
+    new Category { CategoryID = 7, Name = "Gaming", ImageUrl = "/images/categories/gaming.jpg" },
+    new Category { CategoryID = 8, Name = "Vehicles", ImageUrl = "/images/categories/vehicles.jpg" },
+    new Category { CategoryID = 9, Name = "Study Materials", ImageUrl = "/images/categories/study.jpg" },
+    new Category { CategoryID = 10, Name = "Others", ImageUrl = "/images/categories/others.jpg" }
+);
         }
     }
 }

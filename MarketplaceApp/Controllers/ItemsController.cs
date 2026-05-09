@@ -59,14 +59,22 @@ namespace MarketplaceApp.Controllers
                     query = query.Where(i => i.IsAvailableForSale);
             }
 
+
             query = sort switch
             {
-                "price_asc" => query.OrderBy(i => i.Price),
-                "price_desc" => query.OrderByDescending(i => i.Price),
+                // من الأقل سعراً إلى الأعلى (Low to High)
+                "price_asc" => query.OrderBy(i => i.PriceSortValue),
+
+                // من الأعلى سعراً إلى الأقل (High to Low)
+                "price_desc" => query.OrderByDescending(i => i.PriceSortValue),
+
+                // الترتيب الافتراضي (الأحدث أولاً)
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
             var items = await query.ToListAsync();
+
+           
 
             // Populate ViewBags for Filter SelectLists
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);

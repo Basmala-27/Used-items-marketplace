@@ -278,9 +278,10 @@
                     <label asp-for="PhoneNumber" class="mt-2">Phone Number</label>
                     <input asp-for="PhoneNumber" class="form-control" placeholder="01xxxxxxxxx" />
                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-
+                   
                     <label class="mt-2">Profile Picture (Optional)</label>
-                    <input name="ProfileImageFile" type="file" class="form-control mb-1" accept="image/*" />
+                    <input asp-for="ImageFile" type="file" class="form-control mb-1" accept="image/*" />
+                    <span asp-validation-for="ImageFile" class="text-danger"></span>
 
                     <div class="row mt-2">
                         <div class="col">

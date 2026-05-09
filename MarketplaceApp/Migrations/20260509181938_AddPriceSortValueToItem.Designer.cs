@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509181938_AddPriceSortValueToItem")]
+    partial class AddPriceSortValueToItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -56,9 +59,6 @@ namespace MarketplaceApp.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
-
-                    b.Property<double>("PriceSortValue")
-                        .HasColumnType("REAL");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
@@ -277,49 +277,7 @@ namespace MarketplaceApp.Migrations
                         {
                             CategoryID = 3,
                             ImageUrl = "/images/categories/fashion.jpg",
-                            Name = "Clothes"
-                        },
-                        new
-                        {
-                            CategoryID = 4,
-                            ImageUrl = "/images/categories/phones.jpg",
-                            Name = "Phones"
-                        },
-                        new
-                        {
-                            CategoryID = 5,
-                            ImageUrl = "/images/categories/laptops.jpg",
-                            Name = "Laptops"
-                        },
-                        new
-                        {
-                            CategoryID = 6,
-                            ImageUrl = "/images/categories/accessories.jpg",
-                            Name = "Accessories"
-                        },
-                        new
-                        {
-                            CategoryID = 7,
-                            ImageUrl = "/images/categories/gaming.jpg",
-                            Name = "Gaming"
-                        },
-                        new
-                        {
-                            CategoryID = 8,
-                            ImageUrl = "/images/categories/vehicles.jpg",
-                            Name = "Vehicles"
-                        },
-                        new
-                        {
-                            CategoryID = 9,
-                            ImageUrl = "/images/categories/study.jpg",
-                            Name = "Study Materials"
-                        },
-                        new
-                        {
-                            CategoryID = 10,
-                            ImageUrl = "/images/categories/others.jpg",
-                            Name = "Others"
+                            Name = "Fashion"
                         });
                 });
 

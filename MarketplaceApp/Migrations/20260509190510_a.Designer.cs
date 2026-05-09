@@ -3,6 +3,7 @@ using System;
 using MarketplaceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketplaceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509190510_a")]
+    partial class a
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -56,9 +59,6 @@ namespace MarketplaceApp.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
-
-                    b.Property<double>("PriceSortValue")
-                        .HasColumnType("REAL");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
@@ -276,8 +276,8 @@ namespace MarketplaceApp.Migrations
                         new
                         {
                             CategoryID = 3,
-                            ImageUrl = "/images/categories/fashion.jpg",
-                            Name = "Clothes"
+                            ImageUrl = "/images/categories/fashion.jpeg",
+                            Name = "Fashion"
                         },
                         new
                         {

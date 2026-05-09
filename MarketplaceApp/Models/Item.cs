@@ -31,6 +31,7 @@ public class Item
     [Range(0.01, 100000000, ErrorMessage = "Price must be greater than 0")]
     [Display(Name = "Asking Price", Prompt = "0.00")]
     public decimal Price { get; set; }
+    public double PriceSortValue { get; set; }
 
     [Required(ErrorMessage = "Condition is required")]
     [StringLength(50)]
