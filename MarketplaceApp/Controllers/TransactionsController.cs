@@ -365,6 +365,13 @@ namespace MarketplaceApp.Controllers
                 buyer.PendingBalance  -= remainingAmount;
                 seller.WalletBalance  += remainingAmount;
 
+                seller.Rating += 1;
+
+                if (seller.TrustScore < 5.0)
+                {
+                    seller.TrustScore = Math.Min(5.0, seller.TrustScore + 0.5);
+                }
+
                 // 2. تحديث حالة المنتج + نقل الملكية ✅
                 buyRequest.Item.Status = ItemStatus.Sold;
                 buyRequest.Item.UserID = buyerId!;   // نقل الملكية للمشتري
