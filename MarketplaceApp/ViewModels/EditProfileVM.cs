@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 
-namespace MarketplaceApp.Models
+namespace MarketplaceApp.ViewModels
 {
     public class EditProfileVM
     {

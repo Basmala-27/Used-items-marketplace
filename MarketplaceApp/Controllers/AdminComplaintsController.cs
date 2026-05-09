@@ -1,7 +1,7 @@
 using MarketplaceApp.Data;
 using MarketplaceApp.Models;
-using MarketplaceApp.Services;
 using MarketplaceApp.ViewModels;
+using MarketplaceApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -148,7 +148,7 @@ namespace MarketplaceApp.Controllers
             {
                 user.IsBlocked = true;
                 await _userManager.UpdateAsync(user);
-                
+
                 complaint.Status = ComplaintStatus.Resolved;
                 await _context.SaveChangesAsync();
 

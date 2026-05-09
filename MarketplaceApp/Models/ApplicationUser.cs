@@ -6,7 +6,7 @@ namespace MarketplaceApp.Models
 {
     public class ApplicationUser : IdentityUser
     {
-       
+
         [MaxLength(100)]
         [Required(ErrorMessage = "You should enter the name")]
         [Display(Name = "Full Name")]
@@ -20,7 +20,7 @@ namespace MarketplaceApp.Models
         [Display(Name = "Profile Picture")]
         public string ProfileImage { get; set; } = string.Empty;
 
-       
+
         [Range(0, 5)]
         public double TrustScore { get; set; } = 0;
 
@@ -28,7 +28,7 @@ namespace MarketplaceApp.Models
         [Display(Name = "Completed sales")]
         public int Rating { get; set; }
 
-       
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // ===== محفظة الـ Escrow =====

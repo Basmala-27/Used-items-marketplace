@@ -16,7 +16,7 @@ namespace MarketplaceApp.ViewModels
 
         // Hidden fields to link the complaint to an item or a user
         public string? TargetUserId { get; set; }
-        
+
         public int? TargetItemId { get; set; }
     }
 }

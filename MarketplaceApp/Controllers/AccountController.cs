@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using MarketplaceApp.Models;
+using MarketplaceApp.ViewModels;
 
 namespace MarketplaceApp.Controllers
 {
@@ -76,7 +77,7 @@ namespace MarketplaceApp.Controllers
 
         // ---------------- LOGIN ----------------
 
-      
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -97,7 +98,7 @@ namespace MarketplaceApp.Controllers
                 return View(model);
             }
 
-           
+
             if (user.IsBlocked)
             {
                 ModelState.AddModelError("Email", "Your account has been blocked by the admin.");

@@ -55,11 +55,11 @@ namespace MarketplaceApp.Models
         public virtual Item? Item { get; set; }
 
         [ForeignKey(nameof(BuyerID))]
-        [InverseProperty("Purchases")] 
+        [InverseProperty("Purchases")]
         public virtual ApplicationUser Buyer { get; set; } = null!;
 
         [ForeignKey(nameof(SellerID))]
-        [InverseProperty("Sales")] 
+        [InverseProperty("Sales")]
         public virtual ApplicationUser? Seller { get; set; }
 
         [Display(Name = "Customer Review")]

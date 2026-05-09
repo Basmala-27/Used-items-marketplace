@@ -7,7 +7,7 @@ namespace MarketplaceApp.Models
     public class SwapRequest
     {
         [Key]
-        
+
         public int SwapRequestId { get; set; }
 
 
@@ -35,7 +35,7 @@ namespace MarketplaceApp.Models
         [Required]
         [Display(Name = "Sent On")]
         [DataType(DataType.DateTime)]
-        public DateTime CreatedAt { get; set; }= DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 
         // --- Navigation Properties ---

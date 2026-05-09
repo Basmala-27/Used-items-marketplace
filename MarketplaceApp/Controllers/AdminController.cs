@@ -26,16 +26,16 @@ namespace MarketplaceApp.Controllers
         }
 
 
-   public async Task<IActionResult> ManageItems()
-{
-    var items = await _context.Items
-        .Include(i => i.User)   // جلب بيانات المستخدم
-        .Include(i => i.Images) // السطر الناقص: جلب الصور المرتبطة بالمنتج
-        .OrderByDescending(i => i.CreatedAt)
-        .ToListAsync();
+        public async Task<IActionResult> ManageItems()
+        {
+            var items = await _context.Items
+                .Include(i => i.User)   // جلب بيانات المستخدم
+                .Include(i => i.Images) // السطر الناقص: جلب الصور المرتبطة بالمنتج
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
 
-    return View(items);
-}
+            return View(items);
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteItem(int id)
@@ -48,17 +48,7 @@ namespace MarketplaceApp.Controllers
 
                 if (item != null)
                 {
-                    // 1. Delete physical images
-                    if (item.Images != null)
-                    {
-                        foreach (var img in item.Images)
-                        {
-                            // We don't have IWebHostEnvironment injected here, but they are tracked
-                            // Let's rely on EF Core removing the records and skip physical deletion for simplicity,
-                            // or if they want physical deletion, they need IWebHostEnvironment.
-                            // Actually just removing DB records is what the raw SQL did.
-                        }
-                    }
+                    // 1. Delete the item (EF Core will cascade delete Images due to DbContext config)
 
                     // 2. Manual cleanup for SQLite
                     var favorites = _context.Favorites.Where(f => f.ItemID == id);

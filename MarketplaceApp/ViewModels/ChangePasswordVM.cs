@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 
-namespace MarketplaceApp.Models
+namespace MarketplaceApp.ViewModels
 {
     public class ChangePasswordVM
     {

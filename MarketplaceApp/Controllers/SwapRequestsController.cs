@@ -1,6 +1,7 @@
 using MarketplaceApp.Data;
 using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
+using MarketplaceApp.ViewModels;
 using MarketplaceApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -183,30 +184,5 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-        // Simple CRUD Actions
-        public async Task<IActionResult> Index()
-        {
-            var swapRequests = await _context.SwapRequests
-                .Include(s => s.Requester)
-                .Include(s => s.OfferedItem)
-                .Include(s => s.RequestedItem)
-                .ToListAsync();
-            return View(swapRequests);
-        }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var swapRequest = await _context.SwapRequests
-                .Include(s => s.Requester)
-                .Include(s => s.OfferedItem)
-                .Include(s => s.RequestedItem)
-                .FirstOrDefaultAsync(m => m.SwapRequestId == id);
-
-            if (swapRequest == null) return NotFound();
-
-            return View(swapRequest);
-        }
     }
-}
+}

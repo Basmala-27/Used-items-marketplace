@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MarketplaceApp.Models;
+using MarketplaceApp.ViewModels;
 using MarketplaceApp.Data;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -200,7 +201,7 @@ namespace MarketplaceApp.Controllers
             bool isOwner = currentUserId == id;
 
             var itemsQuery = _context.Items.Where(i => i.UserID == id);
-            
+
             if (!isOwner)
             {
                 itemsQuery = itemsQuery.Where(i => i.Status == ItemStatus.Available);

@@ -50,7 +50,7 @@ namespace MarketplaceApp.Controllers
                 {
                     success = false,
                     isNotLoggedIn = true,
-                    redirectUrl = "/Account/Login" 
+                    redirectUrl = "/Account/Login"
                 });
             }
 

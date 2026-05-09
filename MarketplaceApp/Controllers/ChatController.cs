@@ -56,7 +56,7 @@ namespace MarketplaceApp.Controllers
                 return Unauthorized();
 
             var messages = _context.Messages
-                .Where(m => m.ConversationID    == id)
+                .Where(m => m.ConversationID == id)
                 .OrderBy(m => m.CreatedAt)
                 .ToList();
 
@@ -126,7 +126,7 @@ namespace MarketplaceApp.Controllers
                 {
                     BuyerID = userId,
                     SellerID = sellerId,
-                    ItemID= itemId,
+                    ItemID = itemId,
                     CreatedAt = DateTime.Now
                 };
 
