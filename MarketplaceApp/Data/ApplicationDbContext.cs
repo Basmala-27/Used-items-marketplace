@@ -18,7 +18,7 @@ namespace MarketplaceApp.Data
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public DbSet<Offer> Offers { get; set; }
+
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<SwapRequest> SwapRequests { get; set; }
@@ -95,12 +95,7 @@ namespace MarketplaceApp.Data
                 .HasForeignKey(s => s.RequesterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ================= OFFER =================
-            modelBuilder.Entity<Offer>()
-                .HasOne(o => o.Buyer)
-                .WithMany()
-                .HasForeignKey(o => o.BuyerID)
-                .OnDelete(DeleteBehavior.Restrict);
+
 
             // ================= REVIEW =================
             modelBuilder.Entity<Review>()

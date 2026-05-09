@@ -47,7 +47,7 @@ namespace MarketplaceApp.Controllers
                     .Include(f => f.Item).ThenInclude(i => i.Images)
                     .Select(f => f.Item)
                     .ToListAsync(),
-                ActiveOffers = await _context.Offers.CountAsync(o => o.BuyerID == user.Id),
+
                 SwapRequests = await _context.SwapRequests
                     .CountAsync(s => s.RequesterId == user.Id || s.RequestedItem.UserID == user.Id),
 

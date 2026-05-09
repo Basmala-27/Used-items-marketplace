@@ -21,8 +21,6 @@ namespace MarketplaceApp.ViewModels
         public int FavoritesCount { get; set; }
         public IEnumerable<Item>? FavoriteItems { get; set; } // القائمة الفعليّة للعرض
 
-       
-        public int ActiveOffers { get; set; }
         public int SwapRequests { get; set; }
 
 

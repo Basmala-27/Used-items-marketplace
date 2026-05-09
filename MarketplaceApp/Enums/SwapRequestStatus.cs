@@ -1,6 +1,6 @@
-﻿namespace MarketplaceApp.Enums
+namespace MarketplaceApp.Enums
 {
-    public enum OfferStatus
+    public enum SwapRequestStatus
     {
         Pending,
         Accepted,

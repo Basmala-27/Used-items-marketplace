@@ -55,7 +55,6 @@ namespace MarketplaceApp.Models
 
         public virtual ICollection<Conversation> SoldConversations { get; set; } = new List<Conversation>();
 
-        public virtual ICollection<Offer> BoughtOffers { get; set; } = new List<Offer>();
 
         public virtual ICollection<Review> ReviewsWritten { get; set; } = new List<Review>();
 

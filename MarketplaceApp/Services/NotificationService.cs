@@ -95,14 +95,14 @@ namespace MarketplaceApp.Services
         {
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
                 $"✅ تمت الموافقة على طلب التبادل الخاص بك لمنتج \"{requestedItemTitle}\".",
-                $"/SwapRequests/Details/{swapRequestId}");
+                $"/Profile#transactions");
         }
 
         public async Task NotifySwapRequestRejectedAsync(string userId, int swapRequestId, string requestedItemTitle)
         {
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
                 $"❌ تم رفض طلب التبادل الخاص بك لمنتج \"{requestedItemTitle}\".",
-                $"/SwapRequests/Details/{swapRequestId}");
+                $"/SwapRequests/MySentRequests");
         }
 
         public async Task NotifyNewMessageAsync(string userId, int conversationId, string senderName)

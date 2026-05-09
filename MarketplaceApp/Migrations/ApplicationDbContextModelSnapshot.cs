@@ -440,9 +440,6 @@ namespace MarketplaceApp.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("OfferID")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int?>("RelatedEntityID")
                         .HasColumnType("INTEGER");
 
@@ -460,46 +457,9 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("OfferID");
-
                     b.HasIndex("UserID");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("MarketplaceApp.Models.Offer", b =>
-                {
-                    b.Property<int>("OfferID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("BuyerID")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ItemID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("OfferID");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("BuyerID");
-
-                    b.HasIndex("ItemID");
-
-                    b.ToTable("Offers");
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Review", b =>
@@ -910,10 +870,6 @@ namespace MarketplaceApp.Migrations
                         .WithMany("Notifications")
                         .HasForeignKey("ApplicationUserId");
 
-                    b.HasOne("MarketplaceApp.Models.Offer", null)
-                        .WithMany("Notifications")
-                        .HasForeignKey("OfferID");
-
                     b.HasOne("MarketplaceApp.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
@@ -921,29 +877,6 @@ namespace MarketplaceApp.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MarketplaceApp.Models.Offer", b =>
-                {
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", null)
-                        .WithMany("BoughtOffers")
-                        .HasForeignKey("ApplicationUserId");
-
-                    b.HasOne("MarketplaceApp.Models.ApplicationUser", "Buyer")
-                        .WithMany()
-                        .HasForeignKey("BuyerID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Buyer");
-
-                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Review", b =>
@@ -1098,8 +1031,6 @@ namespace MarketplaceApp.Migrations
                 {
                     b.Navigation("BoughtConversations");
 
-                    b.Navigation("BoughtOffers");
-
                     b.Navigation("ComplaintsReceived");
 
                     b.Navigation("ComplaintsSubmitted");
@@ -1131,11 +1062,6 @@ namespace MarketplaceApp.Migrations
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("MarketplaceApp.Models.Offer", b =>
-                {
-                    b.Navigation("Notifications");
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Transaction", b =>

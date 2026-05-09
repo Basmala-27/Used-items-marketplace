@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MarketplaceApp.Models.SwapRequest>
+@model IEnumerable<MarketplaceApp.Models.SwapRequest>
 @using MarketplaceApp.Enums
 
 @{
@@ -31,7 +31,7 @@
                         <div class="card-body p-0">
                             <div class="row g-0 align-items-center">
 
-                                <!-- المنتج بتاعك (Your Item) -->
+                                <!-- ?????? ????? (Your Item) -->
                                 <div class="col-md-4 p-4 text-center border-end bg-light-gray">
                                     <small class="text-uppercase text-muted fw-bold d-block mb-2">Your Item</small>
                                     <h6 class="fw-bold mb-1">@request.RequestedItem?.Title</h6>
@@ -41,14 +41,14 @@
                                     </div>
                                 </div>
 
-                                <!-- أيقونة التبادل في المنتصف -->
+                                <!-- ?????? ??????? ?? ??????? -->
                                 <div class="col-md-1 text-center py-3">
                                     <div class="bg-white shadow-sm border rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                                         <i class="bi bi-arrow-left-right text-orange fs-5"></i>
                                     </div>
                                 </div>
 
-                                <!-- المنتج المعروض عليك (Offered Item) -->
+                                <!-- ?????? ??????? ???? (Offered Item) -->
                                 <div class="col-md-4 p-4 text-center">
                                     <small class="text-uppercase text-muted fw-bold d-block mb-2">Offered Item</small>
                                     <h6 class="fw-bold mb-1">@request.OfferedItem?.Title</h6>
@@ -58,16 +58,16 @@
                                     </div>
                                 </div>
 
-                                <!-- قسم الأكشن والحالة -->
+                                <!-- ??? ?????? ??????? -->
                                 <div class="col-md-3 p-4 bg-light border-start text-center">
                                     <div class="mb-3">
                                         <small class="d-block text-muted mb-1">From: @request.Requester?.Email</small>
-                                        <span class="badge @(request.Status == OfferStatus.Pending ? "bg-warning text-dark" : "bg-success") px-3">
+                                        <span class="badge @(request.Status == SwapRequestStatus.Pending ? "bg-warning text-dark" : "bg-success") px-3">
                                             @request.Status
                                         </span>
                                     </div>
 
-                                    @if (request.Status == OfferStatus.Pending)
+                                    @if (request.Status == SwapRequestStatus.Pending)
                                     {
                                         <div class="d-grid gap-2">
                                             <form asp-action="Respond" method="post">

@@ -29,7 +29,7 @@ namespace MarketplaceApp.Models
 
         [Required]
         [Display(Name = "Request Status")]
-        public OfferStatus Status { get; set; } = OfferStatus.Pending;
+        public SwapRequestStatus Status { get; set; } = SwapRequestStatus.Pending;
 
 
         [Required]

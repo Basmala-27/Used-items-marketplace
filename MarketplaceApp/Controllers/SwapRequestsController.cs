@@ -63,7 +63,7 @@ namespace MarketplaceApp.Controllers
         // =====================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Respond(int id, OfferStatus status)
+        public async Task<IActionResult> Respond(int id, SwapRequestStatus status)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -80,12 +80,12 @@ namespace MarketplaceApp.Controllers
             if (swapRequest.RequestedItem.UserID != userId)
                 return Json(new { success = false, message = "Unauthorized." });
 
-            if (swapRequest.Status != OfferStatus.Pending)
+            if (swapRequest.Status != SwapRequestStatus.Pending)
                 return Json(new { success = false, message = "Request already processed." });
 
-            if (status == OfferStatus.Rejected)
+            if (status == SwapRequestStatus.Rejected)
             {
-                swapRequest.Status = OfferStatus.Rejected;
+                swapRequest.Status = SwapRequestStatus.Rejected;
                 await _context.SaveChangesAsync();
 
                 // Notify sender using the service
@@ -128,7 +128,7 @@ namespace MarketplaceApp.Controllers
                 swapRequest.RequestedItem.Status = ItemStatus.Swapped;
 
                 // 5. Update Request Status
-                swapRequest.Status = OfferStatus.Accepted;
+                swapRequest.Status = SwapRequestStatus.Accepted;
 
                 // 6. Financial Records (Transaction logs for history)
                 _context.Transactions.Add(new Transaction
@@ -185,4 +185,4 @@ namespace MarketplaceApp.Controllers
         }
 
     }
-}
+}

@@ -59,15 +59,15 @@
             </dl>
 
             <div class="mt-4 shadow-sm p-3 bg-light rounded border">
+                <!-- تأكد أن الـ asp-action هو Delete -->
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
 
-                <form asp-action="Delete"
-                      asp-route-id="@Model.ItemID"
-                      method="post"
-                      onsubmit="return confirm('Are you sure you want to delete this item?');">
+                    <!-- الـ Hidden input لازم يتطابق مع المعامل في الـ POST Action -->
+                    <input type="hidden" name="ItemID" value="@Model.ItemID" />
 
-                    <input type="hidden" asp-for="ItemID" />
-
-                    <button type="submit" class="btn btn-danger px-4 shadow-sm">
+                    <button type="submit" class="btn btn-danger px-4 shadow-sm"
+                            onclick="return confirm('Are you sure you want to delete this item?');">
                         Confirm Delete
                     </button>
 
@@ -76,9 +76,7 @@
                     <a asp-action="Index" class="btn btn-secondary px-4 shadow-sm">
                         Back to List
                     </a>
-
                 </form>
-
             </div>
         </div>
     </div>

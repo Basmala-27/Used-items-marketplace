@@ -72,7 +72,7 @@ namespace MarketplaceApp.Controllers
                 .Include(s => s.OfferedItem).ThenInclude(i => i.Images)
                 .Include(s => s.RequestedItem).ThenInclude(i => i.Images)
                 .Include(s => s.Requester)
-                .Where(s => s.RequestedItem.UserID == userId && s.Status == OfferStatus.Pending)
+                .Where(s => s.RequestedItem.UserID == userId && s.Status == SwapRequestStatus.Pending)
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 

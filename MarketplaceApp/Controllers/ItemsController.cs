@@ -201,7 +201,8 @@ namespace MarketplaceApp.Controllers
                 Condition = item.Condition,
                 Location = item.Location,
                 Status = item.Status,
-                CategoryID = item.CategoryID
+                CategoryID = item.CategoryID,
+                UserID = item.UserID // تأكد أن الـ ViewModel فيه الخاصية دي
             };
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
@@ -209,54 +210,100 @@ namespace MarketplaceApp.Controllers
             return View(vm);
         }
 
+        // ===================== EDIT (POST) =====================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ItemEditViewModel vm)
         {
+            // 1. جلب العنصر الأصلي من الداتابيز أولاً
             var item = await _context.Items.FirstOrDefaultAsync(i => i.ItemID == vm.ItemID);
             if (item == null) return NotFound();
 
-            if (!ModelState.IsValid)
+            // 2. التحقق من الصلاحية (الأمان)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (item.UserID != currentUserId) return Unauthorized();
+
+            if (ModelState.IsValid)
             {
-                ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
-                return View(vm);
+                item.Title = vm.Title;
+                item.Description = vm.Description;
+                item.Price = vm.Price;
+                item.Condition = vm.Condition;
+                item.Location = vm.Location;
+                item.Status = vm.Status;
+                item.CategoryID = vm.CategoryID;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Item updated successfully!";
+                    return RedirectToAction("Details", new { id = item.ItemID });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    ModelState.AddModelError("", "Unable to save changes. Try again.");
+                }
             }
 
-            item.Title = vm.Title;
-            item.Description = vm.Description;
-            item.Price = vm.Price;
-            item.Condition = vm.Condition;
-            item.Location = vm.Location;
-            item.Status = vm.Status;
-            item.CategoryID = vm.CategoryID;
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "Home");
+            // لو الـ ModelState مش تمام، لازم نرجع الـ ViewBags تاني
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
+            ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
+            return View(vm);
         }
 
-        // ===================== DELETE (With Physical File Cleanup) =====================
+        // ===================== DELETE (Action Fix) =====================
+        // ضيف الميثود دي عشان صفحة الـ Delete تفتح أصلاً (GET)
+        // ===================== DELETE (GET) =====================
+        // دي الميثود اللي بتعرض صفحة التأكيد
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var item = await _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.User)
+                .FirstOrDefaultAsync(m => m.ItemID == id);
+
+            if (item == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (item.UserID != currentUserId) return Unauthorized();
+
+            return View(item);
+        }
+
+        // ===================== DELETE (POST) =====================
+        // دي الميثود اللي بتنفذ الحذف الفعلي
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int ItemID) // اتأكد أن الاسم هنا ItemID زي الـ Hidden Input
         {
-            var item = await _context.Items.Include(i => i.Images).FirstOrDefaultAsync(i => i.ItemID == id);
+            var item = await _context.Items
+                .Include(i => i.Images)
+                .FirstOrDefaultAsync(i => i.ItemID == ItemID);
+
             if (item == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != userId) return Unauthorized();
 
-            // 1. Delete Files
-            foreach (var img in item.Images)
+            // 1. مسح الملفات الفيزيائية (الصور)
+            if (item.Images != null)
             {
-                var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
-                if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                foreach (var img in item.Images)
+                {
+                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                }
             }
 
-            // 2. Cascade cleanup for SQLite
-            _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == id));
-            _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == id));
-            _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == id));
+            // 2. تنظيف العلاقات (Cascade Cleanup)
+            _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
+            _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
+            _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
 
+            // 3. مسح العنصر نفسه
             _context.Items.Remove(item);
             await _context.SaveChangesAsync();
 
@@ -303,7 +350,7 @@ namespace MarketplaceApp.Controllers
                     RequesterId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     OfferedItemId = model.OfferedItemId,
                     RequestedItemId = model.RequestedItemId,
-                    Status = OfferStatus.Pending,
+                    Status = SwapRequestStatus.Pending,
                     CreatedAt = DateTime.Now
                 };
 

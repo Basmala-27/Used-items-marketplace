@@ -299,6 +299,28 @@
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        $(document).ready(function () {
+            // Check if there's a hash in the URL and activate the corresponding tab
+            var hash = window.location.hash;
+            if (hash) {
+                var targetBtn = document.querySelector('button[data-bs-target="' + hash + '"]');
+                if (targetBtn) {
+                    var tabInstance = new bootstrap.Tab(targetBtn);
+                    tabInstance.show();
+                }
+            }
+
+            // Update the URL hash when a tab is clicked
+            $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+                var target = $(e.target).data('bs-target');
+                if (history.pushState) {
+                    history.pushState(null, null, target);
+                } else {
+                    window.location.hash = target;
+                }
+            });
+        });
+
         function removeFromFav(itemId) {
             var icon = $(`#heart-icon-${itemId}`);
             var card = $(`#fav-item-${itemId}`);
