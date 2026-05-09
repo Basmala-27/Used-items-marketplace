@@ -24,6 +24,10 @@ namespace MarketplaceApp.Models
         [Range(0, 5)]
         public double TrustScore { get; set; } = 0;
 
+        /// <summary>Number of completed sales / swap deals as seller.</summary>
+        [Display(Name = "Completed sales")]
+        public int Rating { get; set; }
+
        
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

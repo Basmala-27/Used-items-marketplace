@@ -104,6 +104,18 @@ namespace MarketplaceApp.Controllers
                 var offeredItemOwnerId  = swapRequest.OfferedItem.UserID;   // الشخص الطالب
                 var requestedItemOwnerId = swapRequest.RequestedItem.UserID; // الشخص المستجيب
 
+                var sellerOfferedItem = await _context.Users.FindAsync(offeredItemOwnerId);
+                var sellerRequestedItem = await _context.Users.FindAsync(requestedItemOwnerId);
+                if (sellerOfferedItem == null || sellerRequestedItem == null)
+                {
+                    await dbTx.RollbackAsync();
+                    TempData["Error"] = "تعذر العثور على أحد المستخدمين.";
+                    return RedirectToAction(nameof(MyRequests));
+                }
+
+                sellerOfferedItem.Rating += 1;
+                sellerRequestedItem.Rating += 1;
+
                 // 1. تبادل الملكية
                 swapRequest.OfferedItem.UserID  = requestedItemOwnerId;  // المنتج المعروض يصبح ملك المستجيب
                 swapRequest.RequestedItem.UserID = offeredItemOwnerId;    // المنتج المطلوب يصبح ملك الطالب
