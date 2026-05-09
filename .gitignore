@@ -17,3 +17,10 @@
 /MarketplaceApp/obj/MarketplaceApp.csproj.nuget.dgspec.json
 /MarketplaceApp/MarketplaceApp.csproj
 /MarketplaceApp/MarketplaceApp.csproj
+/MarketplaceApp/Marketplace.db
+/MarketplaceApp/Marketplace.db-shm
+/MarketplaceApp/Marketplace.db-wal
+*.md
+/MarketplaceApp/Marketplace.db
+/MarketplaceApp/Marketplace.db-shm
+/MarketplaceApp/Marketplace.db-wal
