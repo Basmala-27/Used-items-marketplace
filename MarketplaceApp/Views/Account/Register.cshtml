@@ -26,7 +26,7 @@
             overflow: hidden;
         }
 
-      
+        /* LEFT */
         .left {
             flex: 1;
             display: flex;
@@ -50,7 +50,7 @@
             margin-bottom: 18px;
         }
 
-      
+        /* TRUST */
         .trust {
             background: linear-gradient(135deg,#fff7f3,#f7f7f7);
             padding: 14px;
@@ -69,7 +69,7 @@
                 color: #ff6b35;
             }
 
-    
+        /* INPUTS & VALIDATION */
         label {
             font-size: 12px;
             font-weight: 600;
@@ -88,7 +88,7 @@
                 box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.15);
             }
 
-      
+        /* Validation Styling */
         .input-validation-error {
             border-color: #dc3545 !important;
             background-color: #fff8f8;
@@ -103,7 +103,7 @@
             margin-bottom: 8px;
         }
 
-      
+        /* BUTTON */
         .btn-orange {
             background: #ff6b35;
             color: white;
@@ -121,7 +121,7 @@
                 transform: translateY(-1px);
             }
 
-       
+        /* SOCIAL */
         .social {
             display: flex;
             gap: 10px;
@@ -144,7 +144,7 @@
                     transform: translateY(-1px);
                 }
 
-     
+        /* RIGHT (UNCHANGED) */
         .right {
             flex: 1;
             background: radial-gradient(circle at top right, #ffe7df, #fff);
@@ -156,20 +156,17 @@
         }
 
         @@keyframes float {
-            0%
+            0% {
+                transform: translateY(0px);
+            }
 
-        {
-            transform: translateY(0px);
-        }
+            50% {
+                transform: translateY(-18px);
+            }
 
-        50% {
-            transform: translateY(-18px);
-        }
-
-        100% {
-            transform: translateY(0px);
-        }
-
+            100% {
+                transform: translateY(0px);
+            }
         }
 
         .icon {
@@ -251,7 +248,7 @@
 
     <div class="main">
 
-      
+        <!-- LEFT (WITH VALIDATION) -->
         <div class="left">
             <div class="wrapper">
 
@@ -267,7 +264,7 @@
                 </div>
 
                 <form asp-action="Register" method="post" enctype="multipart/form-data">
-                 
+                    <!-- Validation Summary (Optional but helpful) -->
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
 
                     <label asp-for="Name">Full Name</label>
@@ -298,9 +295,10 @@
                         </div>
                     </div>
 
-                
+                    <button type="submit" class="btn-orange">Create Account</button>
 
-          
+                   
+
                     <p class="text-center mt-3" style="font-size:12px;">
                         Already have account?
                         <a href="/Account/Login" style="color:#ff6b35;text-decoration:none;">Sign in</a>
@@ -311,6 +309,7 @@
             </div>
         </div>
 
+       
         <div class="right">
 
             <div class="icon i1"><i class="bi bi-bag"></i></div>
@@ -348,7 +347,7 @@
 
     </div>
 
-  
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>

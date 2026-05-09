@@ -3,8 +3,8 @@
 @using System.Text.Json
 
 @{
-    ViewData["Title"] = "طلباتي";
-    var walletBalance  = (decimal)(ViewBag.WalletBalance  ?? 0m);
+    ViewData["Title"] = "My Orders";
+    var walletBalance = (decimal)(ViewBag.WalletBalance ?? 0m);
     var pendingBalance = (decimal)(ViewBag.PendingBalance ?? 0m);
     var reviewableBuyRequestIds = ((IEnumerable<int>?)ViewBag.ReviewableBuyRequestIds ?? Enumerable.Empty<int>()).ToHashSet();
     var reviewTransactionIds = (IDictionary<int, int>?)ViewBag.ReviewTransactionIds ?? new Dictionary<int, int>();
@@ -13,27 +13,27 @@
 
 <div class="container py-5">
 
-    <!-- Header -->
+
     <div class="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
         <div>
             <h1 class="fw-bold mb-1" style="font-size:2rem;">
-                <i class="bi bi-bag-heart-fill text-orange me-2"></i>طلباتي كمشترٍ
+                <i class="bi bi-bag-heart-fill text-orange me-2"></i>My Orders
             </h1>
-            <p class="text-muted mb-0">تتبّع طلبات الشراء وأكّد استلامك لتحرير المبلغ للبائع</p>
+            <p class="text-muted mb-0">Track your purchase orders</p>
         </div>
         <a asp-controller="Transactions" asp-action="TopUp"
            class="btn btn-orange text-white fw-bold px-4 rounded-pill shadow-sm">
-            <i class="bi bi-plus-circle me-1"></i> شحن المحفظة
+            <i class="bi bi-plus-circle me-1"></i> Wallet top-up
         </a>
     </div>
 
-    <!-- Wallet Summary Cards -->
+
     <div class="row g-4 mb-5">
         <div class="col-md-4">
             <div class="wallet-card wallet-available">
                 <div class="wallet-icon"><i class="bi bi-wallet2"></i></div>
                 <div>
-                    <small class="d-block opacity-75 mb-1">رصيدك المتاح</small>
+                    <small class="d-block opacity-75 mb-1">Available balance</small>
                     <h3 class="fw-bold mb-0">$@walletBalance.ToString("0.00")</h3>
                 </div>
             </div>
@@ -42,7 +42,7 @@
             <div class="wallet-card wallet-pending">
                 <div class="wallet-icon"><i class="bi bi-hourglass-split"></i></div>
                 <div>
-                    <small class="d-block opacity-75 mb-1">محتجز في Escrow</small>
+                    <small class="d-block opacity-75 mb-1">Held in Escrow</small>
                     <h3 class="fw-bold mb-0">$@pendingBalance.ToString("0.00")</h3>
                 </div>
             </div>
@@ -51,22 +51,22 @@
             <div class="wallet-card wallet-total">
                 <div class="wallet-icon"><i class="bi bi-bag-check"></i></div>
                 <div>
-                    <small class="d-block opacity-75 mb-1">عدد الطلبات</small>
+                    <small class="d-block opacity-75 mb-1">Number of requests</small>
                     <h3 class="fw-bold mb-0">@Model.Count</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Orders List -->
+
     @if (!Model.Any())
     {
         <div class="empty-state text-center py-5">
             <i class="bi bi-bag-x display-1 text-muted opacity-25"></i>
             <h4 class="mt-4 text-muted">لا توجد طلبات بعد</h4>
-            <p class="text-muted mb-4">ابدأ بتصفح المنتجات وشراء ما تحب!</p>
+            <p class="text-muted mb-4">Start browsing the products</p>
             <a asp-controller="Items" asp-action="Index" class="btn btn-orange text-white px-5 rounded-pill">
-                <i class="bi bi-grid me-2"></i> تصفح المنتجات
+                <i class="bi bi-grid me-2"></i> Browse products
             </a>
         </div>
     }
@@ -79,20 +79,21 @@
                 var halfAmt = Math.Round(req.Amount / 2, 2);
 
 
-                var (statusClass, statusLabel, statusIcon) = req.Status switch {
-                    BuyRequestStatus.Pending          => ("badge-warn",      "⏳ بانتظار البائع",   "bi-hourglass"),
-                    BuyRequestStatus.SellerAccepted   => ("badge-info",      "🚚 جارٍ الشحن",       "bi-truck"),
-                    BuyRequestStatus.Completed        => ("badge-success",   "✅ مكتمل",             "bi-check-circle-fill"),
-                    BuyRequestStatus.RejectedBySeller => ("badge-danger",    "❌ مرفوض",             "bi-x-circle-fill"),
-                    BuyRequestStatus.Cancelled        => ("badge-secondary", "🚫 ملغى",              "bi-slash-circle"),
-                    _                                 => ("badge-secondary", req.Status.ToString(),  "bi-question")
+                var (statusClass, statusLabel, statusIcon) = req.Status switch
+                {
+                    BuyRequestStatus.Pending => ("badge-warn", "Waiting for seller⏳", "bi-hourglass"),
+                    BuyRequestStatus.SellerAccepted => ("badge-info", "🚚 Shipping in progress", "bi-truck"),
+                    BuyRequestStatus.Completed => ("badge-success", "✅ Completed", "bi-check-circle-fill"),
+                    BuyRequestStatus.RejectedBySeller => ("badge-danger", "❌ Rejected", "bi-x-circle-fill"),
+                    BuyRequestStatus.Cancelled => ("badge-secondary", "🚫 Cancelled", "bi-slash-circle"),
+                    _ => ("badge-secondary", req.Status.ToString(), "bi-question")
                 };
 
 
                 <div class="order-card @(req.Status == BuyRequestStatus.Pending ? "order-pending" : req.Status == BuyRequestStatus.SellerAccepted ? "order-shipping" : req.Status == BuyRequestStatus.Completed ? "order-done" : "")">
                     <div class="row g-0 align-items-center">
 
-                        <!-- صورة -->
+
                         <div class="col-auto">
                             <div class="order-img-wrap">
                                 <img src="@imgUrl" alt="@req.Item?.Title" class="order-img rounded-3">
@@ -100,7 +101,7 @@
                             </div>
                         </div>
 
-                        <!-- تفاصيل -->
+
                         <div class="col px-4">
                             <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
                                 <div>
@@ -116,7 +117,7 @@
                                 </div>
                             </div>
 
-                            <!-- شريط تقدم الـ Escrow -->
+
                             @if (req.Status != BuyRequestStatus.RejectedBySeller && req.Status != BuyRequestStatus.Cancelled)
                             {
                                 <div class="escrow-progress mt-3">
@@ -146,7 +147,7 @@
                                 </div>
                             }
 
-                            <!-- أزرار الإجراء -->
+
                             <div class="mt-3 d-flex gap-2 flex-wrap">
                                 @if (req.Status == BuyRequestStatus.Pending)
                                 {
@@ -154,7 +155,7 @@
                                             class="btn btn-outline-danger btn-sm rounded-pill cancel-btn"
                                             data-id="@req.BuyRequestId"
                                             data-title="@req.Item?.Title">
-                                        <i class="bi bi-x-circle me-1"></i>إلغاء الطلب
+                                        <i class="bi bi-x-circle me-1"></i>Cancel Order
                                     </button>
                                 }
                                 else if (req.Status == BuyRequestStatus.SellerAccepted)
@@ -164,7 +165,7 @@
                                             data-id="@req.BuyRequestId"
                                             data-half="$@halfAmt.ToString("0.00")"
                                             data-title="@req.Item?.Title">
-                                        <i class="bi bi-check-circle-fill me-1"></i>تم الاستلام ✅
+                                        <i class="bi bi-check-circle-fill me-1"></i>Recieved ✅
                                     </button>
                                 }
                                 else if (req.Status == BuyRequestStatus.Completed && reviewableBuyRequestIds.Contains(req.BuyRequestId))
@@ -192,7 +193,7 @@
     }
 </div>
 
-<!-- Confirm Delivery Modal -->
+
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -202,23 +203,22 @@
             </div>
             <div class="modal-body p-4 text-center">
                 <div class="confirm-icon mb-3"><i class="bi bi-box-seam-fill text-success" style="font-size:3rem;"></i></div>
-                <p class="mb-1">هل استلمت <strong id="confirmItemTitle"></strong>؟</p>
+                <p class="mb-1">Recived? <strong id="confirmItemTitle"></strong>؟</p>
                 <p class="text-muted small">
-                    سيتم تحويل <strong id="confirmHalf" class="text-success"></strong> (الـ 50% الأخيرة) للبائع فوراً.
-                    <br><em>المنتج سيصبح ملكك نهائياً. لا يمكن التراجع.</em>
+                    The final <strong id="confirmHalf" class="text-success">50%</strong> will be transferred to the seller immediately.
+                    <br><em>The product will become yours permanently. This action is irreversible.</em>
                 </p>
             </div>
             <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
-                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" id="doConfirm" class="btn btn-success flex-grow-1 rounded-pill fw-bold">
-                    <i class="bi bi-check-circle-fill me-1"></i>نعم، أكّد الاستلام
+                    <i class="bi bi-check-circle-fill me-1"></i>Yes, Confirm Receipt
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Review Modal -->
 <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true" lang="en" dir="ltr">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -258,27 +258,28 @@
     </div>
 </div>
 
-<!-- Cancel Modal -->
 <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 bg-danger">
-                <h5 class="modal-title text-white fw-bold"><i class="bi bi-x-circle-fill me-2"></i>إلغاء الطلب</h5>
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-x-circle-fill me-2"></i>Cancel Order</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 text-center">
-                <p>إلغاء طلب شراء <strong id="cancelItemTitle"></strong>؟</p>
-                <p class="text-muted small">سيُعاد المبلغ كاملاً لمحفظتك.</p>
+                <p>Cancel the request for <strong id="cancelItemTitle"></strong>?</p>
+                <p class="text-muted small">The full amount will be refunded to your wallet.</p>
             </div>
             <div class="modal-footer border-0 px-4 pb-4 pt-0 d-flex gap-2">
-                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">تراجع</button>
-                <button type="button" id="doCancel" class="btn btn-danger flex-grow-1 rounded-pill fw-bold">إلغاء الطلب</button>
+                <button type="button" class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">Go Back</button>
+                <button type="button" id="doCancel" class="btn btn-danger flex-grow-1 rounded-pill fw-bold">Cancel Order</button>
             </div>
         </div>
     </div>
 </div>
+</div>
+</div>
 
-<!-- Toast -->
+
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
     <div id="orderToast" class="toast align-items-center border-0 rounded-4 shadow-lg" role="alert">
         <div class="d-flex">
@@ -289,59 +290,279 @@
 </div>
 
 <style>
-    .text-orange  { color: #f97316 !important; }
-    .btn-orange   { background: #f97316; border: none; }
+    .text-orange {
+        color: #f97316 !important;
+    }
 
-    /* Wallet Cards */
-    .wallet-card { display:flex; align-items:center; gap:18px; border-radius:20px; padding:22px 24px; border:2px solid transparent; transition:0.25s; }
-    .wallet-card:hover { transform:translateY(-4px); }
-    .wallet-icon { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
-    .wallet-available { background:#f0fdf4; border-color:#22c55e; color:#166534; }
-    .wallet-available .wallet-icon { background:#dcfce7; color:#16a34a; }
-    .wallet-pending   { background:#fffbeb; border-color:#f59e0b; color:#92400e; }
-    .wallet-pending   .wallet-icon { background:#fef3c7; color:#d97706; }
-    .wallet-total     { background:#f0f9ff; border-color:#0ea5e9; color:#0c4a6e; }
-    .wallet-total     .wallet-icon { background:#e0f2fe; color:#0284c7; }
+    .btn-orange {
+        background: #f97316;
+        border: none;
+    }
 
-    /* Order Cards */
-    .order-card { background:white; border-radius:20px; border:2px solid #e2e8f0; overflow:hidden; transition:0.25s; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
-    .order-card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.08); transform:translateY(-2px); }
-    .order-pending  { border-color:#fde68a; }
-    .order-shipping { border-color:#bfdbfe; }
-    .order-done     { border-color:#bbf7d0; }
 
-    .order-img-wrap { position:relative; width:110px; height:110px; margin:16px 0 16px 16px; }
-    .order-img { width:100%; height:100%; object-fit:cover; border:2px solid #e2e8f0; border-radius:14px; }
-    .order-status-dot { position:absolute; bottom:6px; right:6px; width:14px; height:14px; border-radius:50%; border:2px solid white; }
-    .dot-pending          { background:#f59e0b; }
-    .dot-selleraccepted   { background:#3b82f6; }
-    .dot-completed        { background:#22c55e; }
-    .dot-rejectedbyseller { background:#ef4444; }
-    .dot-cancelled        { background:#94a3b8; }
+    .wallet-card {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        border-radius: 20px;
+        padding: 22px 24px;
+        border: 2px solid transparent;
+        transition: 0.25s;
+    }
 
-    .order-price { font-size:1.35rem; font-weight:800; color:#f97316; }
-    .order-badge { padding:4px 12px; border-radius:50px; font-size:12px; font-weight:700; }
-    .badge-warn      { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
-    .badge-info      { background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; }
-    .badge-success   { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
-    .badge-danger    { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
-    .badge-secondary { background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; }
+        .wallet-card:hover {
+            transform: translateY(-4px);
+        }
 
-    /* Escrow Progress */
-    .escrow-progress { display:flex; align-items:center; gap:0; background:#f8fafc; border-radius:14px; padding:12px 16px; }
-    .ep-step { display:flex; align-items:center; gap:10px; }
-    .ep-circle { width:32px; height:32px; min-width:32px; border-radius:50%; background:#e2e8f0; color:#94a3b8; display:flex; align-items:center; justify-content:center; font-size:14px; }
-    .ep-done .ep-circle { background:#dcfce7; color:#16a34a; }
-    .ep-active .ep-circle { background:#fff7ed; color:#f97316; }
-    .ep-text { display:flex; flex-direction:column; }
-    .ep-text strong { font-size:12px; color:#374151; }
-    .ep-text small  { font-size:11px; color:#94a3b8; }
-    .ep-line { flex:1; height:2px; background:#e2e8f0; margin:0 8px; }
-    .ep-line-done { background:#22c55e; }
+    .wallet-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
 
-    .confirm-icon { width:80px; height:80px; background:#f0fdf4; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; }
-    .empty-state { animation:fadeIn 0.5s ease; }
-    @@keyframes fadeIn { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+    .wallet-available {
+        background: #f0fdf4;
+        border-color: #22c55e;
+        color: #166534;
+    }
+
+        .wallet-available .wallet-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+    .wallet-pending {
+        background: #fffbeb;
+        border-color: #f59e0b;
+        color: #92400e;
+    }
+
+        .wallet-pending .wallet-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+    .wallet-total {
+        background: #f0f9ff;
+        border-color: #0ea5e9;
+        color: #0c4a6e;
+    }
+
+        .wallet-total .wallet-icon {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+
+    .order-card {
+        background: white;
+        border-radius: 20px;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: 0.25s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+        .order-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+    .order-pending {
+        border-color: #fde68a;
+    }
+
+    .order-shipping {
+        border-color: #bfdbfe;
+    }
+
+    .order-done {
+        border-color: #bbf7d0;
+    }
+
+    .order-img-wrap {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: 16px 0 16px 16px;
+    }
+
+    .order-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+    }
+
+    .order-status-dot {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .dot-pending {
+        background: #f59e0b;
+    }
+
+    .dot-selleraccepted {
+        background: #3b82f6;
+    }
+
+    .dot-completed {
+        background: #22c55e;
+    }
+
+    .dot-rejectedbyseller {
+        background: #ef4444;
+    }
+
+    .dot-cancelled {
+        background: #94a3b8;
+    }
+
+    .order-price {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #f97316;
+    }
+
+    .order-badge {
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-warn {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .badge-secondary {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+
+    .escrow-progress {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 12px 16px;
+    }
+
+    .ep-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ep-circle {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .ep-done .ep-circle {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .ep-active .ep-circle {
+        background: #fff7ed;
+        color: #f97316;
+    }
+
+    .ep-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .ep-text strong {
+            font-size: 12px;
+            color: #374151;
+        }
+
+        .ep-text small {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+    .ep-line {
+        flex: 1;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 8px;
+    }
+
+    .ep-line-done {
+        background: #22c55e;
+    }
+
+    .confirm-icon {
+        width: 80px;
+        height: 80px;
+        background: #f0fdf4;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .empty-state {
+        animation: fadeIn 0.5s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 @section Scripts {
@@ -352,7 +573,7 @@
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
         const pendingReviewPrompt = @Html.Raw(pendingReviewPromptJson);
 
-        // ===== Confirm Delivery =====
+
         document.querySelectorAll('.confirm-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 pendingId = this.dataset.id;
@@ -362,21 +583,25 @@
             });
         });
 
-        document.getElementById('doConfirm')?.addEventListener('click', function () {
+              document.getElementById('doConfirm')?.addEventListener('click', function () {
+            // تم تغيير النص إلى Received بنجاح
             sendAction('/Transactions/ConfirmDelivery', { buyRequestId: pendingId }, 'confirmModal', this, {
-                successBtnText: '<i class="bi bi-check-circle-fill me-1"></i>تم الاستلام ✅',
+                successBtnText: '<i class="bi bi-check-circle-fill me-1"></i>Received ✅',
                 onSuccess: (data) => {
-                    if (data.reviewPrompt?.canReview) {
-                        openReviewModal(data.reviewPrompt);
-                        return;
-                    }
+                            if (data.reviewPrompt?.canReview) {
+
+            setTimeout(() => {
+                openReviewModal(data.reviewPrompt);
+            }, 400);
+
+            return;
+        }
 
                     setTimeout(() => location.reload(), 2200);
                 }
             });
         });
 
-        // ===== Cancel Request =====
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 pendingId = this.dataset.id;
@@ -386,8 +611,9 @@
         });
 
         document.getElementById('doCancel')?.addEventListener('click', function () {
+
             sendAction('/Transactions/CancelBuyRequest', { buyRequestId: pendingId }, 'cancelModal', this, {
-                successBtnText: 'إلغاء الطلب',
+                successBtnText: 'Order Canceled',
                 onSuccess: () => setTimeout(() => location.reload(), 2200)
             });
         });
@@ -442,11 +668,15 @@
                 fetchOptions.headers['X-Requested-With'] = 'XMLHttpRequest';
             }
 
-            fetch(url, fetchOptions)
+           fetch(url, fetchOptions)
                 .then(r => r.json())
                 .then(data => {
+                    // إغلاق الـ Modal المفتوح حالياً
                     bootstrap.Modal.getInstance(document.getElementById(modalId))?.hide();
+
+                    // عرض الرسالة القادمة من الـ API (تأكد أن السيرفر يرسلها بالإنجليزية أيضاً)
                     showToast(data.message, data.success ? 'success' : 'danger');
+
                     if (data.success && typeof options.onSuccess === 'function') {
                         options.onSuccess(data);
                         return;
@@ -454,18 +684,21 @@
 
                     if (!data.success) {
                         btn.disabled = false;
-                        btn.innerHTML = options.successBtnText || 'إعادة';
+                        // تم تغيير "إعادة" إلى "Retry"
+                        btn.innerHTML = options.successBtnText || 'Retry';
                     }
                 })
                 .catch(() => {
-                    showToast('حدث خطأ في الاتصال.', 'danger');
+                    // تم تغيير رسالة خطأ الاتصال
+                    showToast('Connection error. Please try again.', 'danger');
                     btn.disabled = false;
-                    btn.innerHTML = options.successBtnText || 'إعادة';
+                    btn.innerHTML = options.successBtnText || 'Retry';
                 });
         }
 
         function openReviewModal(promptData) {
             activeReviewPrompt = promptData;
+            // تم تغيير "this seller" لتكون بالإنجليزية افتراضياً
             document.getElementById('reviewSellerName').textContent = promptData.sellerName || 'this seller';
             document.getElementById('reviewTransactionId').value = promptData.transactionId || '';
             document.getElementById('reviewSellerId').value = promptData.sellerId || '';

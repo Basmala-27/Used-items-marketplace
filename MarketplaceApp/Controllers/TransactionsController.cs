@@ -370,6 +370,74 @@ namespace MarketplaceApp.Controllers
         }
 
         // ==========================================
+        // ACTION: Cancel Buy Request
+        // ==========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBuyRequest(int buyRequestId)
+        {
+            var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var buyRequest = await _context.BuyRequests
+                .Include(b => b.Item)
+                .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
+
+            if (buyRequest == null || buyRequest.BuyerID != buyerId)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Unauthorized request."
+                });
+            }
+
+            if (buyRequest.Status != BuyRequestStatus.Pending)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Only pending requests can be canceled."
+                });
+            }
+
+            var buyer = await _context.Users.FindAsync(buyerId);
+
+            await using var dbTx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // refund
+                buyer.PendingBalance -= buyRequest.Amount;
+                buyer.WalletBalance += buyRequest.Amount;
+
+                // restore item
+                buyRequest.Item.Status = ItemStatus.Available;
+
+                // cancel request
+                buyRequest.Status = BuyRequestStatus.Cancelled;
+
+                await _context.SaveChangesAsync();
+                await dbTx.CommitAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Order canceled successfully."
+                });
+            }
+            catch
+            {
+                await dbTx.RollbackAsync();
+
+                return Json(new
+                {
+                    success = false,
+                    message = "An error occurred while canceling."
+                });
+            }
+        }
+
+        // ==========================================
         //  GET: TopUp Page
         // ==========================================
         [HttpGet]

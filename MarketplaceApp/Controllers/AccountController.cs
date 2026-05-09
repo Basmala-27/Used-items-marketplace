@@ -113,7 +113,7 @@ namespace MarketplaceApp.Controllers
 
             if (result.Succeeded)
             {
-                try { await _notificationService.SendAsync(user.Id, Enums.NotificationType.Info, null, "Welcome back!"); } catch { }
+             
                 return RedirectToAction("Index", "Home");
             }
 
