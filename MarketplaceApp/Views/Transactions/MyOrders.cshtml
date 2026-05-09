@@ -63,7 +63,7 @@
     {
         <div class="empty-state text-center py-5">
             <i class="bi bi-bag-x display-1 text-muted opacity-25"></i>
-            <h4 class="mt-4 text-muted">لا توجد طلبات بعد</h4>
+            <h4 class="mt-4 text-muted">You have no orders yet</h4>
             <p class="text-muted mb-4">Start browsing the products</p>
             <a asp-controller="Items" asp-action="Index" class="btn btn-orange text-white px-5 rounded-pill">
                 <i class="bi bi-grid me-2"></i> Browse products
@@ -105,7 +105,7 @@
                         <div class="col px-4">
                             <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
                                 <div>
-                                    <h5 class="fw-bold mb-1">@(req.Item?.Title ?? "منتج")</h5>
+                                    <h5 class="fw-bold mb-1">@(req.Item?.Title ?? "Product")</h5>
                                     <div class="d-flex gap-3 text-muted small flex-wrap">
                                         <span><i class="bi bi-person me-1"></i>@(req.Seller?.Name ?? req.Seller?.Email ?? "—")</span>
                                         <span><i class="bi bi-calendar me-1"></i>@req.CreatedAt.ToString("dd MMM yyyy - hh:mm tt")</span>
@@ -124,24 +124,24 @@
                                     <div class="ep-step @(req.Status != BuyRequestStatus.Pending ? "ep-done" : "ep-active")">
                                         <div class="ep-circle"><i class="bi bi-shield-check-fill"></i></div>
                                         <div class="ep-text">
-                                            <strong>دفع آمن</strong>
-                                            <small>$@req.Amount.ToString("0.00") محتجزة</small>
+                                            <strong>Secure Payment</strong>
+                                            <small>$@req.Amount.ToString("0.00") Received </small>
                                         </div>
                                     </div>
                                     <div class="ep-line @(req.Status != BuyRequestStatus.Pending ? "ep-line-done" : "")"></div>
                                     <div class="ep-step @(req.Status == BuyRequestStatus.SellerAccepted || req.Status == BuyRequestStatus.Completed ? "ep-done" : "")">
                                         <div class="ep-circle"><i class="bi bi-check-circle-fill"></i></div>
                                         <div class="ep-text">
-                                            <strong>قبول البائع</strong>
-                                            <small>50% له: $@halfAmt.ToString("0.00")</small>
+                                            <strong>Seller Acceptance</strong>
+                                            <small>50% to seller: $@halfAmt.ToString("0.00")</small>
                                         </div>
                                     </div>
                                     <div class="ep-line @(req.Status == BuyRequestStatus.Completed ? "ep-line-done" : "")"></div>
                                     <div class="ep-step @(req.Status == BuyRequestStatus.Completed ? "ep-done" : "")">
                                         <div class="ep-circle"><i class="bi bi-house-check-fill"></i></div>
                                         <div class="ep-text">
-                                            <strong>تأكيد الاستلام</strong>
-                                            <small>50% له: $@halfAmt.ToString("0.00")</small>
+                                            <strong>Confirm Receipt</strong>
+                                            <small>50% to seller: $@halfAmt.ToString("0.00")</small>
                                         </div>
                                     </div>
                                 </div>
@@ -198,7 +198,7 @@
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);">
-                <h5 class="modal-title text-white fw-bold"><i class="bi bi-check-circle-fill me-2"></i>تأكيد الاستلام</h5>
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Confirm Receipt</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 text-center">
@@ -584,7 +584,7 @@
         });
 
               document.getElementById('doConfirm')?.addEventListener('click', function () {
-            // تم تغيير النص إلى Received بنجاح
+            
             sendAction('/Transactions/ConfirmDelivery', { buyRequestId: pendingId }, 'confirmModal', this, {
                 successBtnText: '<i class="bi bi-check-circle-fill me-1"></i>Received ✅',
                 onSuccess: (data) => {
@@ -671,10 +671,10 @@
            fetch(url, fetchOptions)
                 .then(r => r.json())
                 .then(data => {
-                    // إغلاق الـ Modal المفتوح حالياً
+                 
                     bootstrap.Modal.getInstance(document.getElementById(modalId))?.hide();
 
-                    // عرض الرسالة القادمة من الـ API (تأكد أن السيرفر يرسلها بالإنجليزية أيضاً)
+                 
                     showToast(data.message, data.success ? 'success' : 'danger');
 
                     if (data.success && typeof options.onSuccess === 'function') {
@@ -684,12 +684,12 @@
 
                     if (!data.success) {
                         btn.disabled = false;
-                        // تم تغيير "إعادة" إلى "Retry"
+                   
                         btn.innerHTML = options.successBtnText || 'Retry';
                     }
                 })
                 .catch(() => {
-                    // تم تغيير رسالة خطأ الاتصال
+                   
                     showToast('Connection error. Please try again.', 'danger');
                     btn.disabled = false;
                     btn.innerHTML = options.successBtnText || 'Retry';
@@ -698,7 +698,7 @@
 
         function openReviewModal(promptData) {
             activeReviewPrompt = promptData;
-            // تم تغيير "this seller" لتكون بالإنجليزية افتراضياً
+         
             document.getElementById('reviewSellerName').textContent = promptData.sellerName || 'this seller';
             document.getElementById('reviewTransactionId').value = promptData.transactionId || '';
             document.getElementById('reviewSellerId').value = promptData.sellerId || '';
