@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,8 +23,9 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories
-                                           .Include(c => c.Items)
-                                           .ToListAsync();
+         .Include(c => c.Items.Where(i => i.Status == MarketplaceApp.Enums.ItemStatus.Available)) // تصفية المنتجات المتاحة فقط
+         .ToListAsync();
+
             return View(categories);
         }
     }

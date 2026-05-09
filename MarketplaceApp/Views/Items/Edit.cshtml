@@ -1,89 +1,120 @@
-@model MarketplaceApp.ViewModels.ItemEditViewModel
+﻿@model MarketplaceApp.ViewModels.ItemEditViewModel
 
 @{
     ViewData["Title"] = "Edit Item";
 }
 
-<div class="container mt-4">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
 
-    <div class="card shadow-sm border-0 rounded-4 p-4">
-
-        <h3 class="mb-4 fw-bold">Edit Item</h3>
-
-        <form asp-action="Edit" method="post">
-            @Html.AntiForgeryToken()
-
-            <input type="hidden" asp-for="ItemID" />
-            <input type="hidden" asp-for="UserID" />
-
-            <div class="row">
-
-                <!-- Title -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Title</label>
-                    <input asp-for="Title" class="form-control" />
+                @* Header بتصميم جذاب *@
+                <div class="card-header bg-primary bg-gradient py-3">
+                    <h3 class="mb-0 text-white fw-bold text-center">
+                        <i class="bi bi-pencil-square me-2"></i> Edit Item Details
+                    </h3>
                 </div>
 
-                <!-- Price -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Price</label>
-                    <input asp-for="Price" class="form-control" />
-                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
 
-                <!-- Description -->
-                <div class="col-12 mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                </div>
+                        <input type="hidden" asp-for="ItemID" />
+                        <input type="hidden" asp-for="UserID" />
 
-                <!-- Condition -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Condition</label>
-                    <select asp-for="Condition"
-                            class="form-control"
-                            asp-items="ViewBag.Conditions">
-                    </select>
-                </div>
+                        <div class="row g-4">
 
-                <!-- Location -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Location</label>
-                    <input asp-for="Location" class="form-control" />
-                </div>
+                            @* Title *@
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-tag-fill me-1 text-primary"></i> Title
+                                </label>
+                                <input asp-for="Title" class="form-control form-control-lg border-2 focus-ring" placeholder="Enter item title" />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
 
-                <!-- Status -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Status</label>
-                    <select asp-for="Status"
-                            class="form-control"
-                            asp-items="Html.GetEnumSelectList<MarketplaceApp.Enums.ItemStatus>()">
-                    </select>
-                </div>
+                            @* Price *@
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-currency-dollar me-1 text-primary"></i> Price
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-2">$</span>
+                                    <input asp-for="Price" class="form-control border-2" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
 
-                <!-- Category -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Category</label>
-                    <select asp-for="CategoryID"
-                            class="form-control"
-                            asp-items="ViewBag.Categories">
-                    </select>
-                </div>
+                            @* Description *@
+                            <div class="col-12">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-card-text me-1 text-primary"></i> Description
+                                </label>
+                                <textarea asp-for="Description" class="form-control border-2" rows="4" placeholder="Tell us more about the item..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
 
+                            @* Category *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-grid-fill me-1 text-primary"></i> Category
+                                </label>
+                                <select asp-for="CategoryID" class="form-select form-select-lg border-2" asp-items="ViewBag.Categories">
+                                </select>
+                            </div>
+
+                            @* Condition *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-stars me-1 text-primary"></i> Condition
+                                </label>
+                                <select asp-for="Condition" class="form-select form-select-lg border-2" asp-items="ViewBag.Conditions">
+                                </select>
+                            </div>
+
+                            @* Location *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-geo-alt-fill me-1 text-primary"></i> Location
+                                </label>
+                                <input asp-for="Location" class="form-control form-control-lg border-2" placeholder="City, Area" />
+                                <span asp-validation-for="Location" class="text-danger small"></span>
+                            </div>
+
+                            @* Status *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-info-circle-fill me-1 text-primary"></i> Current Status
+                                </label>
+                                <select asp-for="Status" class="form-select form-select-lg border-2 text-primary fw-bold"
+                                        asp-items="Html.GetEnumSelectList<MarketplaceApp.Enums.ItemStatus>()">
+                                </select>
+                            </div>
+
+                        </div>
+
+                        @* الأزرار *@
+                        <div class="mt-5 d-flex flex-column flex-md-row gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow fw-bold flex-grow-1">
+                                <i class="bi bi-check-circle-fill me-2"></i> Save All Changes
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-5 rounded-pill fw-bold">
+                                <i class="bi bi-x-circle me-2"></i> Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
             </div>
-
-            <!-- Buttons -->
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary px-4">
-                    Save Changes
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary px-4">
-                    Cancel
-                </a>
-            </div>
-
-        </form>
-
+        </div>
     </div>
-
 </div>
+
+@section Scripts {
+    @* تم إضافة مكتبة التحقق لضمان تجربة مستخدم جيدة *@
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

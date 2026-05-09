@@ -82,7 +82,7 @@
                 box-shadow: 0 0 0 0.2rem rgba(255,107,53,0.15);
             }
 
-        /* --- ستايل الإيرور الجديد --- */
+     
         .input-validation-error {
             border-color: #dc3545 !important;
             background-color: #fff8f8;
@@ -254,9 +254,9 @@
                     </div>
                 </div>
 
-                <!-- 1. فورم تسجيل الدخول العادي -->
+              
                 <form asp-action="Login" method="post">
-                    <!-- ملخص الأخطاء اللي بتيجي من السيرفر (زي Incorrect Password) -->
+                  
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px; font-weight: 500;"></div>
 
                     <div class="mb-2">
@@ -271,40 +271,19 @@
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
-                    <div class="form-check mb-2">
-                        <input asp-for="RememberMe" class="form-check-input" />
-                        <label class="form-check-label" asp-for="RememberMe" style="font-weight:400; font-size:12px;">
-                            Remember me
-                        </label>
-                    </div>
+                   
 
                     <button type="submit" class="btn-orange">Sign In</button>
                 </form>
 
-                <!-- 2. فورم تسجيل الدخول الخارجي -->
-                <div class="text-center mt-4 mb-2" style="font-size:12px;color:#777;">
-                    Or continue with
-                </div>
+              
+               
 
-                <form asp-action="ExternalLogin" asp-controller="Account" method="post">
-                    <div class="social">
-                        <button type="submit" name="provider" value="Google" class="btn-social">
-                            <i class="bi bi-google"></i> Google
-                        </button>
-                        <button type="submit" name="provider" value="Facebook" class="btn-social">
-                            <i class="bi bi-facebook text-primary"></i> Facebook
-                        </button>
-                    </div>
-                </form>
-
-                <p class="text-center mt-4" style="font-size:12px;">
-                    Don't have account?
-                    <a href="/Account/Register" style="color:#ff6b35;text-decoration:none; font-weight:bold;">Create one</a>
-                </p>
+    
             </div>
         </div>
 
-        <!-- الجزء اليمين (الأنيميشن) - زي ما هو بالظبط -->
+    
         <div class="right">
             <div class="icon i1"><i class="bi bi-bag"></i></div>
             <div class="icon i2"><i class="bi bi-graph-up"></i></div>
@@ -334,7 +313,7 @@
         </div>
     </div>
 
-    <!-- Scripts اللازمة لتشغيل الـ Validation فورا من غير تحميل -->
+   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>

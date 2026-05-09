@@ -4,80 +4,90 @@
     ViewData["Title"] = "Delete Item";
 }
 
-<div class="container mt-4">
-    <h1 class="fw-bold">Delete</h1>
-    <h3 class="text-danger">Are you sure you want to delete this item?</h3>
-    <hr />
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                @* Header القسم العلوي *@
+                <div class="card-header bg-danger bg-gradient py-3 text-center">
+                    <h4 class="text-white mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Deletion
+                    </h4>
+                </div>
 
-    <div class="row">
-        <div class="col-md-10">
-            <dl class="row">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <p class="text-muted">You are about to permanently delete the following item:</p>
+                        <h3 class="fw-bold text-dark">@Model.Title</h3>
+                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">
+                            Price: @Model.Price.ToString("C")
+                        </span>
+                    </div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Title)</dt>
-                <dd class="col-sm-9 fw-bold">@Html.DisplayFor(model => model.Title)</dd>
+                    <div class="bg-light rounded-3 p-3 mb-4 border-start border-danger border-4">
+                        <div class="row g-2">
+                            <div class="col-5 text-muted small">Category:</div>
+                            <div class="col-7 fw-semibold">@Model.Category?.Name</div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Description)</dt>
-                <dd class="col-sm-9 text-muted">@Html.DisplayFor(model => model.Description)</dd>
+                            <div class="col-5 text-muted small">Condition:</div>
+                            <div class="col-7 fw-semibold">@Model.Condition</div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Price)</dt>
-                <dd class="col-sm-9 text-success fw-bold">@Model.Price.ToString("C")</dd>
+                            <div class="col-5 text-muted small">Location:</div>
+                            <div class="col-7 fw-semibold">@Model.Location</div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Condition)</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.Condition)</dd>
+                            <div class="col-5 text-muted small">Status:</div>
+                            <div class="col-7">
+                                <span class="badge border text-dark bg-white shadow-sm">@Model.Status</span>
+                            </div>
+                        </div>
+                    </div>
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Location)</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.Location)</dd>
+                    @* Form الحذف *@
+                    <form id="deleteForm" asp-action="Delete" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ItemID" value="@Model.ItemID" />
 
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Category)</dt>
-                <dd class="col-sm-9">@Model.Category?.Name</dd>
-
-                <dt class="col-sm-3">Available For</dt>
-                <dd class="col-sm-9">
-                    @if (Model.IsAvailableForSale)
-                    {
-                        <span class="badge bg-primary">Sale</span>
-                    }
-                    @if (Model.IsAvailableForSwap)
-                    {
-                        <span class="badge bg-warning text-dark ms-1">Swap</span>
-                    }
-                </dd>
-
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Status)</dt>
-                <dd class="col-sm-9">
-                    <span class="badge border text-dark bg-light">
-                        @Html.DisplayFor(model => model.Status)
-                    </span>
-                </dd>
-
-                <dt class="col-sm-3">Owner</dt>
-                <dd class="col-sm-9">@Model.User?.Email</dd>
-
-                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.CreatedAt)</dd>
-
-            </dl>
-
-            <div class="mt-4 shadow-sm p-3 bg-light rounded border">
-                <!-- تأكد أن الـ asp-action هو Delete -->
-                <form asp-action="Delete" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <!-- الـ Hidden input لازم يتطابق مع المعامل في الـ POST Action -->
-                    <input type="hidden" name="ItemID" value="@Model.ItemID" />
-
-                    <button type="submit" class="btn btn-danger px-4 shadow-sm"
-                            onclick="return confirm('Are you sure you want to delete this item?');">
-                        Confirm Delete
-                    </button>
-
-                    <span class="mx-2">|</span>
-
-                    <a asp-action="Index" class="btn btn-secondary px-4 shadow-sm">
-                        Back to List
-                    </a>
-                </form>
+                        <div class="d-grid gap-2">
+                            <button type="button" id="btnDelete" class="btn btn-danger btn-lg rounded-pill shadow-sm fw-bold">
+                                <i class="bi bi-trash3-fill me-2"></i> Delete Permanently
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill fw-bold">
+                                <i class="bi bi-arrow-left me-2"></i> Cancel & Go Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @* إضافة مكتبة SweetAlert2 *@
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById('btnDelete').addEventListener('click', function (e) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This action cannot be undone! The item '@Model.Title' will be removed forever.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, keep it',
+                reverseButtons: true,
+                border: 'none',
+                customClass: {
+                    popup: 'rounded-4 shadow'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // إذا وافق المستخدم، نقوم بإرسال الفورم
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+        });
+    </script>
+}

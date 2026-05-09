@@ -59,56 +59,56 @@ namespace MarketplaceApp.Services
         public async Task NotifyBuyRequestAsync(string userId, int buyRequestId, string itemTitle, decimal price)
         {
             await SendAsync(userId, NotificationType.Order, buyRequestId,
-                $"🛒 طلب شراء جديد لمنتجك \"{itemTitle}\" بسعر ${price:0.00} — قبل أو ارفض الطلب",
+                $"🛒 New buy request for your item \"{itemTitle}\" at ${price:0.00} — Accept or reject the request",
                 $"/Transactions/SellerRequests");
         }
 
         public async Task NotifyBuyRequestAcceptedAsync(string userId, int buyRequestId, string itemTitle)
         {
             await SendAsync(userId, NotificationType.Order, buyRequestId,
-                $"✅ البائع قبل طلب شرائك لـ \"{itemTitle}\"! جارٍ الشحن. أكّد استلامك لتحرير المبلغ.",
+                $"✅ The seller accepted your buy request for \"{itemTitle}\"! Shipping in progress. Confirm receipt to release payment.",
                 $"/Transactions/MyOrders");
         }
 
         public async Task NotifyBuyRequestRejectedAsync(string userId, int buyRequestId, string itemTitle, decimal refundAmount)
         {
             await SendAsync(userId, NotificationType.Order, buyRequestId,
-                $"❌ رفض البائع طلب شرائك لـ \"{itemTitle}\". تم استرداد ${refundAmount:0.00} لمحفظتك.",
+                $"❌ The seller rejected your buy request for \"{itemTitle}\". ${refundAmount:0.00} has been refunded to your wallet.",
                 $"/Transactions/MyOrders");
         }
 
         public async Task NotifyOrderCompletedAsync(string sellerId, int buyRequestId, string itemTitle, decimal amount)
         {
             await SendAsync(sellerId, NotificationType.Transaction, buyRequestId,
-                $"✅ أكد المشتري استلام \"{itemTitle}\". تم تحويل ${amount:0.00} (50%) الأخيرة لمحفظتك!",
+                $"✅ The buyer confirmed receiving \"{itemTitle}\". The final ${amount:0.00} (50%) has been transferred to your wallet!",
                 $"/Transactions");
         }
 
         public async Task NotifySwapRequestAsync(string userId, int swapRequestId, string requestedItemTitle)
         {
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
-                $"🔄 لديك طلب تبادل جديد على منتجك \"{requestedItemTitle}\".",
+                $"🔄 You have a new swap request for your item \"{requestedItemTitle}\".",
                 $"/Transactions/SellerRequests");
         }
 
         public async Task NotifySwapRequestAcceptedAsync(string userId, int swapRequestId, string requestedItemTitle)
         {
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
-                $"✅ تمت الموافقة على طلب التبادل الخاص بك لمنتج \"{requestedItemTitle}\".",
+                $"✅ Your swap request for \"{requestedItemTitle}\" has been approved.",
                 $"/Profile#transactions");
         }
 
         public async Task NotifySwapRequestRejectedAsync(string userId, int swapRequestId, string requestedItemTitle)
         {
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
-                $"❌ تم رفض طلب التبادل الخاص بك لمنتج \"{requestedItemTitle}\".",
+                $"❌ Your swap request for \"{requestedItemTitle}\" has been rejected.",
                 $"/SwapRequests/MySentRequests");
         }
 
         public async Task NotifyNewMessageAsync(string userId, int conversationId, string senderName)
         {
             await SendAsync(userId, NotificationType.Message, conversationId,
-                $"💬 رسالة جديدة من {senderName}.",
+                $"💬 New message from {senderName}.",
                 $"/Chat/Chat/{conversationId}");
         }
     }
