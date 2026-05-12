@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Top Up Wallet";
+    var currentBalance = (decimal)(ViewBag.CurrentBalance ?? 0m);
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="topup-icon-circle mx-auto mb-3">
+                    <i class="bi bi-wallet2 fs-1 text-white"></i>
+                </div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.8rem;">Top Up Wallet</h1>
+                <p class="text-muted">Add funds to your wallet for secure Escrow purchases</p>
+            </div>
+
+            <!-- Current Balance Display -->
+            <div class="balance-display mb-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-muted d-block mb-1">Your Current Balance</small>
+                        <h2 class="fw-bold mb-0 text-orange" id="currentBalanceDisplay">$@currentBalance.ToString("0.00")</h2>
+                    </div>
+                    <div class="balance-icon">
+                        <i class="bi bi-piggy-bank-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Amount Selection -->
+            <div class="mb-4">
+                <small class="text-muted fw-semibold d-block mb-2">Quick Select:</small>
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var amt in new[] { 10, 25, 50, 100, 250, 500 })
+                    {
+                        <button type="button"
+                                class="btn btn-quick-amount rounded-pill fw-semibold"
+                                onclick="setAmount(@amt)">
+                            $@amt
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Main Top Up Card -->
+            <div class="topup-card shadow">
+                <form id="topupForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-4">
+                        <label for="topupAmount" class="form-label fw-semibold">Enter Amount (USD)</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-orange text-white border-0 fw-bold">$</span>
+                            <input type="number"
+                                   id="topupAmount"
+                                   name="amount"
+                                   class="form-control border-2 border-start-0"
+                                   placeholder="0.00"
+                                   min="1" max="10000" step="0.01"
+                                   style="border-radius: 0 12px 12px 0; font-size: 1.3rem; font-weight: 700;"
+                                   oninput="updatePreview(this.value)">
+                        </div>
+                        <div class="form-text text-muted mt-1">Min: $1 — Max: $10,000</div>
+                    </div>
+
+                    <!-- Balance Preview -->
+                    <div id="previewBox" class="preview-box mb-4" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Current</span>
+                            <span class="fw-bold">$@currentBalance.ToString("0.00")</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <span class="text-muted">Adding</span>
+                            <span class="fw-bold text-success" id="addedAmount">+$0.00</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">New Balance</span>
+                            <span class="fw-bold text-orange fs-5" id="newBalance">$@currentBalance.ToString("0.00")</span>
+                        </div>
+                    </div>
+
+                    <!-- Mock Payment Info -->
+                    <div class="payment-info mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-credit-card-fill text-orange fs-5"></i>
+                            <span class="fw-semibold">Payment Details (Demo Mode)</span>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <input type="text" class="form-control rounded-3 bg-light" placeholder="Card Number" value="4242 4242 4242 4242" readonly>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control rounded-3 bg-light" value="12/28" readonly>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control rounded-3 bg-light" value="123" readonly>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <small class="text-muted italic">
+                                <i class="bi bi-info-circle me-1"></i> No real funds will be charged.
+                            </small>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="topupSubmitBtn" class="btn btn-orange w-100 fw-bold py-3 rounded-pill text-white fs-5 shadow">
+                        <i class="bi bi-plus-circle-fill me-2"></i> Confirm Top Up
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Transactions" asp-action="MyOrders" class="text-muted text-decoration-none small">
+                    <i class="bi bi-arrow-left me-1"></i> Back to My Orders
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;">
+    <div id="topupToast" class="toast align-items-center border-0 rounded-4 shadow-lg" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="topupToastMsg"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-orange {
+        color: #f97316 !important;
+    }
+
+    .bg-orange {
+        background-color: #f97316 !important;
+    }
+
+    .btn-orange {
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background: linear-gradient(135deg, #ea6c0a, #f97316);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(249,115,22,0.4);
+        }
+
+    .topup-icon-circle {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 30px rgba(249,115,22,0.35);
+        animation: floatBob 3s ease-in-out infinite;
+    }
+
+    @@keyframes floatBob {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+
+    .balance-display {
+        background: linear-gradient(135deg, #fff7ed, #fff);
+        border: 2px solid #fed7aa;
+        border-radius: 18px;
+        padding: 20px 24px;
+    }
+
+    .balance-icon {
+        width: 50px;
+        height: 50px;
+        background: #fff7ed;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        color: #f97316;
+    }
+
+    .btn-quick-amount {
+        background: #fff7ed;
+        color: #f97316;
+        border: 1.5px solid #fed7aa;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+        .btn-quick-amount:hover, .btn-quick-amount.active {
+            background: #f97316;
+            color: white;
+            border-color: #f97316;
+        }
+
+    .topup-card {
+        background: white;
+        border-radius: 24px;
+        padding: 28px;
+        border: 1.5px solid #e2e8f0;
+    }
+
+    .preview-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 16px;
+        border: 1.5px solid #e2e8f0;
+    }
+
+    .payment-info {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 16px;
+        border: 1.5px dashed #cbd5e1;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const currentBalance = @currentBalance;
+
+        function setAmount(val) {
+            document.getElementById('topupAmount').value = val;
+            document.querySelectorAll('.btn-quick-amount').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            updatePreview(val);
+        }
+
+        function updatePreview(val) {
+            const amount = parseFloat(val);
+            const box = document.getElementById('previewBox');
+            if (isNaN(amount) || amount <= 0) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            document.getElementById('addedAmount').textContent = '+$' + amount.toFixed(2);
+            document.getElementById('newBalance').textContent = '$' + (currentBalance + amount).toFixed(2);
+        }
+
+        document.getElementById('topupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('topupAmount').value);
+            if (!amount || amount <= 0) { showToast('Please enter a valid amount.', 'warning'); return; }
+
+            const btn = document.getElementById('topupSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+            const formData = new FormData();
+            formData.append('amount', amount);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch('/Transactions/TopUpWallet', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'danger');
+                    if (data.success) {
+                        setTimeout(() => window.location.href = '/Transactions/MyOrders', 2000);
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-plus-circle-fill me-2"></i> Confirm Top Up';
+                    }
+                })
+                .catch(() => {
+                    showToast('Connection error.', 'danger');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirm Top Up';
+                });
+        });
+
+        function showToast(message, type) {
+            const toast = document.getElementById('topupToast');
+            toast.className = `toast align-items-center border-0 rounded-4 shadow-lg text-bg-${type}`;
+            document.getElementById('topupToastMsg').textContent = message;
+            new bootstrap.Toast(toast).show();
+        }
+    </script>
+}

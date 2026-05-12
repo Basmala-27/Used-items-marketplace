@@ -1,11 +1,10 @@
-
-
+@using MarketplaceApp.Enums
 @model MarketplaceApp.ViewModels.ProfileVM
 @{
     ViewData["Title"] = "My Profile";
 }
-<style>
 
+<style>
     .tabs-wrapper {
         display: flex;
         justify-content: flex-start;
@@ -36,7 +35,6 @@
             color: #000 !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
         }
-
 
     .product-card {
         border: none;
@@ -70,13 +68,21 @@
         z-index: 10;
     }
 
-    .text-orange {
-        color: #FF6600 !important;
-    }
-
     .stat-card {
         background-color: rgba(255, 255, 255, 0.15);
         border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .bg-orange {
+        background-color: #FF6600 !important;
+    }
+
+    .border-orange {
+        border-color: #FF6600 !important;
+    }
+
+    .text-orange {
+        color: #FF6600 !important;
     }
 
     .removing-item {
@@ -102,7 +108,6 @@
                 <a asp-controller="Profile" asp-action="Edit" class="btn btn-outline-light rounded-pill px-4">
                     <i class="bi bi-pencil-square me-2"></i>Edit Profile
                 </a>
-
                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-light text-danger rounded-pill px-4 shadow-sm">
@@ -143,7 +148,6 @@
         </div>
     </div>
 
-
     <div class="mt-4 px-3 px-md-5">
         <div class="tabs-wrapper mb-4">
             <div class="tabs-container">
@@ -162,6 +166,7 @@
         </div>
 
         <div class="tab-content" id="profileTabsContent">
+            <!-- Posted Items Tab -->
             <div class="tab-pane fade show active" id="my-items">
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 row-cols-xl-7 g-3">
                     @if (Model.PostedItems != null && Model.PostedItems.Any())
@@ -192,6 +197,7 @@
                 </div>
             </div>
 
+            <!-- Favorites Tab -->
             <div class="tab-pane fade" id="favorites">
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 row-cols-xl-7 g-3" id="favorites-grid">
                     @if (Model.FavoriteItems != null && Model.FavoriteItems.Any())
@@ -225,6 +231,7 @@
                 </div>
             </div>
 
+            <!-- Transactions Tab -->
             <div class="tab-pane fade" id="transactions">
                 @if (Model.Transactions == null || !Model.Transactions.Any())
                 {
@@ -240,7 +247,7 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="bg-light">
                                     <tr>
-                                        <th class="ps-4 py-3 border-0">Item</th>
+                                        <th class="ps-4 py-3 border-0">Transaction</th>
                                         <th class="py-3 border-0">Status</th>
                                         <th class="py-3 border-0">Date</th>
                                         <th class="text-end pe-4 py-3 border-0">Amount</th>
@@ -251,21 +258,44 @@
                                     {
                                         <tr>
                                             <td class="ps-4 py-3">
-                                                <div class="fw-bold text-dark">@trans.Item?.Title</div>
+                                                <div class="fw-bold text-dark">
+                                                    @if (trans.Type == TransactionType.Deposit)
+                                                    {
+                                                        <span class="text-orange">
+                                                            <i class="bi bi-wallet2 me-1"></i> Wallet Deposit
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @(trans.Item?.Title ?? "Marketplace Order")
+                                                    }
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(trans.Notes) && trans.Type != TransactionType.Deposit)
+                                                {
+                                                    <small class="text-muted d-block" style="font-size: 11px;">@trans.Notes</small>
+                                                }
                                             </td>
                                             <td>
                                                 @{
                                                     var statusClass = trans.Status.ToString() switch
                                                     {
+                                                        "Completed" when trans.Type == TransactionType.Deposit => "bg-orange text-white border-orange",
                                                         "Completed" => "bg-success-subtle text-success border-success-subtle",
                                                         "Pending" => "bg-warning-subtle text-warning border-warning-subtle",
                                                         "Accepted" => "bg-primary-subtle text-primary border-primary-subtle",
-                                                        "Cancelled" => "bg-danger-subtle text-danger border-danger-subtle",
+                                                        "Cancelled" => "bg-light text-muted border-secondary-subtle",
                                                         _ => "bg-secondary-subtle text-muted border-secondary-subtle"
                                                     };
                                                 }
                                                 <span class="badge rounded-pill border @statusClass px-3 py-2">
-                                                    @trans.Status
+                                                    @if (trans.Type == TransactionType.Deposit && trans.Status.ToString() == "Completed")
+                                                    {
+                                                        <span>Success</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @trans.Status
+                                                    }
                                                 </span>
                                             </td>
                                             <td class="text-muted">
@@ -275,10 +305,32 @@
                                                 @{
                                                     var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                                                     var isSale = trans.SellerID == currentUserId;
+                                                    var isRejectedOrCancelled = trans.Status == OrderStatus.Cancelled;
                                                 }
-                                                <span class="fw-bold @(isSale ? "text-success" : "text-dark")">
-                                                    @(isSale ? "+" : "")@trans.FinalPrice.ToString("C")
-                                                </span>
+
+                                                @if (isRejectedOrCancelled)
+                                                {
+                                                    <div class="d-flex flex-column align-items-end">
+                                                        <span class="text-muted fw-bold" style="text-decoration: line-through; font-size: 13px;">
+                                                            @trans.FinalPrice.ToString("C")
+                                                        </span>
+                                                        <span class="badge bg-light text-secondary border border-secondary-subtle" style="font-size: 10px;">
+                                                            <i class="bi bi-arrow-counterclockwise"></i> Refunded
+                                                        </span>
+                                                    </div>
+                                                }
+                                                else if (trans.Type == TransactionType.Deposit)
+                                                {
+                                                    <span class="fw-bold text-orange">
+                                                        +@trans.FinalPrice.ToString("C")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="fw-bold @(isSale ? "text-success" : "text-dark")">
+                                                        @(isSale ? "+" : "-")@trans.FinalPrice.ToString("C")
+                                                    </span>
+                                                }
                                             </td>
                                         </tr>
                                     }
@@ -288,65 +340,68 @@
                     </div>
                 }
             </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                <script>
-                    $(document).ready(function () {
-                        var hash = window.location.hash;
-                        if (hash) {
-                            var targetBtn = document.querySelector('button[data-bs-target="' + hash + '"]');
-                            if (targetBtn) {
-                                var tabInstance = new bootstrap.Tab(targetBtn);
-                                tabInstance.show();
-                            }
-                        }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var hash = window.location.hash;
+            if (hash) {
+                var targetBtn = document.querySelector('button[data-bs-target="' + hash + '"]');
+                if (targetBtn) {
+                    var tabInstance = new bootstrap.Tab(targetBtn);
+                    tabInstance.show();
+                }
+            }
 
-                        $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
-                            var target = $(e.target).data('bs-target');
-                            if (history.pushState) {
-                                history.pushState(null, null, target);
-                            } else {
-                                window.location.hash = target;
-                            }
-                        });
-                    });
+            $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+                var target = $(e.target).data('bs-target');
+                if (history.pushState) {
+                    history.pushState(null, null, target);
+                } else {
+                    window.location.hash = target;
+                }
+            });
+        });
 
-                    function removeFromFav(itemId) {
-                        var icon = $(`#heart-icon-${itemId}`);
-                        var card = $(`#fav-item-${itemId}`);
-                        icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
+        function removeFromFav(itemId) {
+            var icon = $(`#heart-icon-${itemId}`);
+            var card = $(`#fav-item-${itemId}`);
+            icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart');
 
-                        $.ajax({
-                            url: '/Favorites/ToggleFavorite',
-                            type: 'POST',
-                            data: { itemId: itemId },
-                            success: function (response) {
-                                if (response.success && response.status === "removed") {
-                                    card.addClass('removing-item');
-                                    setTimeout(function() {
-                                        card.remove();
-                                        $('.favorites-count').each(function() {
-                                            var current = parseInt($(this).text());
-                                            if (current > 0) $(this).text(current - 1);
-                                        });
-                                        if ($('#favorites-grid .product-card').length === 0) {
-                                            $('#favorites-grid').html(`
-                                                <div class="col-12 text-center py-5 opacity-50">
-                                                    <i class="bi bi-heartbreak fs-1"></i>
-                                                    <p class="mt-2">Your wishlist is empty.</p>
-                                                </div>
-                                            `);
-                                        }
-                                    }, 300);
-                                } else {
-                                    icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
-                                }
-                            },
-                            error: function () {
-                                icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+            $.ajax({
+                url: '/Favorites/ToggleFavorite',
+                type: 'POST',
+                data: { itemId: itemId },
+                success: function (response) {
+                    if (response.success && response.status === "removed") {
+                        card.addClass('removing-item');
+                        setTimeout(function() {
+                            card.remove();
+                            $('.favorites-count').each(function() {
+                                var current = parseInt($(this).text());
+                                if (current > 0) $(this).text(current - 1);
+                            });
+                            if ($('#favorites-grid .product-card').length === 0) {
+                                $('#favorites-grid').html(`
+                                    <div class="col-12 text-center py-5 opacity-50">
+                                        <i class="bi bi-heartbreak fs-1"></i>
+                                        <p class="mt-2">Your wishlist is empty.</p>
+                                    </div>
+                                `);
                             }
-                        });
+                        }, 300);
+                    } else {
+                        icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
                     }
-                </script>
+                },
+                error: function () {
+                    icon.removeClass('bi-heart').addClass('bi-heart-fill text-danger');
+                }
+            });
+        }
+    </script>
 }

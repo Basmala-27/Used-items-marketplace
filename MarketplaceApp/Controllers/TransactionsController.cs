@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -364,73 +364,39 @@ namespace MarketplaceApp.Controllers
         public async Task<IActionResult> CancelBuyRequest(int buyRequestId)
         {
             var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var buyRequest = await _context.BuyRequests
-                .Include(b => b.Item)
+            var buyRequest = await _context.BuyRequests.Include(b => b.Item)
                 .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
 
             if (buyRequest == null || buyRequest.BuyerID != buyerId)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = "Unauthorized request."
-                });
-            }
-
-            if (buyRequest.Status != BuyRequestStatus.Pending)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = "Only pending requests can be canceled."
-                });
-            }
+                return Json(new { success = false, message = "Unauthorized." });
 
             var buyer = await _context.Users.FindAsync(buyerId);
-
             await using var dbTx = await _context.Database.BeginTransactionAsync();
-
             try
             {
-                // refund
+                // تحديث المعاملة الأصلية لحالة الإلغاء
+                var originalTx = await _context.Transactions.FindAsync(buyRequest.EscrowTransactionId);
+                if (originalTx != null)
+                {
+                    originalTx.Status = OrderStatus.Cancelled;
+                    originalTx.Notes = "Order cancelled by buyer. Funds refunded.";
+                }
+
                 buyer.PendingBalance -= buyRequest.Amount;
                 buyer.WalletBalance += buyRequest.Amount;
-
-                // restore item
                 buyRequest.Item.Status = ItemStatus.Available;
-
-                // cancel request
                 buyRequest.Status = BuyRequestStatus.Cancelled;
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                return Json(new
-                {
-                    success = true,
-                    message = "Order canceled successfully."
-                });
+                return Json(new { success = true, message = "Order canceled and funds refunded." });
             }
             catch
             {
                 await dbTx.RollbackAsync();
-
-                return Json(new
-                {
-                    success = false,
-                    message = "An error occurred while canceling."
-                });
+                return Json(new { success = false, message = "An error occurred." });
             }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> TopUp()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.FindAsync(userId);
-            ViewBag.CurrentBalance = user?.WalletBalance ?? 0;
-            return View();
         }
 
         [HttpPost]
@@ -450,11 +416,13 @@ namespace MarketplaceApp.Controllers
                 _context.Transactions.Add(new Transaction
                 {
                     BuyerID = userId!,
+                    SellerID = userId!, // تم الإضافة هنا لتجنب الاسم الفارغ
+                    ItemID = null,
                     FinalPrice = amount,
                     Status = OrderStatus.Completed,
                     PaymentMethod = PaymentMethod.Wallet,
                     Type = TransactionType.Deposit,
-                    Notes = $"Top-up: ${amount:0.00}",
+                    Notes = "Wallet Deposit", // هذا النص سيظهر في خانة المنتج/الملاحظات
                     CreatedAt = DateTime.Now
                 });
                 await _context.SaveChangesAsync();
@@ -468,55 +436,57 @@ namespace MarketplaceApp.Controllers
             }
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SellerRejectBuy(int buyRequestId)
         {
             var sellerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var buyRequest = await _context.BuyRequests
-                .Include(b => b.Item)
-                .Include(b => b.Buyer)
+            var buyRequest = await _context.BuyRequests.Include(b => b.Item).Include(b => b.Buyer)
                 .FirstOrDefaultAsync(b => b.BuyRequestId == buyRequestId);
 
             if (buyRequest == null || buyRequest.SellerID != sellerId)
-                return Json(new { success = false, message = "Unauthorized or request not found." });
-
-            if (buyRequest.Status != BuyRequestStatus.Pending)
-                return Json(new { success = false, message = "Only pending requests can be rejected." });
+                return Json(new { success = false, message = "Unauthorized." });
 
             var buyer = buyRequest.Buyer;
-
             await using var dbTx = await _context.Database.BeginTransactionAsync();
             try
             {
+                // تم التغيير هنا: تحديث حالة المعاملة الأصلية لإخراجها من الـ Pending
+                var originalTx = await _context.Transactions.FindAsync(buyRequest.EscrowTransactionId);
+                if (originalTx != null)
+                {
+                    originalTx.Status = OrderStatus.Cancelled; // تغيير الحالة بدل المسح
+                    originalTx.Notes = "Order rejected by seller. Funds refunded.";
+                }
 
                 buyer.PendingBalance -= buyRequest.Amount;
                 buyer.WalletBalance += buyRequest.Amount;
-
-
                 buyRequest.Item.Status = ItemStatus.Available;
                 buyRequest.Status = BuyRequestStatus.RejectedBySeller;
 
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-
-                await _notificationService.NotifyBuyRequestRejectedAsync(
-                    buyRequest.BuyerID,
-                    buyRequest.BuyRequestId,
-                    buyRequest.Item.Title,
-                    buyRequest.Amount
-                );
+                await _notificationService.NotifyBuyRequestRejectedAsync(buyer.Id, buyRequest.BuyRequestId, buyRequest.Item.Title, buyRequest.Amount);
 
                 return Json(new { success = true, message = "Request rejected and funds refunded." });
             }
-            catch (Exception)
+            catch
             {
                 await dbTx.RollbackAsync();
                 return Json(new { success = false, message = "An error occurred." });
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> TopUpWallet()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.FindAsync(userId);
+
+
+            ViewBag.CurrentBalance = user?.WalletBalance ?? 0m;
+
+            return View();
         }
     }
 }
