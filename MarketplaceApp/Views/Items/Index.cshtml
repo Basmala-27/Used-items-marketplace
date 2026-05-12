@@ -29,26 +29,35 @@
             <option value="">All Categories</option>
             @foreach (var cat in (SelectList)ViewBag.Categories)
             {
-                <option value="@cat.Value" selected="@(cat.Value == selectedCategory)">@cat.Text</option>
+                <option value="@cat.Value" selected="@(cat.Value == ViewBag.SelectedCategory?.ToString())">@cat.Text</option>
             }
         </select>
     </div>
 
     <div class="col-md-2">
         <select name="condition" class="form-select border-0 shadow-none" onchange="this.form.submit()">
-            <option value="all" selected="@(selectedCondition == "all")">All Conditions</option>
-            <option value="Like New" selected="@(selectedCondition == "Like New")">Like New</option>
-            <option value="Very Good" selected="@(selectedCondition == "Very Good")">Very Good</option>
-            <option value="Good" selected="@(selectedCondition == "Good")">Good</option>
-            <option value="Needs Repair" selected="@(selectedCondition == "Needs Repair")">Needs Repair</option>
+            <option value="all" selected="@(ViewBag.SelectedCondition == "all" || string.IsNullOrEmpty(ViewBag.SelectedCondition))">All Conditions</option>
+            <option value="Like New" selected="@(ViewBag.SelectedCondition == "Like New")">Like New</option>
+            <option value="Very Good" selected="@(ViewBag.SelectedCondition == "Very Good")">Very Good</option>
+            <option value="Good" selected="@(ViewBag.SelectedCondition == "Good")">Good</option>
+            <option value="Needs Repair" selected="@(ViewBag.SelectedCondition == "Needs Repair")">Needs Repair</option>
         </select>
     </div>
 
     <div class="col-md-3">
         <select name="listingType" class="form-select border-0 shadow-none" onchange="this.form.submit()">
-            <option value="all" selected="@(selectedListingType == "all")">Negotiation & Swap</option>
-            <option value="Sale" selected="@(selectedListingType == "Sale")">Open for Negotiation</option>
-            <option value="Swap" selected="@(selectedListingType == "Swap")">Available for Swap</option>
+            <option value="all" selected="@(ViewBag.SelectedListingType == "all")">Negotiation & Swap</option>
+            <option value="Sale" selected="@(ViewBag.SelectedListingType == "Sale")">Open for Negotiation</option>
+            <option value="Swap" selected="@(ViewBag.SelectedListingType == "Swap")">Available for Swap</option>
+        </select>
+    </div>
+
+
+    <div class="col-md-2">
+        <select name="sort" class="form-select border-0 shadow-none" onchange="this.form.submit()">
+            <option value="" selected="@(string.IsNullOrEmpty(ViewBag.SelectedSort))">Sort By</option>
+            <option value="price_asc" selected="@(ViewBag.SelectedSort == "price_asc")">Price: Low to High</option>
+            <option value="price_desc" selected="@(ViewBag.SelectedSort == "price_desc")">Price: High to Low</option>
         </select>
     </div>
 

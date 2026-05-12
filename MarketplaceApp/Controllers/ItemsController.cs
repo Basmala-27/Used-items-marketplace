@@ -58,24 +58,22 @@ namespace MarketplaceApp.Controllers
                     query = query.Where(i => i.IsAvailableForSale);
             }
 
-
             query = sort switch
             {
-                "price_asc" => query.OrderBy(i => i.PriceSortValue),
-
-                "price_desc" => query.OrderByDescending(i => i.PriceSortValue),
-
+                "price_asc" => query.OrderBy(i => (double)i.Price),
+                "price_desc" => query.OrderByDescending(i => (double)i.Price),
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
             var items = await query.ToListAsync();
 
-
-
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
             ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, listingType);
+
             ViewBag.SelectedCategory = categoryId;
+            ViewBag.SelectedCondition = condition;
+            ViewBag.SelectedListingType = listingType;
             ViewBag.SelectedSort = sort;
             ViewBag.SearchTerm = searchTerm;
 
@@ -87,7 +85,6 @@ namespace MarketplaceApp.Controllers
 
             return View(items);
         }
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
