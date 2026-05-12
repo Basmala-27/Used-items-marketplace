@@ -50,7 +50,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-// Seed Admin Role and User
+
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -61,7 +61,7 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
 
-    var adminEmail = "basmala01067618897@gmail.com";
+    var adminEmail = "wwww95287@gmail.com";
     var user = await userManager.FindByEmailAsync(adminEmail);
 
     if (user != null && !await userManager.IsInRoleAsync(user, "Admin"))

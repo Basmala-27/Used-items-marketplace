@@ -28,16 +28,16 @@ namespace MarketplaceApp.Controllers
 
         public async Task<IActionResult> ManageItems()
         {
-            // 1. ????? ?? ??? ItemIDs ???? ?????? ?? ???? ??? Transactions
+           
             var itemsWithTransactions = await _context.Transactions
                 .Select(t => t.ItemID)
                 .ToListAsync();
 
-            // 2. ????? ??? ???????? ???? ??? ID ?????? ?? ????? ?? ??????? ???? ???
+          
             var items = await _context.Items
                 .Include(i => i.User)
                 .Include(i => i.Images)
-                .Where(i => !itemsWithTransactions.Contains(i.ItemID)) // ????? ?? ?? ???? ???? ???????
+                .Where(i => !itemsWithTransactions.Contains(i.ItemID)) 
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
 
@@ -95,16 +95,34 @@ namespace MarketplaceApp.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> ToggleBlockUser(string userId)
         {
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
-            {
-                user.IsBlocked = !user.IsBlocked;
-                await _context.SaveChangesAsync();
+           
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-                TempData["Success"] = user.IsBlocked ? "User has been blocked." : "User has been unblocked.";
+            
+            if (currentUserId == userId)
+            {
+                TempData["Error"] = "You cannot block yourself.";
+                return RedirectToAction(nameof(ManageUsers));
             }
+
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction(nameof(ManageUsers));
+            }
+
+           
+
+            user.IsBlocked = !user.IsBlocked;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = user.IsBlocked ? "User has been blocked." : "User has been unblocked.";
+
             return RedirectToAction(nameof(ManageUsers));
         }
     }
