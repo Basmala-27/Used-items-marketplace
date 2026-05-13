@@ -218,7 +218,7 @@ namespace MarketplaceApp.Controllers
 
                 // Transfer Ownership
                 buyRequest.Item.Status = ItemStatus.Sold;
-                buyRequest.Item.UserID = buyerId!;
+                //buyRequest.Item.UserID = buyerId!;
 
                 buyRequest.Status = BuyRequestStatus.Completed;
 
