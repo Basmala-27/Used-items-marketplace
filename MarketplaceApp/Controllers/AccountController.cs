@@ -57,7 +57,7 @@ namespace MarketplaceApp.Controllers
                 PhoneNumber = model.PhoneNumber,
                 ProfileImage = "/uploads/" + fileName,
                 CreatedAt = DateTime.Now,
-                IsBlocked = false // ?????? ?? ??? ??? ????? ??? ???????
+                IsBlocked = false 
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
