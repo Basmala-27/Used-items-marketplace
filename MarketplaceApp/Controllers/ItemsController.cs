@@ -274,23 +274,41 @@ namespace MarketplaceApp.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != userId) return Unauthorized();
 
-            if (item.Images != null)
+            if (item.Status == ItemStatus.Sold || item.Status == ItemStatus.PendingDelivery)
             {
-                foreach (var img in item.Images)
-                {
-                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-                }
+                TempData["Error"] = "Cannot delete the item because it is sold or pending delivery.";
+                return RedirectToAction("Details", new { id = item.ItemID });
             }
 
-            _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
-            _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
-            _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
+            try
+            {
+                if (item.Images != null)
+                {
+                    foreach (var img in item.Images)
+                    {
+                        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                    }
+                }
 
-            _context.Items.Remove(item);
-            await _context.SaveChangesAsync();
+                _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
+                _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
+                _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
 
-            TempData["Success"] = "Item deleted successfully.";
+                if (item.Images != null && item.Images.Any())
+                {
+                    _context.ItemImages.RemoveRange(item.Images);
+                }
+
+                _context.Items.Remove(item);
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Item and all related data deleted successfully.";
+            }
+            catch
+            {
+                TempData["Error"] = "An error occurred while deleting the item.";
+            }
             return RedirectToAction("Index", "Home");
         }
 
