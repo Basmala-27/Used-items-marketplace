@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -180,7 +180,7 @@ namespace MarketplaceApp.Controllers
                 await _context.SaveChangesAsync();
                 await dbTx.CommitAsync();
 
-                await _notificationService.NotifyBuyRequestAcceptedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title);
+                await _notificationService.NotifyBuyRequestAcceptedAsync(buyRequest.BuyerID, buyRequest.BuyRequestId, buyRequest.Item.Title, seller?.PhoneNumber);
                 return Json(new { success = true, message = "Accepted! 50% released to your wallet." });
             }
             catch

@@ -2,7 +2,7 @@ using MarketplaceApp.Data;
 using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
 using MarketplaceApp.ViewModels;
-using MarketplaceApp.Services;
+using MarketplaceApp.Services; 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -58,22 +58,24 @@ namespace MarketplaceApp.Controllers
                     query = query.Where(i => i.IsAvailableForSale);
             }
 
+
             query = sort switch
             {
-                "price_asc" => query.OrderBy(i => (double)i.Price),
-                "price_desc" => query.OrderByDescending(i => (double)i.Price),
+                "price_asc" => query.OrderBy(i => i.PriceSortValue),
+
+                "price_desc" => query.OrderByDescending(i => i.PriceSortValue),
+
                 _ => query.OrderByDescending(i => i.CreatedAt)
             };
 
             var items = await query.ToListAsync();
 
+
+
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", categoryId);
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, condition);
             ViewBag.ListingTypes = new SelectList(new[] { "Sale", "Swap" }, listingType);
-
             ViewBag.SelectedCategory = categoryId;
-            ViewBag.SelectedCondition = condition;
-            ViewBag.SelectedListingType = listingType;
             ViewBag.SelectedSort = sort;
             ViewBag.SearchTerm = searchTerm;
 
@@ -85,6 +87,7 @@ namespace MarketplaceApp.Controllers
 
             return View(items);
         }
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -187,13 +190,6 @@ namespace MarketplaceApp.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != currentUserId) return Unauthorized();
 
-         
-            if (item.Status != ItemStatus.Available)
-            {
-                TempData["Error"] = "This item cannot be edited because it is no longer available.";
-                return RedirectToAction("Details", new { id = item.ItemID });
-            }
-
             var vm = new ItemEditViewModel
             {
                 ItemID = item.ItemID,
@@ -204,7 +200,7 @@ namespace MarketplaceApp.Controllers
                 Location = item.Location,
                 Status = item.Status,
                 CategoryID = item.CategoryID,
-                UserID = item.UserID
+                UserID = item.UserID 
             };
 
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryID", "Name", vm.CategoryID);
@@ -221,13 +217,6 @@ namespace MarketplaceApp.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != currentUserId) return Unauthorized();
-
-            
-            if (item.Status != ItemStatus.Available)
-            {
-                TempData["Error"] = "Changes were not saved. Editing is only allowed for available items.";
-                return RedirectToAction("Details", new { id = item.ItemID });
-            }
 
             if (ModelState.IsValid)
             {
@@ -255,6 +244,7 @@ namespace MarketplaceApp.Controllers
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
             return View(vm);
         }
+
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -273,10 +263,9 @@ namespace MarketplaceApp.Controllers
             return View(item);
         }
 
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int ItemID)
+        public async Task<IActionResult> DeleteConfirmed(int ItemID) 
         {
             var item = await _context.Items
                 .Include(i => i.Images)
@@ -287,44 +276,28 @@ namespace MarketplaceApp.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != userId) return Unauthorized();
 
-            if (item.Status == ItemStatus.Sold || item.Status == ItemStatus.PendingDelivery)
+            // 1. ??? ??????? ?????????? (?????)
+            if (item.Images != null)
             {
-                TempData["Error"] = "Cannot delete the item because it is sold or pending delivery.";
-                return RedirectToAction("Details", new { id = item.ItemID });
-            }
-
-            try
-            {
-                if (item.Images != null)
+                foreach (var img in item.Images)
                 {
-                    foreach (var img in item.Images)
-                    {
-                        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
-                        if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-                    }
+                    var filePath = Path.Combine(_webHostEnvironment.WebRootPath, img.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
                 }
-
-                _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
-                _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
-                _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
-
-                if (item.Images != null && item.Images.Any())
-                {
-                    _context.ItemImages.RemoveRange(item.Images);
-                }
-
-                _context.Items.Remove(item);
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Item and all related data deleted successfully.";
             }
-            catch
-            {
-                TempData["Error"] = "An error occurred while deleting the item.";
-            }
+
+            _context.Favorites.RemoveRange(_context.Favorites.Where(f => f.ItemID == ItemID));
+            _context.Conversations.RemoveRange(_context.Conversations.Where(c => c.ItemID == ItemID));
+            _context.BuyRequests.RemoveRange(_context.BuyRequests.Where(b => b.ItemID == ItemID));
+
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Item deleted successfully.";
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
         [HttpGet]
         public async Task<IActionResult> CreateSwap(int targetItemId)
         {
@@ -334,6 +307,10 @@ namespace MarketplaceApp.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             decimal priceTolerance = targetItem.Price * 0.20m;
+
+            ViewBag.MinAllowedPrice = targetItem.Price - priceTolerance;
+            ViewBag.MaxAllowedPrice = targetItem.Price + priceTolerance;
+
             var filteredItems = await _context.Items
                 .Where(i => i.UserID == currentUserId && i.Status == ItemStatus.Available &&
                             i.Price >= (targetItem.Price - priceTolerance) &&
@@ -368,6 +345,16 @@ namespace MarketplaceApp.Controllers
 
                 _context.SwapRequests.Add(swapRequest);
                 await _context.SaveChangesAsync();
+
+                var requestedItem = await _context.Items.FindAsync(model.RequestedItemId);
+                if (requestedItem != null)
+                {
+                    await _notificationService.NotifySwapRequestAsync(
+                        requestedItem.UserID, 
+                        swapRequest.SwapRequestId, 
+                        requestedItem.Title
+                    );
+                }
 
                 TempData["Success"] = "Swap request sent successfully!";
                 return RedirectToAction("Details", new { id = model.RequestedItemId });

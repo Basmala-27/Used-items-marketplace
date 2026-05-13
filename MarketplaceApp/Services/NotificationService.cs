@@ -10,11 +10,11 @@ namespace MarketplaceApp.Services
     {
         Task SendAsync(string userId, NotificationType type, int? relatedId, string message, string? url = null);
         Task NotifyBuyRequestAsync(string userId, int buyRequestId, string itemTitle, decimal price);
-        Task NotifyBuyRequestAcceptedAsync(string userId, int buyRequestId, string itemTitle);
+        Task NotifyBuyRequestAcceptedAsync(string userId, int buyRequestId, string itemTitle, string? contactNumber = null);
         Task NotifyBuyRequestRejectedAsync(string userId, int buyRequestId, string itemTitle, decimal refundAmount);
         Task NotifyOrderCompletedAsync(string sellerId, int buyRequestId, string itemTitle, decimal amount);
         Task NotifySwapRequestAsync(string userId, int swapRequestId, string requestedItemTitle);
-        Task NotifySwapRequestAcceptedAsync(string userId, int swapRequestId, string requestedItemTitle);
+        Task NotifySwapRequestAcceptedAsync(string userId, int swapRequestId, string requestedItemTitle, string? contactNumber = null);
         Task NotifySwapRequestRejectedAsync(string userId, int swapRequestId, string requestedItemTitle);
         Task NotifyNewMessageAsync(string userId, int conversationId, string senderName);
     }
@@ -63,10 +63,11 @@ namespace MarketplaceApp.Services
                 $"/Transactions/SellerRequests");
         }
 
-        public async Task NotifyBuyRequestAcceptedAsync(string userId, int buyRequestId, string itemTitle)
+        public async Task NotifyBuyRequestAcceptedAsync(string userId, int buyRequestId, string itemTitle, string? contactNumber = null)
         {
+            string phoneText = !string.IsNullOrEmpty(contactNumber) ? $" Contact: {contactNumber}." : "";
             await SendAsync(userId, NotificationType.Order, buyRequestId,
-                $"✅ The seller accepted your buy request for \"{itemTitle}\"! Shipping in progress. Confirm receipt to release payment.",
+                $"✅ The seller accepted your buy request for \"{itemTitle}\"! Shipping in progress.{phoneText} Confirm receipt to release payment.",
                 $"/Transactions/MyOrders");
         }
 
@@ -91,10 +92,11 @@ namespace MarketplaceApp.Services
                 $"/Transactions/SellerRequests");
         }
 
-        public async Task NotifySwapRequestAcceptedAsync(string userId, int swapRequestId, string requestedItemTitle)
+        public async Task NotifySwapRequestAcceptedAsync(string userId, int swapRequestId, string requestedItemTitle, string? contactNumber = null)
         {
+            string phoneText = !string.IsNullOrEmpty(contactNumber) ? $" Contact them at: {contactNumber}." : "";
             await SendAsync(userId, NotificationType.SwapRequest, swapRequestId,
-                $"✅ Your swap request for \"{requestedItemTitle}\" has been approved.",
+                $"✅ Your swap request for \"{requestedItemTitle}\" has been approved.{phoneText}",
                 $"/Profile#transactions");
         }
 

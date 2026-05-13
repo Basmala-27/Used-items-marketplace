@@ -145,13 +145,14 @@ namespace MarketplaceApp.Controllers
                 await dbTx.CommitAsync();
 
 
-                await _notificationService.NotifySwapRequestAcceptedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title);
+                await _notificationService.NotifySwapRequestAcceptedAsync(swapRequest.RequesterId, swapRequest.SwapRequestId, swapRequest.RequestedItem.Title, respondent.PhoneNumber);
 
+                string phoneText = !string.IsNullOrEmpty(sender.PhoneNumber) ? $" Contact them at: {sender.PhoneNumber}." : "";
                 await _notificationService.SendAsync(
                     userId!,
                     NotificationType.Order,
                     swapRequest.SwapRequestId,
-                    $"🔄 Swap Complete! \"{swapRequest.OfferedItem.Title}\" is now yours.",
+                    $"🔄 Swap Complete! \"{swapRequest.OfferedItem.Title}\" is now yours.{phoneText}",
                     Url.Action("MyRequests", "SwapRequests")
                 );
 
