@@ -1,4 +1,4 @@
-namespace MarketplaceApp.Models
+namespace MarketplaceApp.Enums
 {
     public enum ComplaintStatus
     {

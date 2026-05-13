@@ -1,4 +1,5 @@
 using MarketplaceApp.Data;
+using MarketplaceApp.Enums;
 using MarketplaceApp.Models;
 using MarketplaceApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;

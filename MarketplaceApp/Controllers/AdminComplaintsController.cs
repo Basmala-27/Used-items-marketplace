@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MarketplaceApp.Enums;
 
 namespace MarketplaceApp.Controllers
 {

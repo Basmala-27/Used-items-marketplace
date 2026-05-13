@@ -24,7 +24,7 @@ namespace MarketplaceApp.Models
         [Range(0, 5)]
         public double TrustScore { get; set; } = 0;
 
-        /// <summary>Number of completed sales / swap deals as seller.</summary>
+       
         [Display(Name = "Completed sales")]
         public int Rating { get; set; }
 
@@ -33,12 +33,12 @@ namespace MarketplaceApp.Models
 
         // ===== محفظة الـ Escrow =====
 
-        /// <summary>الرصيد الفعلي للمستخدم (متاح للإنفاق)</summary>
+    
         [Column(TypeName = "decimal(10,2)")]
         [Display(Name = "Wallet Balance")]
         public decimal WalletBalance { get; set; } = 0;
 
-        /// <summary>المبلغ المحتجز في الـ Escrow (صفقات قيد التسليم)</summary>
+      
         [Column(TypeName = "decimal(10,2)")]
         [Display(Name = "Pending Balance")]
         public decimal PendingBalance { get; set; } = 0;

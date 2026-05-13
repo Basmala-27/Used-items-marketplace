@@ -1,4 +1,4 @@
-using MarketplaceApp.Models;
+using MarketplaceApp.Enums;
 using System;
 
 namespace MarketplaceApp.ViewModels
