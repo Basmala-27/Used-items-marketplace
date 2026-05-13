@@ -78,7 +78,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Items");
+                    b.ToTable("Items", (string)null);
                 });
 
             modelBuilder.Entity("ItemImage", b =>
@@ -99,7 +99,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("ItemID");
 
-                    b.ToTable("ItemImages");
+                    b.ToTable("ItemImages", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.ApplicationUser", b =>
@@ -238,7 +238,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("SellerID");
 
-                    b.ToTable("BuyRequests");
+                    b.ToTable("BuyRequests", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Category", b =>
@@ -258,7 +258,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasKey("CategoryID");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -366,7 +366,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("Complaints");
+                    b.ToTable("Complaints", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Conversation", b =>
@@ -398,7 +398,7 @@ namespace MarketplaceApp.Migrations
                     b.HasIndex("BuyerID", "SellerID", "ItemID")
                         .IsUnique();
 
-                    b.ToTable("Conversations");
+                    b.ToTable("Conversations", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Favorite", b =>
@@ -429,7 +429,7 @@ namespace MarketplaceApp.Migrations
                     b.HasIndex("UserID", "ItemID")
                         .IsUnique();
 
-                    b.ToTable("Favorites");
+                    b.ToTable("Favorites", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Message", b =>
@@ -462,7 +462,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Notification", b =>
@@ -504,7 +504,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Review", b =>
@@ -543,7 +543,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("TransactionID");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.SwapRequest", b =>
@@ -581,7 +581,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("RequesterId");
 
-                    b.ToTable("SwapRequests");
+                    b.ToTable("SwapRequests", (string)null);
                 });
 
             modelBuilder.Entity("MarketplaceApp.Models.Transaction", b =>
@@ -627,7 +627,7 @@ namespace MarketplaceApp.Migrations
 
                     b.HasIndex("SellerID");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
