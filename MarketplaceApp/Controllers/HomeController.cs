@@ -48,9 +48,6 @@ namespace MarketplaceApp.Controllers
                 if (userId != null)
                 {
 
-
-
-
                     userFavoriteIds = await _context.Favorites
                       .Where(f => f.UserID == userId)
                       .Select(f => f.ItemID)

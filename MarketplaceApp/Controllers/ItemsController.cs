@@ -187,6 +187,13 @@ namespace MarketplaceApp.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != currentUserId) return Unauthorized();
 
+         
+            if (item.Status != ItemStatus.Available)
+            {
+                TempData["Error"] = "This item cannot be edited because it is no longer available.";
+                return RedirectToAction("Details", new { id = item.ItemID });
+            }
+
             var vm = new ItemEditViewModel
             {
                 ItemID = item.ItemID,
@@ -215,6 +222,13 @@ namespace MarketplaceApp.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (item.UserID != currentUserId) return Unauthorized();
 
+            
+            if (item.Status != ItemStatus.Available)
+            {
+                TempData["Error"] = "Changes were not saved. Editing is only allowed for available items.";
+                return RedirectToAction("Details", new { id = item.ItemID });
+            }
+
             if (ModelState.IsValid)
             {
                 item.Title = vm.Title;
@@ -241,7 +255,6 @@ namespace MarketplaceApp.Controllers
             ViewBag.Conditions = new SelectList(new[] { "Like New", "Very Good", "Good", "Needs Repair" }, vm.Condition);
             return View(vm);
         }
-
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
