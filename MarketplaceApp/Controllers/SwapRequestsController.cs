@@ -11,7 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace MarketplaceApp.Controllers
+namespace MarketplaceApp.Controllersa
 {
     [Authorize]
     public class SwapRequestsController : Controller
@@ -107,8 +107,7 @@ namespace MarketplaceApp.Controllers
                 sender.Rating += 1;
                 respondent.Rating += 1;
 
-                swapRequest.OfferedItem.UserID = requestedItemOwnerId;   // Offered item now belongs to respondent
-                swapRequest.RequestedItem.UserID = offeredItemOwnerId;    // Requested item now belongs to requester
+              
 
                 swapRequest.OfferedItem.Status = ItemStatus.Swapped;
                 swapRequest.RequestedItem.Status = ItemStatus.Swapped;
