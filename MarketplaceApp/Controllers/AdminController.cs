@@ -125,5 +125,33 @@ namespace MarketplaceApp.Controllers
 
             return RedirectToAction(nameof(ManageUsers));
         }
+        
+
+        public async Task<IActionResult> ManageReviews()
+        {
+            var reviews = await _context.Reviews
+                .Include(r => r.Reviewer) 
+                .Include(r => r.Transaction)
+                    .ThenInclude(t => t.Item)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return View(reviews);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReview(int id)
+        {
+            var review = await _context.Reviews.FindAsync(id);
+            if (review != null)
+            {
+                _context.Reviews.Remove(review);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Review has been removed.";
+            }
+            return RedirectToAction(nameof(ManageReviews));
+        }
     }
 }

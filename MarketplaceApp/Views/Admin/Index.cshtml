@@ -1,4 +1,3 @@
-
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "_AdminLayout";
@@ -25,8 +24,8 @@
         }
 
     .icon-box {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -34,6 +33,7 @@
         margin: 0 auto 20px;
     }
 
+    /* Colors Styles */
     .bg-primary-soft {
         background-color: #e7f1ff;
         color: #0d6efd;
@@ -44,64 +44,93 @@
         color: #198754;
     }
 
+    .bg-danger-soft {
+        background-color: #fceaea;
+        color: #dc3545;
+    }
+
+    .bg-warning-soft {
+        background-color: #fff9e6;
+        color: #ffc107;
+    }
+
     .btn-custom {
         border-radius: 12px;
-        padding: 10px 25px;
+        padding: 10px 15px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 </style>
 
 <div class="container py-5">
     <div class="text-center mb-5">
-        <span class="badge bg-primary px-3 py-2 mb-3 rounded-pill">Admin Management</span>
+        <span class="badge bg-primary px-3 py-2 mb-3 rounded-pill">Admin Management System</span>
         <h1 class="display-5 fw-bold text-dark">Welcome back, Admin!</h1>
-        <p class="text-muted">What would you like to manage today?</p>
+        <p class="text-muted">Overview of your marketplace activities and community controls.</p>
     </div>
 
-    <div class="row g-4 justify-content-center align-items-stretch">
-        <div class="col-md-4">
-            <div class="card admin-card shadow-sm p-4 h-100">
+    <div class="row g-4 justify-content-center">
+        <!-- 1. Items Management -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card admin-card shadow-sm p-3 h-100 border-top border-4 border-primary">
                 <div class="card-body text-center d-flex flex-column">
                     <div class="icon-box bg-primary-soft">
-                        <i class="bi bi-box-seam-fill fs-1"></i>
+                        <i class="bi bi-box-seam-fill fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-3">Items Management</h3>
-                    <p class="text-muted mb-4 flex-grow-1">Monitor all marketplace listings. Keep the platform clean and professional.</p>
+                    <h4 class="fw-bold mb-2">Items</h4>
+                    <p class="text-muted small mb-4 flex-grow-1">Monitor listings and maintain platform quality.</p>
                     <a asp-action="ManageItems" class="btn btn-primary btn-custom w-100 shadow-sm mt-auto">
-                        <i class="bi bi-eye me-2"></i> Explore Items
+                        <i class="bi bi-eye me-1"></i> Explore
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card admin-card shadow-sm p-4 h-100">
+        <!-- 2. Users Control -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card admin-card shadow-sm p-3 h-100 border-top border-4 border-success">
                 <div class="card-body text-center d-flex flex-column">
                     <div class="icon-box bg-success-soft">
-                        <i class="bi bi-people-fill fs-1"></i>
+                        <i class="bi bi-people-fill fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-3">Users Control</h3>
-                    <p class="text-muted mb-4 flex-grow-1">Manage your community members. Take action on reports or block bad users.</p>
+                    <h4 class="fw-bold mb-2">Users</h4>
+                    <p class="text-muted small mb-4 flex-grow-1">Manage community members and block accounts.</p>
                     <a asp-action="ManageUsers" class="btn btn-success btn-custom w-100 shadow-sm mt-auto">
-                        <i class="bi bi-shield-check me-2"></i> Manage Community
+                        <i class="bi bi-shield-check me-1"></i> Manage
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card admin-card shadow-sm p-4 h-100 border-top border-4 border-danger">
+        <!-- 3. Reviews Management -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card admin-card shadow-sm p-3 h-100 border-top border-4 border-warning">
                 <div class="card-body text-center d-flex flex-column">
-                    <div class="icon-box bg-danger bg-opacity-10 text-danger">
-                        <i class="bi bi-shield-exclamation-fill fs-1"></i>
+                    <div class="icon-box bg-warning-soft">
+                        <i class="bi bi-star-fill fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-3">Complaints</h3>
-                    <p class="text-muted mb-4 flex-grow-1">Review user reports and take immediate action on items and accounts.</p>
+                    <h4 class="fw-bold mb-2">Reviews</h4>
+                    <p class="text-muted small mb-4 flex-grow-1">Moderate user feedback and remove bad reviews.</p>
+                    <a asp-action="ManageReviews" class="btn btn-warning btn-custom w-100 shadow-sm mt-auto text-white">
+                        <i class="bi bi-chat-left-quote-fill me-1"></i> Reviews
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Complaints -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card admin-card shadow-sm p-3 h-100 border-top border-4 border-danger">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="icon-box bg-danger-soft">
+                        <i class="bi bi-shield-exclamation-fill fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Complaints</h4>
+                    <p class="text-muted small mb-4 flex-grow-1">Take action on user reports and safety flags.</p>
                     <a asp-controller="AdminComplaints" asp-action="Index" class="btn btn-danger btn-custom w-100 shadow-sm mt-auto">
-                        <i class="bi bi-flag-fill me-2"></i> Review Complaints
+                        <i class="bi bi-flag-fill me-1"></i> Reports
                         @await Component.InvokeAsync("AdminUnreadComplaints")
                     </a>
                 </div>
