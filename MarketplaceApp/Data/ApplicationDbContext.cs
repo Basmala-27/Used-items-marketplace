@@ -77,22 +77,46 @@ namespace MarketplaceApp.Data
                 entity.HasOne(f => f.Item)
                     .WithMany()
                     .HasForeignKey(f => f.ItemID)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<SwapRequest>()
-                .HasOne(s => s.Requester)
-                .WithMany()
-                .HasForeignKey(s => s.RequesterId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<SwapRequest>(entity =>
+            {
+                entity.HasOne(s => s.Requester)
+                    .WithMany()
+                    .HasForeignKey(s => s.RequesterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.OfferedItem)
+                    .WithMany(i => i.OfferedInSwaps)
+                    .HasForeignKey(s => s.OfferedItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.RequestedItem)
+                    .WithMany(i => i.RequestedInSwaps)
+                    .HasForeignKey(s => s.RequestedItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
 
 
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Transaction)
-                .WithMany(t => t.Reviews)
-                .HasForeignKey(r => r.TransactionID)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.HasOne(r => r.Transaction)
+                    .WithMany(t => t.Reviews)
+                    .HasForeignKey(r => r.TransactionID)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.Reviewer)
+                    .WithMany(u => u.ReviewsWritten)
+                    .HasForeignKey(r => r.ReviewerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Seller)
+                    .WithMany(u => u.ReviewsReceived)
+                    .HasForeignKey(r => r.SellerID)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<Notification>()
                 .HasOne(n => n.User)
