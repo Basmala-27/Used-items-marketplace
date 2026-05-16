@@ -1,4 +1,4 @@
-﻿using MarketplaceApp.Enums;
+using MarketplaceApp.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace MarketplaceApp.ViewModels
@@ -14,6 +14,7 @@ namespace MarketplaceApp.ViewModels
         public string Description { get; set; } = string.Empty;
 
         [Required]
+        [Range(0.01, 100000000, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
 
         [Required]
